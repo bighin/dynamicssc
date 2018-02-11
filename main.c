@@ -6,6 +6,7 @@
 
 #include "inih/ini.h"
 
+#include "auxx.h"
 #include "config.h"
 #include "laser.h"
 #include "bigpsi.h"
@@ -14,13 +15,13 @@
 void print_header_g(FILE *out,int L,struct configuration_t *config)
 {
 	fprintf(out,"# Strong coupling time evolution\n");
-	fprintf(out,"# Using He-I2 potential energy surface\n");
+	fprintf(out,"#\n");
 	fprintf(out,"# L=%d\n",L);
 	fprintf(out,"#\n");
 	fprintf(out,"# Other parameters are:\n");
 	fprintf(out,"# Cutoff: %f\n",(double)(config->cutoff));
 	fprintf(out,"# Gridpoints: %i\n",config->gridpoints);
-	
+
 	if(!config->shapefile)
 	{
 		fprintf(out,"# Intensity (mW): %f\n",config->milliwatts);
@@ -42,7 +43,7 @@ void print_header_g(FILE *out,int L,struct configuration_t *config)
 void print_header_alpha(FILE *out,int L,struct configuration_t *config)
 {
 	fprintf(out,"# Strong coupling time evolution\n");
-	fprintf(out,"# Using He-I2 potential energy surface\n");
+	fprintf(out,"#\n");
 	fprintf(out,"# L=%d\n",L);
 	fprintf(out,"#\n");
 	fprintf(out,"# Other parameters are:\n");
@@ -69,12 +70,12 @@ void print_header_alpha(FILE *out,int L,struct configuration_t *config)
 
 void print_header_norms(FILE *out)
 {
-	fprintf(out,"# <Time> <NormQP L=0> <NormPhonons L=0> ... <NormQP L=Lmax> <NormPhonons L=Lmax> <TotalNorm> <Re(AlignmentCosine)> <Im(AlignmentCosine)> <Re(Cos^2)> <Im(Cos^2)> <Intensity> <BathIntensity>\n");
+	fprintf(out,"# <Time> <NormQP L=0> <NormPhonons L=0> ... <NormQP L=Lmax> <NormPhonons L=Lmax> <TotalNorm> <Re(AlignmentCosine)> <Im(AlignmentCosine)> <Re(Cos^2)> <Im(Cos^2)> <LaserIntensity> <BathIntensity>\n");
 }
 
 void print_header_summary(FILE *out)
 {
-	fprintf(out,"# <Time> <Intensity> <BathI> <Norm> <NormQP> <NormPhonons> <Re(Cos2D)> <Im(Cos2D)> <%%> <LocalNormErr> <TimeDE> <TimeCos>\n");
+	fprintf(out,"# <Time> <LaserIntensity> <BathIntensity> <Norm> <NormQP> <NormPhonons> <Re(AlignmentCosine)> <Im(AlignmentCosine)> <Completion%%> <LocalNormErr> <TimeDE> <TimeCos>\n");
 }
 
 int do_single(struct configuration_t *config)
@@ -103,7 +104,7 @@ int do_single(struct configuration_t *config)
 		snprintf(fname,1024,"%s.outg.%d.dat",config->prefix,c);
 		fname[1023]='\0';
 
-		if(!(outgs[c]=fopen(fname,"w+")))
+		if(!(outgs[c]=fopen_mkdir(fname,"w+")))
 		{
 			fprintf(stderr,"Couldn't open output file!\n");
 			goto cleanup;
@@ -116,7 +117,7 @@ int do_single(struct configuration_t *config)
 			snprintf(fname,1024,"%s.outalpha.%d.dat",config->prefix,c);
 			fname[1023]='\0';
 
-			if(!(outalphas[c]=fopen(fname,"w+")))
+			if(!(outalphas[c]=fopen_mkdir(fname,"w+")))
 			{
 				fprintf(stderr,"Couldn't open output file!\n");
 				goto cleanup;
@@ -127,11 +128,14 @@ int do_single(struct configuration_t *config)
 	}
 
 	snprintf(fname,1024,"%s.norms.dat",config->prefix);
-	if(!(norms=fopen(fname,"w+")))
+	if(!(norms=fopen_mkdir(fname,"w+")))
 	{
 		fprintf(stderr,"Couldn't open output file!\n");
 		goto cleanup;
 	}
+
+	print_header_norms(norms);
+	print_header_summary(stdout);
 
 	timedivs=(config->endtime-config->starttime)/config->timestep;
 	for(int c=0;c<=timedivs;c++)
@@ -161,15 +165,7 @@ int do_single(struct configuration_t *config)
 			bath_intensity=1.0f;
 
 		gettimeofday(&starttime,NULL);
-
-#warning This should be an option in the .ini file!
-	
-#ifdef DONT_CALCULATE_ALIGNMENT_COSINE
-		ac=0.0f;
-#else
-		ac=costheta2d(psi,config);
-#endif
-
+		ac=(config->cos2d==true)?(costheta2d(psi,config)):(0.0f);
 		cs=costhetasquared(psi,config);
 		gettimeofday(&endtime,NULL);
 
@@ -220,6 +216,10 @@ int do_single(struct configuration_t *config)
 					fprintf(outalphas[n],"%f %f %f %f %f %f %f %f %f %f %f %f\n",ti,k,creal(alpha2m2),cimag(alpha2m2),creal(alpha2m1),cimag(alpha2m1),creal(alpha20),cimag(alpha20),creal(alpha21),cimag(alpha21),creal(alpha22),cimag(alpha22));
 				}
 				
+				/*
+					This last newline is needed in order for gnuplot to easily read the output file.
+				*/
+
 				fprintf(outalphas[n],"\n");
 			}
 		}
@@ -249,7 +249,7 @@ int do_single(struct configuration_t *config)
 		fflush(norms);
 
 		/*
-			...and finally a summary on the standard output...
+			...and finally a summary on the standard output.
 		*/
 
 		completion=100.0f*(ti-config->starttime)/(config->endtime-config->starttime);
@@ -295,30 +295,27 @@ int do_mixture(struct configuration_t *config)
 	return 0;
 }
 
-int main(int argc,char **argv)
+int do_ini_file(char *inifile)
 {
 	struct configuration_t config;
 
-	if(argc!=2)
-	{
-		printf("Usage: %s <inifile>\n",argv[0]);
-		return 0;
-	}
-
 	config.shapefile=NULL;
 
-	if(ini_parse(argv[1],configuration_handler,&config)<0)
+	if(ini_parse(inifile,configuration_handler,&config)<0)
 	{
-		printf("Can't load '%s'\n",argv[1]);
+		printf("Can't load '%s'\n",inifile);
 		return 1;
 	}
 
 	printf("Angulon dynamics, strong coupling.\n");
-	printf("Loaded configuration from: %s\n",argv[1]);
+	printf("Loaded configuration from: %s\n",inifile);
+
+	printf("\nOutput-related options:\n");
+	printf("\tOutput prefix: %s\n",config.prefix);
+	printf("\tOutput mode: %s\n",(config.writephonons==false)?("light (no phonons)"):("full (incl. phonons)"));
+	printf("\tAlignment cosine: %s\n",(config.cos2d==false)?("not calculated (only 3D cosine)"):("calculated"));
 
 	printf("\nGeneral options:\n");
-	printf("\tOutput prefix: %s\n",config.prefix);
-	printf("\tOutput mode: %s\n",(config.writephonons==true)?("light (no phonons)"):("full (incl. phonons)"));
 	printf("\tMaximum L: %d\n",config.maxl);
 	printf("\tStart time: %f\n",config.starttime);
 	printf("\tEnd time: %f\n",config.endtime);
@@ -389,8 +386,8 @@ int main(int argc,char **argv)
 
 	printf("\nLaser pulse:\n");
 	printf("\tLaser: %s\n",(config.laser==true)?("ON"):("OFF"));
-	printf("\tIntensity (mw): %f\n",config.milliwatts);
-	
+	printf("\tIntensity (mW): %f\n",config.milliwatts);
+
 	if(config.shapefile!=NULL)
 	{
 		printf("\tLoading pulse shape from '%s'...",config.shapefile);
@@ -404,19 +401,31 @@ int main(int argc,char **argv)
 
 	printf("\nStarting simulation...\n");
 
-	printf("\nCleaning up...\n");
-
-	if(config.shapefile!=NULL)
-		unload_almost_gaussian();
-
-#if 0
 	if(config.mixture==false)
 		do_single(&config);
 	else
 		do_mixture(&config);
-#endif
+
+	printf("\nCleaning up... ");
+
+	if(config.shapefile!=NULL)
+		unload_almost_gaussian();
 
 	printf("Bye!\n");
 
+	return 0;
+}
+
+int main(int argc,char **argv)
+{
+	if(argc<2)
+	{
+		printf("Usage: %s <inifile> [<otherinifiles> ...]\n",argv[0]);
+		return 0;
+	}
+	
+	for(int c=1;c<argc;c++)
+		do_ini_file(argv[c]);
+	
 	return 0;
 }

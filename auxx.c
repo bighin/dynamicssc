@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include <sys/stat.h>
 
 #include "auxx.h"
 #include "spline.h"
@@ -103,4 +104,30 @@ double get_point(struct interpolation_t *it,double x)
 	splint(it->x,it->y,it->y2,it->n,x,&y);
 	
 	return y;
+}
+
+FILE *fopen_mkdir(const char *name, const char *mode)
+{
+	char *mname=strdup(name);
+
+	for(int i=0;mname[i]!='\0';i++)
+	{
+		if((i>0)&&((mname[i]=='\\')||(mname[i]=='/')))
+		{
+			char slash=mname[i];
+
+			mname[i]='\0';
+
+			if(!mkdir(mname,S_IRWXU|S_IRWXG|S_IRWXO))
+			{
+				free(mname);
+				return NULL;
+			}
+			
+			mname[i]=slash;
+		}
+	}
+
+	free(mname);
+	return fopen(name,mode);
 }

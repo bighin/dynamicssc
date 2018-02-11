@@ -7,6 +7,7 @@ struct configuration_t
 {
 	char *prefix;
 	bool writephonons;
+	bool cos2d;
 	
 	int maxl;
 	double starttime;

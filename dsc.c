@@ -263,7 +263,7 @@ double norm_phonons(double t,const double y[],struct configuration_t *config)
 
 double norm(double t,const double y[],struct configuration_t *config)
 {
-	return sqrt(pow(norm_qp(t,y,config),2.0f)+pow(norm_qp(t,y,config),2.0f));
+	return sqrt(pow(norm_qp(t,y,config),2.0f)+pow(norm_phonons(t,y,config),2.0f));
 }
 
 int fAplus(unsigned ndim,const double *x,void *fdata,unsigned fdim,double *fval)
@@ -416,7 +416,7 @@ int sc_time_evolution(double t,const double y[],double dydt[],void *p)
 	struct configuration_t *config=params->config;
 
 	double complex localAplus,localAminus;
-	double g,dgdt;
+	double complex g,dgdt;
 	double localdensity;
 	int c,L;
 

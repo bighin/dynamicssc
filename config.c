@@ -23,6 +23,13 @@ int configuration_handler(void *user,const char *section,const char *name,const 
 		else
 			pconfig->writephonons=false;
 	}
+	if(MATCH("output","cos2d"))
+	{
+		if(!strcasecmp(value,"true"))
+			pconfig->cos2d=true;
+		else
+			pconfig->cos2d=false;
+	}
 	else if(MATCH("general","maxl"))
 	{
 		pconfig->maxl=atoi(value);
@@ -30,6 +37,10 @@ int configuration_handler(void *user,const char *section,const char *name,const 
 	else if(MATCH("general","starttime"))
 	{
 		pconfig->starttime=atof(value);
+	}
+	else if(MATCH("general","endtime"))
+	{
+		pconfig->endtime=atof(value);
 	}
 	else if(MATCH("general","timestep"))
 	{
