@@ -30,6 +30,13 @@ int configuration_handler(void *user,const char *section,const char *name,const 
 		else
 			pconfig->cos2d=false;
 	}
+	if(MATCH("output","savefinalconf"))
+	{
+		if(!strcasecmp(value,"true"))
+			pconfig->savefinalconf=true;
+		else
+			pconfig->savefinalconf=false;
+	}
 	else if(MATCH("general","maxl"))
 	{
 		pconfig->maxl=atoi(value);
@@ -107,9 +114,24 @@ int configuration_handler(void *user,const char *section,const char *name,const 
 	{
 		pconfig->density=atof(value);
 	}
+	else if(MATCH("precision","hstart"))
+	{
+		pconfig->hstart=atof(value);
+	}
 	else if(MATCH("precision","epsabs"))
 	{
 		pconfig->epsabs=atof(value);
+	}
+	else if(MATCH("precision","epsrel"))
+	{
+		pconfig->epsrel=atof(value);
+	}
+	else if(MATCH("precision","normalize"))
+	{
+		if((!strcasecmp(value,"true"))||(!strcasecmp(value,"on")))
+			pconfig->normalize=true;
+		else
+			pconfig->normalize=false;
 	}
 	else if(MATCH("adiabaticramp","ramp"))
 	{

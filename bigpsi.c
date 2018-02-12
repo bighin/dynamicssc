@@ -26,6 +26,10 @@ int big_sc_time_evolution(double t,const double y[],double dydt[],void *data)
 	for(int c=0;c<(2+10*config->gridpoints)*bigpsi->nrpsis;c++)
 		dydt[c]=0.0f;
 
+	/*
+		We apply the strong coupling evolution to each different L state...
+	*/
+
 	for(int c=0;c<bigpsi->nrpsis;c++)
 	{
 		int offset=c*(2+10*config->gridpoints);
@@ -34,7 +38,7 @@ int big_sc_time_evolution(double t,const double y[],double dydt[],void *data)
 	}
 
 	/*
-		The level mixing due to the electric field
+		and then the level mixing due to the electric field!
 	*/
 
 	if(config->laser==false)
@@ -63,7 +67,7 @@ int big_sc_time_evolution(double t,const double y[],double dydt[],void *data)
 				continue;
 
 			gLprimeM=y[local_offset+0]+I*y[local_offset+1];
-			
+
 			dgLMdt+=-I*C*Q(GETL(d),GETL(c),GETM(),0)*gLprimeM;
 		}
 
@@ -88,20 +92,18 @@ int big_sc_time_evolution(double t,const double y[],double dydt[],void *data)
 
 				int Lprime;
 
-				if((c<=1)||(c>=bigpsi->nrpsis))
+				if((c<1)||(c>=bigpsi->nrpsis))
 					continue;
 
 				Lprime=GETL(c);
 
-				phasediff=timephase((Lprime*(Lprime+1.0f)-L*(L+1.0f)),t,config);
+				phasediff=timephase((L*(L+1.0f)-Lprime*(Lprime+1.0f)),t,config);
 
 				xiLprimeM2m2=y[local_offset+2+10*i]+I*y[local_offset+2+10*i+1];
 				xiLprimeM2m1=y[local_offset+2+10*i+2]+I*y[local_offset+2+10*i+3];
 				xiLprimeM20=y[local_offset+2+10*i+4]+I*y[local_offset+2+10*i+5];
 				xiLprimeM21=y[local_offset+2+10*i+6]+I*y[local_offset+2+10*i+7];
 				xiLprimeM22=y[local_offset+2+10*i+8]+I*y[local_offset+2+10*i+9];
-
-#warning Controllare il segno dell'accoppiamento del laser
 
 				dxiLM2m2dt+=-I*phasediff*C*Q(L,Lprime,GETM(),-2)*xiLprimeM2m2;
 				dxiLM2m1dt+=-I*phasediff*C*Q(L,Lprime,GETM(),-1)*xiLprimeM2m1;
@@ -115,8 +117,6 @@ int big_sc_time_evolution(double t,const double y[],double dydt[],void *data)
 			xiLM20=y[offset+2+10*i+4]+I*y[offset+2+10*i+5];
 			xiLM21=y[offset+2+10*i+6]+I*y[offset+2+10*i+7];
 			xiLM22=y[offset+2+10*i+8]+I*y[offset+2+10*i+9];
-
-#warning Controllare il segno dell'accoppiamento del laser
 
 			dxiLM2m2dt+=-I*(C/2.0f)*xiLM2m2;
 			dxiLM2m1dt+=-I*(C/2.0f)*xiLM2m1;
@@ -166,7 +166,7 @@ struct bigpsi_t *bigpsi_init(struct configuration_t *config,int L,int M)
 			psi->y[offset+0]=0.0f;
 
 		psi->y[offset+1]=0.0f;
-	
+
 		for(int c=0;c<config->gridpoints;c++)
 		{
 			psi->y[offset+2+10*c]=psi->y[offset+2+10*c+1]=0.0f;
@@ -193,9 +193,7 @@ struct bigpsi_t *bigpsi_init(struct configuration_t *config,int L,int M)
 	psi->sys.dimension=psi->nrpsis*(2+10*config->gridpoints);
 	psi->sys.params=psi;
 
-#warning Modify these parameters!
-
-	psi->driver=gsl_odeiv2_driver_alloc_y_new(&psi->sys,gsl_odeiv2_step_rkf45,1e-9,1e-9,1e-9);
+	psi->driver=gsl_odeiv2_driver_alloc_y_new(&psi->sys,gsl_odeiv2_step_rkf45,config->hstart,config->epsabs,config->epsrel);
 
 	return psi;
 }
@@ -216,21 +214,13 @@ void bigpsi_fini(struct bigpsi_t *psi)
 	}
 }
 
-#if 0
 void bigpsi_serialize(struct bigpsi_t *psi,FILE *out)
 {
 	struct configuration_t *config=psi->config;
 
-	double cutoff;
-	int gridpoints;
-
 	int c,ydim=(2+10*config->gridpoints)*psi->nrpsis;
-	
-	cutoff=config->cutoff;
-	gridpoints=config->gridpoints;
-	
-	fwrite(&cutoff,sizeof(double),1,out);
-	fwrite(&gridpoints,sizeof(int),1,out);
+
+	fwrite(config,sizeof(struct configuration_t),1,out);
 
 	fwrite(&psi->nrpsis,sizeof(int),1,out);
 	fwrite(&psi->dim,sizeof(int),1,out);
@@ -245,40 +235,51 @@ void bigpsi_serialize(struct bigpsi_t *psi,FILE *out)
 	}
 }
 
-bool bigpsi_deserialize(FILE *in,struct bigpsi_t *psi,struct configuration_t *config)
+/*
+	Here config must point to a (configuration_t *) struct, whose contents will be overwritten.
+*/
+
+struct bigpsi_t *bigpsi_deserialize(FILE *in,struct configuration_t *config)
 {
-	double cutoff;
-	int gridpoints;
+	struct bigpsi_t *psi;
+	int ydim;
 
-	int c,ydim=(2+10*config->gridpoints)*psi->nrpsis;
-	
-	fread(&cutoff,sizeof(double),1,in);
-	fread(&gridpoints,sizeof(double),1,in);
+	fread(config,sizeof(struct configuration_t),1,in);
 
-	if((fabs(config->cutoff-cutoff)>=0.00001f)||(config->gridpoints!=gridpoints))
-	{
-		printf("Error: trying to load a saved state generated with gridpoints=%d, cutoff=%f\n",gridpoints,cutoff);
-		printf("While the current code has: points=%d, gridcutoff=%f\n",config->gridpoints,config->cutoff);
-		return false;
-	}
+	ydim=(2+10*config->gridpoints)*config->maxl;
+	psi=bigpsi_init(config,config->startl,config->startm);
 
 	fread(&psi->nrpsis,sizeof(int),1,in);
 	fread(&psi->dim,sizeof(int),1,in);
 
-	bigpsi_init(psi,psi->nrpsis,0,0);
+	if((psi->dim!=ydim)||(psi->nrpsis!=config->maxl))
+	{
+		fprintf(stderr,"Error loading a configuration from file! Data is inconsistent!\n");
+		return NULL;
+	}
 
 	fread(psi->y,sizeof(double),ydim,in);
 	fread(&psi->t,sizeof(double),1,in);
 
-	for(c=0;c<psi->nrpsis;c++)
+	for(int c=0;c<psi->nrpsis;c++)
 	{
-		fread(&psi->params[c].L,sizeof(int),1,in);
-		fread(&psi->params[c].M,sizeof(int),1,in);
-	}
+		int localL,localM;
+		
+		fread(&localL,sizeof(int),1,in);
+		fread(&localM,sizeof(int),1,in);
 	
-	return true;
+		if((psi->params[c].L!=localL)||(psi->params[c].M!=localM))
+		{
+			fprintf(stderr,"Error loading a configuration from file! Data is inconsistent!\n");
+			return NULL;
+		}
+
+		psi->params[c].config=config;
+		psi->params[c].t=psi->t;
+	}
+
+	return psi;
 }
-#endif
 
 double get_aos(struct bigpsi_t *psi)
 {
@@ -352,7 +353,7 @@ double total_norm_phonons(struct bigpsi_t *psi)
 	return sqrtf(ret);
 }
 
-void bigpsi_normalize(struct bigpsi_t *psi,double *normalization_error)
+void bigpsi_normalize(struct bigpsi_t *psi,double *previousnorm)
 {
 	struct configuration_t *config=psi->config;
 
@@ -361,13 +362,14 @@ void bigpsi_normalize(struct bigpsi_t *psi,double *normalization_error)
 	for(int c=0;c<(2+10*config->gridpoints)*psi->nrpsis;c++)
 		psi->y[c]/=norm;
 	
-	if(normalization_error!=NULL)
-		*normalization_error=norm;
+	if(previousnorm!=NULL)
+		*previousnorm=norm;
 }
 
-void bigpsi_apply_step(struct bigpsi_t *psi,double ti,double *normalization_error)
+void bigpsi_apply_step(struct bigpsi_t *psi,double ti,double *previousnorm,struct configuration_t *config)
 {
 	gsl_odeiv2_driver_apply(psi->driver,&psi->t,ti,psi->y);
 
-	//bigpsi_normalize(psi,normalization_error);
+	if(config->normalize==true)
+		bigpsi_normalize(psi,previousnorm);
 }

@@ -142,7 +142,7 @@ int do_single(struct configuration_t *config)
 	{
 		double ti=config->starttime+c*(config->endtime-config->starttime)/((double)(timedivs));
 		double bath_intensity;
-		double completion,normalization_error,elapsed_time1,elapsed_time2;
+		double completion,previousnorm,elapsed_time1,elapsed_time2;
 		double complex ac,cs;
 
 		struct timeval starttime,endtime;
@@ -152,7 +152,7 @@ int do_single(struct configuration_t *config)
 		*/
 
 		gettimeofday(&starttime,NULL);
-		bigpsi_apply_step(psi,ti,&normalization_error);
+		bigpsi_apply_step(psi,ti,&previousnorm,config);
 		gettimeofday(&endtime,NULL);
 
 		elapsed_time1=(endtime.tv_sec-starttime.tv_sec)*1000.0;
@@ -199,13 +199,11 @@ int do_single(struct configuration_t *config)
 					if((d%5)!=0)
 						continue;
 
-#warning These phases need to be changed!
-
-					phase2m2=timephase((L*(L+1.0f)+omegak(k)-8.0f),ti,config);
-					phase2m1=timephase((L*(L+1.0f)+omegak(k)-2.0f),ti,config);
-					phase20=timephase((L*(L+1.0f)+omegak(k)),ti,config);
-					phase21=timephase((L*(L+1.0f)+omegak(k)-2.0f),ti,config);
-					phase22=timephase((L*(L+1.0f)+omegak(k)-8.0f),ti,config);
+					phase2m2=timephase(-(L*(L+1.0f)+omegak(k)-2.0f),ti,config);
+					phase2m1=timephase(-(L*(L+1.0f)+omegak(k)+4.0f),ti,config);
+					phase20=timephase(-(L*(L+1.0f)+omegak(k)+6.0f),ti,config);
+					phase21=timephase(-(L*(L+1.0f)+omegak(k)+4.0f),ti,config);
+					phase22=timephase(-(L*(L+1.0f)+omegak(k)-2.0f),ti,config);
 
 					alpha2m2=phase2m2*(y[2+10*d]+I*y[2+10*d+1]);
 					alpha2m1=phase2m1*(y[2+10*d+2]+I*y[2+10*d+3]);
@@ -255,8 +253,25 @@ int do_single(struct configuration_t *config)
 		completion=100.0f*(ti-config->starttime)/(config->endtime-config->starttime);
 
 		printf("%f %f %f %f %f %f %f %f %f %f %f%% ",ti,get_laser_intensity(config->milliwatts,config->duration,ti,config),bath_intensity,total_norm(psi),total_norm_qp(psi),total_norm_phonons(psi),creal(ac),cimag(ac),creal(cs),cimag(cs),completion);
-		printf("%f %f %f\n",normalization_error,elapsed_time1,elapsed_time2);
+		printf("%f %f %f\n",previousnorm,elapsed_time1,elapsed_time2);
 		fflush(stdout);
+	}
+
+	if(config->savefinalconf==true)
+	{
+		FILE *finalconf;
+		
+		snprintf(fname,1024,"%s.final.dat",config->prefix);
+		if(!(finalconf=fopen_mkdir(fname,"w+")))
+		{
+			fprintf(stderr,"Couldn't open output file '%s'!\n",fname);
+			goto cleanup;
+		}
+		
+		bigpsi_serialize(psi,finalconf);
+		
+		if(finalconf!=NULL)
+			fclose(finalconf);
 	}
 
 	cleanup:
@@ -314,6 +329,9 @@ int do_ini_file(char *inifile)
 	printf("\tOutput prefix: %s\n",config.prefix);
 	printf("\tOutput mode: %s\n",(config.writephonons==false)?("light (no phonons)"):("full (incl. phonons)"));
 	printf("\tAlignment cosine: %s\n",(config.cos2d==false)?("not calculated (only 3D cosine)"):("calculated"));
+	
+	if(config.savefinalconf==true)
+		printf("\tFinal configuration will be saved to: %s.final.dat\n",config.prefix);
 
 	printf("\nGeneral options:\n");
 	printf("\tMaximum L: %d\n",config.maxl);
@@ -362,7 +380,7 @@ int do_ini_file(char *inifile)
 		printf("\tUsing a statistical mixture.\n");		
 	}
 
-	if(config.freeevolution==true)
+	if(config.freeevolution==false)
 	{
 		printf("\nGrid:\n");
 		printf("\tk-cutoff: %f\n",config.cutoff);
@@ -377,7 +395,10 @@ int do_ini_file(char *inifile)
 	printf("\tDensity: %f\n",config.density);
 
 	printf("\nNumerical precision:\n");
-	printf("\tepsabs: %f\n",config.epsabs);
+	printf("\thstart: %e\n",config.hstart);
+	printf("\tepsabs: %e\n",config.epsabs);
+	printf("\tepsrel: %e\n",config.epsrel);
+	printf("\tNormalization after each step: %s\n",(config.normalize==true)?("ON"):("OFF"));
 
 	printf("\nAdiabatic ramp:\n");
 	printf("\tRamp: %s\n",(config.ramp==true)?("ON"):("OFF"));

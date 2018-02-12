@@ -285,7 +285,8 @@ int fAplus(unsigned ndim,const double *x,void *fdata,unsigned fdim,double *fval)
 	L=container->params->L;
 	
 	k=x[0];
-	phase21=timephase((L*(L+1.0f)+omegak(k)-2.0f),t,config);
+
+	phase21=timephase(-(L*(L+1.0f)+omegak(k)+4.0f),t,config);
 	f=V2(k,localdensity,config)/omegak(k)*phase21*(get_point(container->intrexi21,k)+I*get_point(container->intimxi21,k));
 
 	fval[0]=creal(f);
@@ -357,7 +358,8 @@ int fAminus(unsigned ndim,const double *x,void *fdata,unsigned fdim,double *fval
 	L=container->params->L;
 	
 	k=x[0];
-	phase2m1=timephase((L*(L+1.0f)+omegak(k)-2.0f),t,config);
+
+	phase2m1=timephase(-(L*(L+1.0f)+omegak(k)+4.0f),t,config);
 	f=V2(k,localdensity,config)/omegak(k)*phase2m1*(get_point(container->intrexi2m1,k)+I*get_point(container->intimxi2m1,k));
 
 	fval[0]=creal(f);
@@ -426,7 +428,7 @@ int sc_time_evolution(double t,const double y[],double dydt[],void *p)
 
 	if(config->freeevolution==true)
 	{
-		dgdt=I*L*(L+1)*g;
+		dgdt=-I*L*(L+1)*g;
 
 		dydt[0]=creal(dgdt);
 		dydt[1]=cimag(dgdt);
@@ -442,7 +444,7 @@ int sc_time_evolution(double t,const double y[],double dydt[],void *p)
 	localAplus=Aplus(t,y,p,localdensity);
 	localAminus=Aminus(t,y,p,localdensity);
 
-	dgdt=I*(L*(L+1))*g+I*sqrt(6*L*(L+1))*(localAplus+localAminus);
+	dgdt=-I*(L*(L+1))*g-I*sqrt(6*L*(L+1))*(localAplus+localAminus);
 
 	dydt[0]=creal(dgdt);
 	dydt[1]=cimag(dgdt);
@@ -464,33 +466,33 @@ int sc_time_evolution(double t,const double y[],double dydt[],void *p)
 		xi21=y[2+10*c+6]+I*y[2+10*c+7];
 		xi22=y[2+10*c+8]+I*y[2+10*c+9];
 
-		dxi2m2dt=-I*2.0f*sqrt(L*(L+1)-2)*timephase(6.0f,t,config)*xi2m1;
-		dxi2m1dt=-I*sqrt(6*L*(L+1))*timephase(2.0f,t,config)*xi20-I*2.0f*sqrt(L*(L+1)-2)*timephase(-6.0f,t,config)*xi2m2;
+		dxi2m2dt=I*2.0f*sqrt(L*(L+1)-2)*timephase(-6.0f,t,config)*xi2m1;
+		dxi2m1dt=I*sqrt(6*L*(L+1))*timephase(-2.0f,t,config)*xi20+I*2.0f*sqrt(L*(L+1)-2)*timephase(6.0f,t,config)*xi2m2;
 
  		if(c!=0)
 		{
 			double complex invphase2m1;
 
-			invphase2m1=timephase(-(L*(L+1.0f)+omegak(k)-2.0f),t,config);
+			invphase2m1=timephase((L*(L+1.0f)+omegak(k)+4.0f),t,config);
 
-			dxi2m1dt+=I*6.0f*V2(k,localdensity,config)/omegak(k)*invphase2m1*localAminus;
-			dxi2m1dt+=I*V2(k,localdensity,config)/omegak(k)*sqrt(6*L*(L+1))*invphase2m1*g;
+			dxi2m1dt+=-I*6.0f*V2(k,localdensity,config)/omegak(k)*invphase2m1*localAminus;
+			dxi2m1dt+=-I*V2(k,localdensity,config)/omegak(k)*sqrt(6*L*(L+1))*invphase2m1*g;
 		}
 
-		dxi20dt=-I*sqrt(6*L*(L+1))*timephase(-2.0f,t,config)*(xi2m1+xi21);
-		dxi21dt=-I*sqrt(6*L*(L+1))*timephase(2.0f,t,config)*xi20-I*2.0f*sqrt(L*(L+1)-2)*timephase(-6.0f,t,config)*xi22;
+		dxi20dt=I*sqrt(6*L*(L+1))*timephase(2.0f,t,config)*(xi2m1+xi21);
+		dxi21dt=I*sqrt(6*L*(L+1))*timephase(-2.0f,t,config)*xi20+I*2.0f*sqrt(L*(L+1)-2)*timephase(6.0f,t,config)*xi22;
 
  		if(c!=0)
 		{
 			double complex invphase21;
 
-			invphase21=timephase(-(L*(L+1.0f)+omegak(k)-2.0f),t,config);
+			invphase21=timephase((L*(L+1.0f)+omegak(k)+4.0f),t,config);
 
-			dxi21dt+=I*6.0f*V2(k,localdensity,config)/omegak(k)*invphase21*localAplus;
-			dxi21dt+=I*V2(k,localdensity,config)/omegak(k)*sqrt(6*L*(L+1))*invphase21*g;
+			dxi21dt+=-I*6.0f*V2(k,localdensity,config)/omegak(k)*invphase21*localAplus;
+			dxi21dt+=-I*V2(k,localdensity,config)/omegak(k)*sqrt(6*L*(L+1))*invphase21*g;
 		}
 
-		dxi22dt=-I*2.0f*sqrt(L*(L+1)-2)*timephase(6.0f,t,config)*xi21;
+		dxi22dt=I*2.0f*sqrt(L*(L+1)-2)*timephase(-6.0f,t,config)*xi21;
 
 		dydt[2+10*c]=creal(dxi2m2dt);
 		dydt[2+10*c+1]=cimag(dxi2m2dt);

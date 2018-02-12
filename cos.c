@@ -67,37 +67,35 @@ double complex Across(struct bigpsi_t *psi,int L,int Lprime,int n,struct configu
 
                 x[c]=k;
 
-#warning These phases need to be changed!
-
 		switch(n)
 		{
 			case -2:
-			phase1=timephase((L*(L+1.0f)+omegak(k)-8.0f),psi->t,config);
-			phase2=timephase((Lprime*(Lprime+1.0f)+omegak(k)-8.0f),psi->t,config);
+			phase1=timephase(-(L*(L+1.0f)+omegak(k)-2.0f),psi->t,config);
+			phase2=timephase(-(Lprime*(Lprime+1.0f)+omegak(k)-2.0f),psi->t,config);
 			noffset=0;
 			break;
 
 			case -1:
-			phase1=timephase((L*(L+1.0f)+omegak(k)-2.0f),psi->t,config);
-			phase2=timephase((Lprime*(Lprime+1.0f)+omegak(k)-2.0f),psi->t,config);
+			phase1=timephase(-(L*(L+1.0f)+omegak(k)+4.0f),psi->t,config);
+			phase2=timephase(-(Lprime*(Lprime+1.0f)+omegak(k)+4.0f),psi->t,config);
 			noffset=2;
 			break;
 
 			case 0:
-			phase1=timephase((L*(L+1.0f)+omegak(k)),psi->t,config);
-			phase2=timephase((Lprime*(Lprime+1.0f)+omegak(k)),psi->t,config);
+			phase1=timephase(-(L*(L+1.0f)+omegak(k)+6.0f),psi->t,config);
+			phase2=timephase(-(Lprime*(Lprime+1.0f)+omegak(k)+6.0f),psi->t,config);
 			noffset=4;
 			break;
 
 			case 1:
-			phase1=timephase((L*(L+1.0f)+omegak(k)-2.0f),psi->t,config);
-			phase2=timephase((Lprime*(Lprime+1.0f)+omegak(k)-2.0f),psi->t,config);
+			phase1=timephase(-(L*(L+1.0f)+omegak(k)+4.0f),psi->t,config);
+			phase2=timephase(-(Lprime*(Lprime+1.0f)+omegak(k)+4.0f),psi->t,config);
 			noffset=6;
 			break;
 
 			case 2:
-			phase1=timephase(I*(L*(L+1.0f)+omegak(k)-8.0f),psi->t,config);
-			phase2=timephase(I*(Lprime*(Lprime+1.0f)+omegak(k)-8.0f),psi->t,config);
+			phase1=timephase(-(L*(L+1.0f)+omegak(k)-2.0f),psi->t,config);
+			phase2=timephase(-(Lprime*(Lprime+1.0f)+omegak(k)-2.0f),psi->t,config);
 			noffset=8;
 			break;
 			

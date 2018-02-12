@@ -8,6 +8,7 @@ struct configuration_t
 	char *prefix;
 	bool writephonons;
 	bool cos2d;
+	bool savefinalconf;
 	
 	int maxl;
 	double starttime;
@@ -37,7 +38,10 @@ struct configuration_t
 	double rampcenter;
 	double rampdelta;
 
+	double hstart;
 	double epsabs;
+	double epsrel;
+	bool normalize;
 
 	bool laser;
 	double duration;

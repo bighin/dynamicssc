@@ -45,12 +45,15 @@ int big_sc_time_evolution(double t,const double y[],double dydt[],void *data);
 struct bigpsi_t *bigpsi_init(struct configuration_t *config,int L,int M);
 void bigpsi_fini(struct bigpsi_t *psi);
 
+void bigpsi_serialize(struct bigpsi_t *psi,FILE *out);
+struct bigpsi_t *bigpsi_deserialize(FILE *in,struct configuration_t *config);
+
 double get_aos(struct bigpsi_t *psi);
 double total_norm(struct bigpsi_t *psi);
 double total_norm_qp(struct bigpsi_t *psi);
 double total_norm_phonons(struct bigpsi_t *psi);
 
-void bigpsi_normalize(struct bigpsi_t *psi,double *normalization_error);
-void bigpsi_apply_step(struct bigpsi_t *psi,double ti,double *normalization_error);
+void bigpsi_normalize(struct bigpsi_t *psi,double *previousnorm);
+void bigpsi_apply_step(struct bigpsi_t *psi,double ti,double *previousnorm,struct configuration_t *config);
 
 #endif //__BIGPSI_H__
