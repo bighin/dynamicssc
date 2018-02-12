@@ -15,6 +15,17 @@ double Q(int L,int Lprime,int M,int N)
 	return (sqrt(2.0f*L+1.0f)/sqrt(2.0f*Lprime+1.0f))*cg(2,0,L,M,Lprime,M)*cg(2,0,L,N,Lprime,N);
 }
 
+bool laser_is_on(struct configuration_t *config,double t)
+{
+	if(config->laser==false)
+		return false;
+	
+	if(get_laser_intensity(config->milliwatts,config->duration,t,config)>1e-4)
+		return true;
+	
+	return false;
+}
+
 int big_sc_time_evolution(double t,const double y[],double dydt[],void *data)
 {
 	struct bigpsi_t *bigpsi=data;
@@ -41,11 +52,10 @@ int big_sc_time_evolution(double t,const double y[],double dydt[],void *data)
 		and then the level mixing due to the electric field!
 	*/
 
-	if(config->laser==false)
+	if(laser_is_on(config,t)==false)
 		return GSL_SUCCESS;
 
-	if((C=(2.0f/3.0f)*get_laser_intensity(config->milliwatts,config->duration,t,config))==0.0f)
-		return GSL_SUCCESS;
+	C=(2.0f/3.0f)*get_laser_intensity(config->milliwatts,config->duration,t,config);
 
 	for(int d=0;d<bigpsi->nrpsis;d++)
 	{
@@ -195,6 +205,9 @@ struct bigpsi_t *bigpsi_init(struct configuration_t *config,int L,int M)
 
 	psi->driver=gsl_odeiv2_driver_alloc_y_new(&psi->sys,gsl_odeiv2_step_rkf45,config->hstart,config->epsabs,config->epsrel);
 
+	psi->have_normalization_snapshot=false;
+	psi->normalization_snapshot=malloc(sizeof(double)*psi->nrpsis);
+
 	return psi;
 }
 
@@ -207,6 +220,9 @@ void bigpsi_fini(struct bigpsi_t *psi)
 
 		if(psi->params)
 			free(psi->params);
+
+		if(psi->normalization_snapshot)
+			free(psi->normalization_snapshot);
 
 		gsl_odeiv2_driver_free(psi->driver);
 
@@ -357,13 +373,58 @@ void bigpsi_normalize(struct bigpsi_t *psi,double *previousnorm)
 {
 	struct configuration_t *config=psi->config;
 
-	double norm=total_norm(psi);
-
-	for(int c=0;c<(2+10*config->gridpoints)*psi->nrpsis;c++)
-		psi->y[c]/=norm;
+	/*
+		It is better to normalize each L state in the wavefunction separately,
+		due to better numerical accuracy.
 	
-	if(previousnorm!=NULL)
-		*previousnorm=norm;
+		However, if the laser is on, or if we don't have a normalization snapshot,
+		then we have 
+	*/
+
+	if((psi->have_normalization_snapshot==true)&&(laser_is_on(config,psi->t)==false))
+	{
+		double totalnorm=total_norm(psi);
+
+		for(int c=0;c<psi->nrpsis;c++)
+		{
+			int offset=c*(2+10*config->gridpoints);
+			double ratio;
+			
+			if(fabs(psi->normalization_snapshot[c])<=1e-10)
+				continue;
+			
+			ratio=psi->normalization_snapshot[c]/norm(psi->t,&(psi->y[offset]),config);
+			
+			for(int d=0;d<(2+10*config->gridpoints);d++)
+				psi->y[offset+d]*=ratio;
+		}
+
+		if(previousnorm!=NULL)
+			*previousnorm=totalnorm;
+	}
+	else
+	{
+		double lnorm=total_norm(psi);
+
+		for(int c=0;c<(2+10*config->gridpoints)*psi->nrpsis;c++)
+			psi->y[c]/=lnorm;
+
+		if(previousnorm!=NULL)
+			*previousnorm=lnorm;
+
+		/*
+			We take a normalization snapshot, in case it could be used in the next stage.
+		*/
+
+		for(int c=0;c<psi->nrpsis;c++)
+		{
+			int offset=c*(2+10*config->gridpoints);
+
+			psi->normalization_snapshot[c]=norm(psi->t,&(psi->y[offset]),config);
+		}
+
+		psi->have_normalization_snapshot=true;
+	}
 }
 
 void bigpsi_apply_step(struct bigpsi_t *psi,double ti,double *previousnorm,struct configuration_t *config)

@@ -400,6 +400,13 @@ int do_ini_file(char *inifile)
 	printf("\tepsrel: %e\n",config.epsrel);
 	printf("\tNormalization after each step: %s\n",(config.normalize==true)?("ON"):("OFF"));
 
+	if(config.wtype==1)
+		printf("\nThe transformation we use is: W = \\omega_k\n");
+	else if(config.wtype==2)
+		printf("\nThe transformation we use is: W = \\omega_k + \\lambda(\\lambda + 1)\n");
+	else
+		printf("\nError: invalid W transformation specified!\n");
+
 	printf("\nAdiabatic ramp:\n");
 	printf("\tRamp: %s\n",(config.ramp==true)?("ON"):("OFF"));
 	printf("\tRamp center: %f\n",config.rampcenter);

@@ -60,6 +60,10 @@ int configuration_handler(void *user,const char *section,const char *name,const 
 		else
 			pconfig->freeevolution=false;
 	}
+	else if(MATCH("transformation","wtype"))
+	{
+		pconfig->wtype=atoi(value);
+	}
 	else if(MATCH("molecule","type"))
 	{
 		if(!strcmp(value,"I2"))

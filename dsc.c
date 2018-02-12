@@ -266,6 +266,20 @@ double norm(double t,const double y[],struct configuration_t *config)
 	return sqrt(pow(norm_qp(t,y,config),2.0f)+pow(norm_phonons(t,y,config),2.0f));
 }
 
+double W(double k,struct configuration_t *config)
+{
+	if(config->wtype==1)
+		return omegak(k);
+
+	if(config->wtype==2)
+		return omegak(k)+6.0f;
+
+	fprintf(stderr,"Fatal error: wrong wtype in configuration");
+	exit(0);
+	
+	return 0.0f;
+}
+
 int fAplus(unsigned ndim,const double *x,void *fdata,unsigned fdim,double *fval)
 {
         /* The context from which we read the global variables */
@@ -287,7 +301,7 @@ int fAplus(unsigned ndim,const double *x,void *fdata,unsigned fdim,double *fval)
 	k=x[0];
 
 	phase21=timephase(-(L*(L+1.0f)+omegak(k)+4.0f),t,config);
-	f=V2(k,localdensity,config)/omegak(k)*phase21*(get_point(container->intrexi21,k)+I*get_point(container->intimxi21,k));
+	f=V2(k,localdensity,config)/W(k,config)*phase21*(get_point(container->intrexi21,k)+I*get_point(container->intimxi21,k));
 
 	fval[0]=creal(f);
 	fval[1]=cimag(f);
@@ -360,7 +374,7 @@ int fAminus(unsigned ndim,const double *x,void *fdata,unsigned fdim,double *fval
 	k=x[0];
 
 	phase2m1=timephase(-(L*(L+1.0f)+omegak(k)+4.0f),t,config);
-	f=V2(k,localdensity,config)/omegak(k)*phase2m1*(get_point(container->intrexi2m1,k)+I*get_point(container->intimxi2m1,k));
+	f=V2(k,localdensity,config)/W(k,config)*phase2m1*(get_point(container->intrexi2m1,k)+I*get_point(container->intimxi2m1,k));
 
 	fval[0]=creal(f);
 	fval[1]=cimag(f);
@@ -412,12 +426,85 @@ double complex Aminus(double t,const double y[],struct params_t *params,double l
 	return res[0]+I*res[1];
 }
 
+int fB(unsigned ndim,const double *x,void *fdata,unsigned fdim,double *fval)
+{
+        /* The context from which we read the global variables */
+
+        struct container_t *container=(struct container_t *)(fdata);
+	struct configuration_t *config=container->params->config;
+
+        /* The integration variables and other auxiliary variables */
+
+        double k;
+	double complex f,phase20;
+	double t,localdensity;
+	int L;
+	
+	t=container->t;
+	localdensity=container->localdensity;
+	L=container->params->L;
+	
+	k=x[0];
+
+	phase20=timephase(-(L*(L+1.0f)+omegak(k)+6.0f),t,config);
+	f=V2(k,localdensity,config)/W(k,config)*phase20*(get_point(container->intrexi20,k)+I*get_point(container->intimxi20,k))*(omegak(k)+6.0-W(k,config));
+
+	fval[0]=creal(f);
+	fval[1]=cimag(f);
+
+	return 0;
+}
+
+double complex B(double t,const double y[],struct params_t *params,double localdensity)
+{
+	struct container_t container;
+	struct configuration_t *config=params->config;
+
+	double *x,*yre,*yim;
+	double xmin,xmax,res[2],err[2];
+	int c;
+
+	x=malloc(sizeof(double)*config->gridpoints);
+	yre=malloc(sizeof(double)*config->gridpoints);
+	yim=malloc(sizeof(double)*config->gridpoints);
+
+        for(c=0;c<config->gridpoints;c++)
+	{
+                double gridstep=config->cutoff/config->gridpoints;
+                double k=c*gridstep;
+
+                x[c]=k;
+                yre[c]=y[2+10*c+4];
+                yim[c]=y[2+10*c+5];
+	}
+
+        container.intrexi20=init_interpolation(x,yre,config->gridpoints);
+        container.intimxi20=init_interpolation(x,yim,config->gridpoints);
+	container.t=t;
+	container.params=params;
+	container.localdensity=localdensity;
+
+	xmin=0.0f;
+	xmax=config->cutoff;
+
+	hcubature(2,fB,&container,1,&xmin,&xmax,maxEval,0,relError,ERROR_INDIVIDUAL,res,err);
+
+	fini_interpolation(container.intrexi20);
+	fini_interpolation(container.intimxi20);
+
+	if(x)	free(x);
+	if(yre)	free(yre);
+	if(yim)	free(yim);
+
+	return res[0]+I*res[1];
+}
+
 int sc_time_evolution(double t,const double y[],double dydt[],void *p)
 {
 	struct params_t *params=(struct params_t *)(p);
 	struct configuration_t *config=params->config;
 
-	double complex localAplus,localAminus;
+	double complex localAplus,localAminus,localB;
 	double complex g,dgdt;
 	double localdensity;
 	int c,L;
@@ -443,8 +530,10 @@ int sc_time_evolution(double t,const double y[],double dydt[],void *p)
 
 	localAplus=Aplus(t,y,p,localdensity);
 	localAminus=Aminus(t,y,p,localdensity);
+	localB=B(t,y,p,localdensity);
 
 	dgdt=-I*(L*(L+1))*g-I*sqrt(6*L*(L+1))*(localAplus+localAminus);
+	dgdt+=I*localB;
 
 	dydt[0]=creal(dgdt);
 	dydt[1]=cimag(dgdt);
@@ -475,11 +564,15 @@ int sc_time_evolution(double t,const double y[],double dydt[],void *p)
 
 			invphase2m1=timephase((L*(L+1.0f)+omegak(k)+4.0f),t,config);
 
-			dxi2m1dt+=-I*6.0f*V2(k,localdensity,config)/omegak(k)*invphase2m1*localAminus;
-			dxi2m1dt+=-I*V2(k,localdensity,config)/omegak(k)*sqrt(6*L*(L+1))*invphase2m1*g;
+			dxi2m1dt+=-I*6.0f*V2(k,localdensity,config)/W(k,config)*invphase2m1*localAminus;
+			dxi2m1dt+=-I*V2(k,localdensity,config)/W(k,config)*sqrt(6*L*(L+1))*invphase2m1*g;
 		}
 
 		dxi20dt=I*sqrt(6*L*(L+1))*timephase(2.0f,t,config)*(xi2m1+xi21);
+		
+		if(c!=0)
+			dxi20dt+=I*g*V2(k,localdensity,config)/W(k,config)*(omegak(k)+6.0-W(k,config))*timephase((L*(L+1.0f)+omegak(k)+6.0f),t,config);
+
 		dxi21dt=I*sqrt(6*L*(L+1))*timephase(-2.0f,t,config)*xi20+I*2.0f*sqrt(L*(L+1)-2)*timephase(6.0f,t,config)*xi22;
 
  		if(c!=0)
@@ -488,8 +581,8 @@ int sc_time_evolution(double t,const double y[],double dydt[],void *p)
 
 			invphase21=timephase((L*(L+1.0f)+omegak(k)+4.0f),t,config);
 
-			dxi21dt+=-I*6.0f*V2(k,localdensity,config)/omegak(k)*invphase21*localAplus;
-			dxi21dt+=-I*V2(k,localdensity,config)/omegak(k)*sqrt(6*L*(L+1))*invphase21*g;
+			dxi21dt+=-I*6.0f*V2(k,localdensity,config)/W(k,config)*invphase21*localAplus;
+			dxi21dt+=-I*V2(k,localdensity,config)/W(k,config)*sqrt(6*L*(L+1))*invphase21*g;
 		}
 
 		dxi22dt=I*2.0f*sqrt(L*(L+1)-2)*timephase(-6.0f,t,config)*xi21;

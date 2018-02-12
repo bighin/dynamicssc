@@ -16,6 +16,8 @@ struct configuration_t
 	double timestep;
 	bool freeevolution;
 
+	short wtype;
+
 #define MOLECULE_I2	(20)
 #define MOLECULE_CS2	(21)
 

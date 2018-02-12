@@ -38,6 +38,13 @@ struct bigpsi_t
 
 	gsl_odeiv2_driver *driver;
 	gsl_odeiv2_system sys;
+	
+	/*
+		Saved norms for normalization
+	*/
+	
+	bool have_normalization_snapshot;
+	double *normalization_snapshot;
 };
 
 int big_sc_time_evolution(double t,const double y[],double dydt[],void *data);
