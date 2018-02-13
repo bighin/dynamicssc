@@ -403,13 +403,17 @@ struct bigpsi_t *bigpsi_deserialize(FILE *in,struct configuration_t *config)
 	struct bigpsi_t *psi;
 	int ydim;
 
-	fread(config,sizeof(struct configuration_t),1,in);
+	if(fread(config,sizeof(struct configuration_t),1,in)!=1)
+		return NULL;
 
 	ydim=(2+10*config->gridpoints)*config->maxl;
 	psi=bigpsi_init(config,config->startl,config->startm);
 
-	fread(&psi->nrpsis,sizeof(int),1,in);
-	fread(&psi->dim,sizeof(int),1,in);
+	if(fread(&psi->nrpsis,sizeof(int),1,in)!=1)
+		goto cleanup;
+	
+	if(fread(&psi->dim,sizeof(int),1,in)!=1)
+		goto cleanup;
 
 	if((psi->dim!=ydim)||(psi->nrpsis!=config->maxl))
 	{
@@ -444,6 +448,11 @@ struct bigpsi_t *bigpsi_deserialize(FILE *in,struct configuration_t *config)
 	}
 
 	return psi;
+	
+	cleanup:
+	
+	bigpsi_fini(psi);
+	return NULL;
 }
 
 double get_aos(struct bigpsi_t *psi)
