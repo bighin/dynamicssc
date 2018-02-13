@@ -1,8 +1,13 @@
 TARGET = dsc
 LIBS = -lgsl -lncurses -lm -lblas
-CC = gcc-mp-7
-CFLAGS = -O2 -Wall -std=c11 -I/opt/local/include/ -fopenmp
+CC = gcc
+CFLAGS = -O2 -Wall -std=gnu11 -I/opt/local/include/ -fopenmp
 LDFLAGS = -L/opt/local/lib/
+
+OS := $(shell uname)
+ifeq ($(OS), Darwin)
+CC = gcc-mp-7
+endif
 
 .PHONY: clean all default
 

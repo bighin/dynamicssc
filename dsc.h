@@ -26,6 +26,7 @@ double V2(double k,double n,struct configuration_t *config);
 
 double complex timephase(double phase,double t,struct configuration_t *config);
 double adiabatic_ramp(double t,struct configuration_t *config);
+double W(double k,struct configuration_t *config);
 
 struct params_t
 {
