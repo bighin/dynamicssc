@@ -180,11 +180,19 @@ struct bigpsi_t *bigpsi_init(struct configuration_t *config,int L,int M)
 
 		for(int c=0;c<config->gridpoints;c++)
 		{
-			psi->y[offset+2+10*c]=psi->y[offset+2+10*c+1]=0.0f;
-			psi->y[offset+2+10*c+2]=psi->y[offset+2+10*c+3]=0.0f;
-			psi->y[offset+2+10*c+4]=psi->y[offset+2+10*c+5]=0.0f;
-			psi->y[offset+2+10*c+6]=psi->y[offset+2+10*c+7]=0.0f;
-			psi->y[offset+2+10*c+8]=psi->y[offset+2+10*c+9]=0.0f;
+			double gridstep=config->cutoff/config->gridpoints;
+			double k=c*gridstep;
+
+			psi->y[offset+2+10*c]=0.0f;
+			psi->y[offset+2+10*c+1]=0.0f;
+			psi->y[offset+2+10*c+2]=0.0f;
+			psi->y[offset+2+10*c+3]=0.0f;
+			psi->y[offset+2+10*c+4]=0.0f;
+			psi->y[offset+2+10*c+5]=0.0f;
+			psi->y[offset+2+10*c+6]=0.0f;
+			psi->y[offset+2+10*c+7]=0.0f;
+			psi->y[offset+2+10*c+8]=0.0f;
+			psi->y[offset+2+10*c+9]=0.0f;
 		}
 	}
 
