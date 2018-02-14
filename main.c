@@ -78,6 +78,39 @@ void print_header_summary(FILE *out)
 	fprintf(out,"# <Time> <LaserIntensity> <BathIntensity> <Norm> <NormQP> <NormPhonons> <Re(AlignmentCosine)> <Im(AlignmentCosine)> <Completion%%> <LocalNormErr> <TimeDE> <TimeCos>\n");
 }
 
+void dump_phonons(FILE *out,struct bigpsi_t *psi,int L,struct configuration_t *config)
+{
+	int offset=L*(2+10*config->gridpoints);
+	double *y=&psi->y[offset];
+
+	for(int d=0;d<config->gridpoints;d++)
+	{
+        	double gridstep=config->cutoff/config->gridpoints;
+		double k=d*gridstep;
+		double ti=psi->t;
+
+		double complex phase2m2,phase2m1,phase20,phase21,phase22;
+		double complex alpha2m2,alpha2m1,alpha20,alpha21,alpha22;
+
+		if((d%5)!=0)
+			continue;
+
+		phase2m2=timephase(-(L*(L+1.0f)+omegak(k)-2.0f),ti,config);
+		phase2m1=timephase(-(L*(L+1.0f)+omegak(k)+4.0f),ti,config);
+		phase20=timephase(-(L*(L+1.0f)+omegak(k)+6.0f),ti,config);
+		phase21=timephase(-(L*(L+1.0f)+omegak(k)+4.0f),ti,config);
+		phase22=timephase(-(L*(L+1.0f)+omegak(k)-2.0f),ti,config);
+
+		alpha2m2=phase2m2*(y[2+10*d]+I*y[2+10*d+1]);
+		alpha2m1=phase2m1*(y[2+10*d+2]+I*y[2+10*d+3]);
+		alpha20=phase20*(y[2+10*d+4]+I*y[2+10*d+5]);
+		alpha21=phase21*(y[2+10*d+6]+I*y[2+10*d+7]);
+		alpha22=phase22*(y[2+10*d+8]+I*y[2+10*d+9]);
+
+		fprintf(out,"%f %f %f %f %f %f %f %f %f %f %f %f\n",ti,k,creal(alpha2m2),cimag(alpha2m2),creal(alpha2m1),cimag(alpha2m1),creal(alpha20),cimag(alpha20),creal(alpha21),cimag(alpha21),creal(alpha22),cimag(alpha22));
+	}
+}
+
 int do_single(struct configuration_t *config)
 {
 	struct bigpsi_t *psi;
@@ -267,9 +300,11 @@ int do_single(struct configuration_t *config)
 			fprintf(stderr,"Couldn't open output file '%s'!\n",fname);
 			goto cleanup;
 		}
-		
-		bigpsi_serialize(psi,finalconf);
-		
+
+#warning Debug stuff!
+		//bigpsi_serialize(psi,finalconf);
+		dump_phonons(finalconf,psi,3,config);
+
 		if(finalconf!=NULL)
 			fclose(finalconf);
 	}
