@@ -1,7 +1,7 @@
 TARGET = dsc
 LIBS = -lgsl -lncurses -lm -lblas
 CC = gcc
-CFLAGS = -O0 -g -Wall -std=gnu11 -I/opt/local/include/ -fopenmp
+CFLAGS = -O2 -Wall -std=gnu11 -I/opt/local/include/ -fopenmp
 LDFLAGS = -L/opt/local/lib/
 
 OS := $(shell uname)
