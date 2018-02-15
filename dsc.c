@@ -146,6 +146,22 @@ double adiabatic_ramp(double t,struct configuration_t *config)
 	return 0.5f*(1.0f+tanh((t-rampcenter)/delta));
 }
 
+double complex Pk(double complex En,int L,double k)
+{
+        double complex a,b,c;
+
+        a=-En+L*(L+1)+omegak(k)+4.0f;
+        b=-En+L*(L+1)+omegak(k)+6.0f;
+        c=-En+L*(L+1)+omegak(k)-2.0f;
+
+	return a-(12.0f*L*(L+1))/b-(4.0f*(L*(L+1)-2.0f))/c;
+}
+
+double complex fscale(double k)
+{
+	return Pk(11.60+I*0.001,3,k)+I*0.001;
+}
+
 int fnorm(unsigned ndim,const double *x,void *fdata,unsigned fdim,double *fval)
 {
         /* The context from which we read the 'external' variables */
@@ -164,6 +180,12 @@ int fnorm(unsigned ndim,const double *x,void *fdata,unsigned fdim,double *fval)
 	xi20=get_point(container->intrexi20,k)+I*get_point(container->intimxi20,k);
 	xi21=get_point(container->intrexi21,k)+I*get_point(container->intimxi21,k);
 	xi22=get_point(container->intrexi22,k)+I*get_point(container->intimxi22,k);
+
+	xi2m2/=fscale(k);
+	xi2m1/=fscale(k);
+	xi20/=fscale(k);
+	xi21/=fscale(k);
+	xi22/=fscale(k);
 
 	fval[0]=conj(xi2m2)*xi2m2+conj(xi2m1)*xi2m1+conj(xi20)*xi20+conj(xi21)*xi21+conj(xi22)*xi22;
 
@@ -300,6 +322,7 @@ int fAplus(unsigned ndim,const double *x,void *fdata,unsigned fdim,double *fval)
 
 	phase21=timephase(-(omegak(k)+4.0f),t,config);
 	f=V2(k,localdensity,config)/W(k,config)*phase21*(get_point(container->intrexi21,k)+I*get_point(container->intimxi21,k));
+	f/=fscale(k);
 
 	fval[0]=creal(f);
 	fval[1]=cimag(f);
@@ -371,6 +394,7 @@ int fAminus(unsigned ndim,const double *x,void *fdata,unsigned fdim,double *fval
 
 	phase2m1=timephase(-(omegak(k)+4.0f),t,config);
 	f=V2(k,localdensity,config)/W(k,config)*phase2m1*(get_point(container->intrexi2m1,k)+I*get_point(container->intimxi2m1,k));
+	f/=fscale(k);
 
 	fval[0]=creal(f);
 	fval[1]=cimag(f);
@@ -442,6 +466,7 @@ int fB(unsigned ndim,const double *x,void *fdata,unsigned fdim,double *fval)
 
 	phase20=timephase(-(omegak(k)+6.0f),t,config);
 	f=V2(k,localdensity,config)/W(k,config)*phase20*(get_point(container->intrexi20,k)+I*get_point(container->intimxi20,k))*(omegak(k)+6.0-W(k,config));
+	f/=fscale(k);
 
 	fval[0]=creal(f);
 	fval[1]=cimag(f);
@@ -558,14 +583,14 @@ int sc_time_evolution(double t,const double y[],double dydt[],void *p)
 
 			invphase2m1=timephase(omegak(k)+4.0f,t,config);
 
-			dxi2m1dt+=-I*6.0f*V2(k,localdensity,config)/W(k,config)*invphase2m1*localAminus;
-			dxi2m1dt+=-I*V2(k,localdensity,config)/W(k,config)*sqrt(6*L*(L+1))*invphase2m1*g;
+			dxi2m1dt+=-I*6.0f*V2(k,localdensity,config)/W(k,config)*invphase2m1*fscale(k)*localAminus;
+			dxi2m1dt+=-I*V2(k,localdensity,config)/W(k,config)*sqrt(6*L*(L+1))*invphase2m1*fscale(k)*g;
 		}
 
 		dxi20dt=I*sqrt(6*L*(L+1))*timephase(2.0f,t,config)*(xi2m1+xi21);
 		
 		if(c!=0)
-			dxi20dt+=I*g*V2(k,localdensity,config)/W(k,config)*(omegak(k)+6.0-W(k,config))*timephase(omegak(k)+6.0f,t,config);
+			dxi20dt+=I*g*V2(k,localdensity,config)/W(k,config)*(omegak(k)+6.0-W(k,config))*timephase(omegak(k)+6.0f,t,config)*fscale(k);
 
 		dxi21dt=I*sqrt(6*L*(L+1))*timephase(-2.0f,t,config)*xi20+I*2.0f*sqrt(L*(L+1)-2)*timephase(6.0f,t,config)*xi22;
 
@@ -575,8 +600,8 @@ int sc_time_evolution(double t,const double y[],double dydt[],void *p)
 
 			invphase21=timephase(omegak(k)+4.0f,t,config);
 
-			dxi21dt+=-I*6.0f*V2(k,localdensity,config)/W(k,config)*invphase21*localAplus;
-			dxi21dt+=-I*V2(k,localdensity,config)/W(k,config)*sqrt(6*L*(L+1))*invphase21*g;
+			dxi21dt+=-I*6.0f*V2(k,localdensity,config)/W(k,config)*invphase21*fscale(k)*localAplus;
+			dxi21dt+=-I*V2(k,localdensity,config)/W(k,config)*sqrt(6*L*(L+1))*invphase21*fscale(k)*g;
 		}
 
 		dxi22dt=I*2.0f*sqrt(L*(L+1)-2)*timephase(-6.0f,t,config)*xi21;
