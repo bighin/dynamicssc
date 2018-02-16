@@ -131,3 +131,8 @@ FILE *fopen_mkdir(const char *name, const char *mode)
 	free(mname);
 	return fopen(name,mode);
 }
+
+double arccot(double x)
+{
+	return (M_PI/2.0f)-atan(x);
+}

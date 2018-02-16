@@ -2,6 +2,7 @@
 #define __AUX_H__
 
 #include <stdio.h>
+#include <math.h>
 
 struct interpolation_t
 {
@@ -19,5 +20,7 @@ void copy_interpolation(struct interpolation_t *dst,struct interpolation_t *src)
 double get_point(struct interpolation_t *it,double x);
 
 FILE *fopen_mkdir(const char *name, const char *mode);
+
+double arccot(double x);
 
 #endif //__AUX_H__

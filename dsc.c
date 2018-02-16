@@ -87,7 +87,7 @@ double U0(double n,double k,struct configuration_t *config)
 	return config->u0*a*b/c;
 }
 
-double U2(double n,double k,struct configuration_t *config)
+double U2gaussian(double n,double k,struct configuration_t *config)
 {
 	double a,b,c,d,z;
 
@@ -98,6 +98,38 @@ double U2(double n,double k,struct configuration_t *config)
 	d=8.0f*pow(k,3.0f)*M_PI;
 	
 	return config->u2*a*(b+c)/d;
+}
+
+double U2morse(double n,double k,struct configuration_t *config)
+{
+	double A=1.25f;
+	double re=0.75f;
+
+	double x1,x2,x3,x4,x5,x6,z;
+
+	double A2=pow(A,2.0f);
+	double A3=pow(A,3.0f);
+	double k2=pow(k,2.0f);
+	double k3=pow(k,3.0f);
+
+	double expAre=exp(A*re);
+
+	x1=(6*A3*k)/pow(A2+k2,2.0f);
+	x2=(10.0f*A*k3)/pow(A2+k2,2.0f);
+	x3=-(24.0f*A3*expAre*k)/pow(4.0f*A2+k2,2.0f);
+	x4=-(10.0f*A*expAre*k3)/pow(4.0f*A2+k2,2.0f);
+
+	x5=3.0f*expAre*arccot(2.0f*A/k);
+	x6=-6.0f*atan(k/A);
+
+	z=-expAre/(2.0f*sqrt(2.0f)*k3*pow(M_PI,3.0f/2.0f));
+	
+	return config->u2*sqrt((8.0f*n*k*k*ek(k))/(5.0f*omegak(k)))*z*(x1+x2+x3+x4+x5+x6);
+}
+
+double U2(double n,double k,struct configuration_t *config)
+{
+	return U2morse(n,k,config);
 }
 
 double V0(double k,double n,struct configuration_t *config)

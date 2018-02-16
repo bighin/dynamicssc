@@ -11,6 +11,7 @@
 #include "laser.h"
 #include "bigpsi.h"
 #include "cos.h"
+#include "mixture.h"
 
 void print_header_g(FILE *out,int L,struct configuration_t *config)
 {
@@ -336,13 +337,6 @@ int do_single(struct configuration_t *config)
 	if(config->writephonons==true)
 		if(outalphas)
 			free(outalphas);
-
-	return 0;
-}
-
-int do_mixture(struct configuration_t *config)
-{
-	fprintf(stderr,"Please implement me!\n");
 
 	return 0;
 }
