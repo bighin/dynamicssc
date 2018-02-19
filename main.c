@@ -431,12 +431,19 @@ int do_ini_file(char *inifile)
 	printf("\tepsrel: %e\n",config.epsrel);
 	printf("\tNormalization after each step: %s\n",(config.normalize==true)?("ON"):("OFF"));
 
+	printf("\nTransformation:\n");
+
 	if(config.wtype==1)
-		printf("\nThe transformation we use is: W = \\omega_k\n");
+		printf("\tW = \\omega_k\n");
 	else if(config.wtype==2)
-		printf("\nThe transformation we use is: W = \\omega_k + \\lambda(\\lambda + 1)\n");
+		printf("\tW = \\omega_k + \\lambda(\\lambda + 1)\n");
 	else
-		printf("\nError: invalid W transformation specified!\n");
+		printf("\tError: invalid W transformation specified!\n");
+
+	if(config.fscale==true)
+		printf("\tAdditional 'f' scaling: ON\n");
+	else
+		printf("\tAdditional 'f' scaling: OFF\n");
 
 	printf("\nAdiabatic ramp:\n");
 	printf("\tRamp: %s\n",(config.ramp==true)?("ON"):("OFF"));

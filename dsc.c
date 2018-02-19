@@ -129,7 +129,7 @@ double U2morse(double n,double k,struct configuration_t *config)
 
 double U2(double n,double k,struct configuration_t *config)
 {
-	return U2gaussian(n,k,config);
+	return U2morse(n,k,config);
 }
 
 double V0(double k,double n,struct configuration_t *config)
@@ -195,7 +195,7 @@ double complex fscale(double k,int L,struct configuration_t *config)
 	double en=L*(L+1);
 	
 	if(config->fscale==true)
-		return Pk(0.9*en+I*epsilon,L,k)+I*epsilon;
+		return Pk(0.9*en+I*epsilon,L,k)/(1.0f+k*k)+I*epsilon;
 
 	return 1.0;
 }
@@ -237,6 +237,11 @@ int fnorm(unsigned ndim,const double *x,void *fdata,unsigned fdim,double *fval)
 double norm_qp(double t,const double y[],struct params_t *params,struct configuration_t *config)
 {
 	double complex g=y[0]+I*y[1];
+
+	/*
+		Here we should multiply g by a fase, but since we are just interested
+		in the modulus, this is not needed...
+	*/
 	
 	return sqrt(conj(g)*g);
 }
@@ -507,7 +512,7 @@ int fB(unsigned ndim,const double *x,void *fdata,unsigned fdim,double *fval)
 	double complex f,phase20;
 	double t,localdensity;
 	int L;
-	
+
 	t=container->t;
 	localdensity=container->localdensity;
 	L=container->params->L;
@@ -582,7 +587,7 @@ int sc_time_evolution(double t,const double y[],double dydt[],void *p)
 
 	g=y[0]+I*y[1];
 
-	dgdt=-I*L*(L+1)*g;
+	dgdt=0.0f;
 
 	if(config->freeevolution==true)
 	{
@@ -591,7 +596,7 @@ int sc_time_evolution(double t,const double y[],double dydt[],void *p)
 
 		return GSL_SUCCESS;
 	}
-	
+
 	if(config->ramp==true)
 		localdensity=config->density*adiabatic_ramp(t,config);
 	else
