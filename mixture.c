@@ -270,7 +270,7 @@ void do_mixture(struct configuration_t *config)
 		                break;
 
 				/*
-					To silence silly gcc errors.
+					To silence silly gcc warnings.
 				*/
 	
 				default:
@@ -310,7 +310,7 @@ void do_mixture(struct configuration_t *config)
 	                break;
 		
 			/*
-				Again, just to silence silly gcc errors.
+				Again, just to silence silly gcc warnings.
 			*/
 		
 			default:

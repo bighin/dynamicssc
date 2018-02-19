@@ -106,7 +106,7 @@ double get_point(struct interpolation_t *it,double x)
 	return y;
 }
 
-FILE *fopen_mkdir(const char *name, const char *mode)
+FILE *fopen_mkdir(const char *name,const char *mode)
 {
 	char *mname=strdup(name);
 

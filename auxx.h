@@ -19,7 +19,7 @@ void fini_interpolation(struct interpolation_t *it);
 void copy_interpolation(struct interpolation_t *dst,struct interpolation_t *src);
 double get_point(struct interpolation_t *it,double x);
 
-FILE *fopen_mkdir(const char *name, const char *mode);
+FILE *fopen_mkdir(const char *name,const char *mode);
 
 double arccot(double x);
 
