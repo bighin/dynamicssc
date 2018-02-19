@@ -57,28 +57,31 @@ int big_sc_time_evolution(double t,const double y[],double dydt[],void *data)
 
 	C=(2.0f/3.0f)*get_laser_intensity(config->milliwatts,config->duration,t,config);
 
+#define GETL(x) (params[x].L)
+#define GETM() 	(params[0].M)
+
 	for(int d=0;d<bigpsi->nrpsis;d++)
 	{
 		int offset=d*(2+10*config->gridpoints);
 		double complex gLM,dgLMdt;
+		int L=GETL(d);
 
-		gLM=y[offset+0]+I*y[offset+1];
-
-#define GETL(x) (params[x].L)
-#define GETM() 	(params[0].M)
+		gLM=(y[offset+0]+I*y[offset+1]);
 
 		dgLMdt=0.0f;
 		for(int c=d-2;c<=d+2;c++)
 		{
 			int local_offset=c*(2+10*config->gridpoints);
 			double complex gLprimeM;
+			int Lprime;
 
 			if((c<0)||(c>=bigpsi->nrpsis))
 				continue;
 
+			Lprime=GETL(c);
 			gLprimeM=y[local_offset+0]+I*y[local_offset+1];
 
-			dgLMdt+=I*C*Q(GETL(d),GETL(c),GETM(),0)*gLprimeM;
+			dgLMdt+=I*C*Q(GETL(d),GETL(c),GETM(),0)*gLprimeM*timephase((L*(L+1.0f)-Lprime*(Lprime+1.0f)),t,config);
 		}
 
 		dgLMdt+=I*(C/2.0f)*gLM;

@@ -129,7 +129,7 @@ double U2morse(double n,double k,struct configuration_t *config)
 
 double U2(double n,double k,struct configuration_t *config)
 {
-	return U2morse(n,k,config);
+	return U2gaussian(n,k,config);
 }
 
 double V0(double k,double n,struct configuration_t *config)
