@@ -220,7 +220,7 @@ int do_single(struct configuration_t *config)
 			
 			double *y=&psi->y[offset];
 
-			fprintf(outgs[n],"%f %f %f %f\n",ti,y[0],y[1],norm_qp(ti,y,config));
+			fprintf(outgs[n],"%f %f %f %f\n",ti,y[0],y[1],norm_qp(ti,y,&psi->params[n],config));
 
 			if(config->writephonons==true)
 			{
@@ -276,7 +276,7 @@ int do_single(struct configuration_t *config)
 		{
 			int offset=d*(2+10*config->gridpoints);
 
-			fprintf(norms,"%f %f ",norm_qp(ti,&psi->y[offset],config),norm_phonons(ti,&psi->y[offset],config));
+			fprintf(norms,"%f %f ",norm_qp(ti,&psi->y[offset],&psi->params[d],config),norm_phonons(ti,&psi->y[offset],&psi->params[d],config));
 		}
 
 		fprintf(norms,"%f %f %f %f %f %f %f\n",total_norm(psi),creal(ac),cimag(ac),creal(cs),cimag(cs),get_laser_intensity(config->milliwatts,config->duration,ti,config),bath_intensity);

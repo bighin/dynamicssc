@@ -109,14 +109,14 @@ int do_run(int L,int M,struct info_t *info,bool silent,struct configuration_t *c
 		{
 			int offset=d*(2+10*config->gridpoints);
 		
-			fprintf(details,"%f ",norm_qp(ti,&(psi->y[offset]),config));
+			fprintf(details,"%f ",norm_qp(ti,&(psi->y[offset]),&(psi->params[d]),config));
 		}
 
 		for(int d=0;d<config->maxl;d++)
 		{
 			int offset=d*(2+10*config->gridpoints);
 		
-			fprintf(details,"%f ",norm_qp(ti,&(psi->y[offset]),config));
+			fprintf(details,"%f ",norm_qp(ti,&(psi->y[offset]),&(psi->params[d]),config));
 		}
 
 		fprintf(details,"\n");

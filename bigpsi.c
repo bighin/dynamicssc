@@ -183,6 +183,7 @@ struct bigpsi_t *bigpsi_init(struct configuration_t *config,int L,int M)
 			double gridstep=config->cutoff/config->gridpoints;
 			double k=c*gridstep;
 
+
 			psi->y[offset+2+10*c]=0.0f;
 			psi->y[offset+2+10*c+1]=0.0f;
 			psi->y[offset+2+10*c+2]=0.0f;
@@ -333,8 +334,8 @@ double get_aos(struct bigpsi_t *psi)
 		int offset=d*(2+10*config->gridpoints);
 		int L=psi->params[d].L;
 
-		num+=L*pow(norm_qp(psi->t,&psi->y[offset],config),2.0f);
-		den+=pow(norm_qp(psi->t,&psi->y[offset],config),2.0f);
+		num+=L*pow(norm_qp(psi->t,&psi->y[offset],&psi->params[d],config),2.0f);
+		den+=pow(norm_qp(psi->t,&psi->y[offset],&psi->params[d],config),2.0f);
 	}
 	
 	return num/den;
@@ -351,7 +352,7 @@ double total_norm(struct bigpsi_t *psi)
 	{
 		int offset=d*(2+10*config->gridpoints);
 
-		ret+=pow(norm(psi->t,&psi->y[offset],config),2.0f);
+		ret+=pow(norm(psi->t,&psi->y[offset],&psi->params[d],config),2.0f);
 	}
 	
 	return sqrtf(ret);
@@ -368,7 +369,7 @@ double total_norm_qp(struct bigpsi_t *psi)
 	{
 		int offset=d*(2+10*config->gridpoints);
 
-		ret+=pow(norm_qp(psi->t,&psi->y[offset],config),2.0f);
+		ret+=pow(norm_qp(psi->t,&psi->y[offset],&psi->params[d],config),2.0f);
 	}
 	
 	return sqrtf(ret);
@@ -385,7 +386,7 @@ double total_norm_phonons(struct bigpsi_t *psi)
 	{
 		int offset=d*(2+10*config->gridpoints);
 
-		ret+=pow(norm_phonons(psi->t,&psi->y[offset],config),2.0f);
+		ret+=pow(norm_phonons(psi->t,&psi->y[offset],&psi->params[d],config),2.0f);
 	}
 	
 	return sqrtf(ret);
@@ -415,7 +416,7 @@ void bigpsi_normalize(struct bigpsi_t *psi,double *previousnorm)
 			if(fabs(psi->normalization_snapshot[c])<=1e-10)
 				continue;
 			
-			ratio=psi->normalization_snapshot[c]/norm(psi->t,&(psi->y[offset]),config);
+			ratio=psi->normalization_snapshot[c]/norm(psi->t,&(psi->y[offset]),&psi->params[c],config);
 			
 			for(int d=0;d<(2+10*config->gridpoints);d++)
 				psi->y[offset+d]*=ratio;
@@ -442,7 +443,7 @@ void bigpsi_normalize(struct bigpsi_t *psi,double *previousnorm)
 		{
 			int offset=c*(2+10*config->gridpoints);
 
-			psi->normalization_snapshot[c]=norm(psi->t,&(psi->y[offset]),config);
+			psi->normalization_snapshot[c]=norm(psi->t,&(psi->y[offset]),&psi->params[c],config);
 		}
 
 		psi->have_normalization_snapshot=true;

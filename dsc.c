@@ -189,11 +189,15 @@ double complex Pk(double complex En,int L,double k)
 	return a-(12.0f*L*(L+1))/b-(4.0f*(L*(L+1)-2.0f))/c;
 }
 
-double complex fscale(double k)
+double complex fscale(double k,int L,struct configuration_t *config)
 {
 	double epsilon=0.001f;
+	double en=L*(L+1);
 	
-	return Pk(11.60+I*epsilon,3,k)+I*epsilon;
+	if(config->fscale==true)
+		return Pk(0.9*en+I*epsilon,L,k)+I*epsilon;
+
+	return 1.0;
 }
 
 int fnorm(unsigned ndim,const double *x,void *fdata,unsigned fdim,double *fval)
@@ -201,11 +205,13 @@ int fnorm(unsigned ndim,const double *x,void *fdata,unsigned fdim,double *fval)
         /* The context from which we read the 'external' variables */
 
         struct container_t *container=(struct container_t *)(fdata);
+	struct configuration_t *config=container->params->config;
 
         /* The integration variables */
 
         double k;
 	double complex xi2m2,xi2m1,xi20,xi21,xi22;
+	int L;
 
 	k=x[0];
 
@@ -215,25 +221,27 @@ int fnorm(unsigned ndim,const double *x,void *fdata,unsigned fdim,double *fval)
 	xi21=get_point(container->intrexi21,k)+I*get_point(container->intimxi21,k);
 	xi22=get_point(container->intrexi22,k)+I*get_point(container->intimxi22,k);
 
-	xi2m2/=fscale(k);
-	xi2m1/=fscale(k);
-	xi20/=fscale(k);
-	xi21/=fscale(k);
-	xi22/=fscale(k);
+	L=container->params->L;
+
+	xi2m2/=fscale(k,L,config);
+	xi2m1/=fscale(k,L,config);
+	xi20/=fscale(k,L,config);
+	xi21/=fscale(k,L,config);
+	xi22/=fscale(k,L,config);
 
 	fval[0]=conj(xi2m2)*xi2m2+conj(xi2m1)*xi2m1+conj(xi20)*xi20+conj(xi21)*xi21+conj(xi22)*xi22;
 
 	return 0;
 }
 
-double norm_qp(double t,const double y[],struct configuration_t *config)
+double norm_qp(double t,const double y[],struct params_t *params,struct configuration_t *config)
 {
 	double complex g=y[0]+I*y[1];
 	
 	return sqrt(conj(g)*g);
 }
 
-double norm_phonons(double t,const double y[],struct configuration_t *config)
+double norm_phonons(double t,const double y[],struct params_t *params,struct configuration_t *config)
 {
 	double *x,*yre2m2,*yim2m2,*yre2m1,*yim2m1,*yre20,*yim20,*yre21,*yim21,*yre22,*yim22;
 	double xmin,xmax,err;
@@ -286,6 +294,8 @@ double norm_phonons(double t,const double y[],struct configuration_t *config)
 	container.intrexi22=init_interpolation(x,yre22,config->gridpoints);
 	container.intimxi22=init_interpolation(x,yim22,config->gridpoints);
 
+	container.params=params;
+
 	xmin=0.0f;
 	xmax=config->cutoff;
 
@@ -317,9 +327,9 @@ double norm_phonons(double t,const double y[],struct configuration_t *config)
 	return sqrt(res);
 }
 
-double norm(double t,const double y[],struct configuration_t *config)
+double norm(double t,const double y[],struct params_t *params,struct configuration_t *config)
 {
-	return sqrt(pow(norm_qp(t,y,config),2.0f)+pow(norm_phonons(t,y,config),2.0f));
+	return sqrt(pow(norm_qp(t,y,params,config),2.0f)+pow(norm_phonons(t,y,params,config),2.0f));
 }
 
 double W(double k,struct configuration_t *config)
@@ -348,15 +358,17 @@ int fAplus(unsigned ndim,const double *x,void *fdata,unsigned fdim,double *fval)
         double k;
 	double complex f,phase21;
 	double t,localdensity;
+	int L;
 	
 	t=container->t;
 	localdensity=container->localdensity;
+	L=container->params->L;
 	
 	k=x[0];
 
 	phase21=timephase(-(omegak(k)+4.0f),t,config);
 	f=V2(k,localdensity,config)/W(k,config)*phase21*(get_point(container->intrexi21,k)+I*get_point(container->intimxi21,k));
-	f/=fscale(k);
+	f/=fscale(k,L,config);
 
 	fval[0]=creal(f);
 	fval[1]=cimag(f);
@@ -420,15 +432,17 @@ int fAminus(unsigned ndim,const double *x,void *fdata,unsigned fdim,double *fval
         double k;
 	double complex f,phase2m1;
 	double t,localdensity;
+	int L;
 	
 	t=container->t;
 	localdensity=container->localdensity;
-	
+	L=container->params->L;
+
 	k=x[0];
 
 	phase2m1=timephase(-(omegak(k)+4.0f),t,config);
 	f=V2(k,localdensity,config)/W(k,config)*phase2m1*(get_point(container->intrexi2m1,k)+I*get_point(container->intimxi2m1,k));
-	f/=fscale(k);
+	f/=fscale(k,L,config);
 
 	fval[0]=creal(f);
 	fval[1]=cimag(f);
@@ -492,15 +506,17 @@ int fB(unsigned ndim,const double *x,void *fdata,unsigned fdim,double *fval)
         double k;
 	double complex f,phase20;
 	double t,localdensity;
+	int L;
 	
 	t=container->t;
 	localdensity=container->localdensity;
-	
+	L=container->params->L;
+
 	k=x[0];
 
 	phase20=timephase(-(omegak(k)+6.0f),t,config);
 	f=V2(k,localdensity,config)/W(k,config)*phase20*(get_point(container->intrexi20,k)+I*get_point(container->intimxi20,k))*(omegak(k)+6.0-W(k,config));
-	f/=fscale(k);
+	f/=fscale(k,L,config);
 
 	fval[0]=creal(f);
 	fval[1]=cimag(f);
@@ -617,14 +633,14 @@ int sc_time_evolution(double t,const double y[],double dydt[],void *p)
 
 			invphase2m1=timephase(omegak(k)+4.0f,t,config);
 
-			dxi2m1dt+=-I*6.0f*V2(k,localdensity,config)/W(k,config)*invphase2m1*fscale(k)*localAminus;
-			dxi2m1dt+=-I*V2(k,localdensity,config)/W(k,config)*sqrt(6*L*(L+1))*invphase2m1*fscale(k)*g;
+			dxi2m1dt+=-I*6.0f*V2(k,localdensity,config)/W(k,config)*invphase2m1*fscale(k,L,config)*localAminus;
+			dxi2m1dt+=-I*V2(k,localdensity,config)/W(k,config)*sqrt(6*L*(L+1))*invphase2m1*fscale(k,L,config)*g;
 		}
 
 		dxi20dt=I*sqrt(6*L*(L+1))*timephase(2.0f,t,config)*(xi2m1+xi21);
 		
 		if(c!=0)
-			dxi20dt+=I*g*V2(k,localdensity,config)/W(k,config)*(omegak(k)+6.0-W(k,config))*timephase(omegak(k)+6.0f,t,config)*fscale(k);
+			dxi20dt+=I*g*V2(k,localdensity,config)/W(k,config)*(omegak(k)+6.0-W(k,config))*timephase(omegak(k)+6.0f,t,config)*fscale(k,L,config);
 
 		dxi21dt=I*sqrt(6*L*(L+1))*timephase(-2.0f,t,config)*xi20+I*2.0f*sqrt(L*(L+1)-2)*timephase(6.0f,t,config)*xi22;
 
@@ -634,8 +650,8 @@ int sc_time_evolution(double t,const double y[],double dydt[],void *p)
 
 			invphase21=timephase(omegak(k)+4.0f,t,config);
 
-			dxi21dt+=-I*6.0f*V2(k,localdensity,config)/W(k,config)*invphase21*fscale(k)*localAplus;
-			dxi21dt+=-I*V2(k,localdensity,config)/W(k,config)*sqrt(6*L*(L+1))*invphase21*fscale(k)*g;
+			dxi21dt+=-I*6.0f*V2(k,localdensity,config)/W(k,config)*invphase21*fscale(k,L,config)*localAplus;
+			dxi21dt+=-I*V2(k,localdensity,config)/W(k,config)*sqrt(6*L*(L+1))*invphase21*fscale(k,L,config)*g;
 		}
 
 		dxi22dt=I*2.0f*sqrt(L*(L+1)-2)*timephase(-6.0f,t,config)*xi21;

@@ -26,7 +26,9 @@ double V2(double k,double n,struct configuration_t *config);
 
 double complex timephase(double phase,double t,struct configuration_t *config);
 double adiabatic_ramp(double t,struct configuration_t *config);
+
 double W(double k,struct configuration_t *config);
+double complex fscale(double k,int L,struct configuration_t *config);
 
 struct params_t
 {
@@ -62,9 +64,9 @@ struct container_t
 	struct params_t *params;
 };
 
-double norm_qp(double t,const double y[],struct configuration_t *config);
-double norm_phonons(double t,const double y[],struct configuration_t *config);
-double norm(double t,const double y[],struct configuration_t *config);
+double norm_qp(double t,const double y[],struct params_t *params,struct configuration_t *config);
+double norm_phonons(double t,const double y[],struct params_t *params,struct configuration_t *config);
+double norm(double t,const double y[],struct params_t *params,struct configuration_t *config);
 
 double complex Aplus(double t,const double y[],struct params_t *params,double localdensity);
 double complex Aminus(double t,const double y[],struct params_t *params,double localdensity);

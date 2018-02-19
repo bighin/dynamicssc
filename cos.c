@@ -14,6 +14,10 @@ struct across_container_t
 
 	struct interpolation_t *intre2;
 	struct interpolation_t *intim2;
+	
+	int L,Lprime;
+	
+	struct configuration_t *config;
 };
 
 int fAcross(unsigned ndim,const double *x,void *fdata,unsigned fdim,double *fval)
@@ -21,6 +25,7 @@ int fAcross(unsigned ndim,const double *x,void *fdata,unsigned fdim,double *fval
         /* The context from which we read the global variables */
 
         struct across_container_t *container=(struct across_container_t *)(fdata);
+	struct configuration_t *config=container->config;
 
         /* The integration variables and other auxiliary variables */
 
@@ -31,6 +36,7 @@ int fAcross(unsigned ndim,const double *x,void *fdata,unsigned fdim,double *fval
 
 	f=conj(get_point(container->intre1,k)+I*get_point(container->intim1,k));
 	f*=get_point(container->intre2,k)+I*get_point(container->intim2,k);
+	f/=fscale(k,container->L,config)*fscale(k,container->Lprime,config);
 
 	fval[0]=creal(f);
 	fval[1]=cimag(f);
@@ -117,6 +123,10 @@ double complex Across(struct bigpsi_t *psi,int L,int Lprime,int n,struct configu
         container.intim1=init_interpolation(x,y1im,config->gridpoints);
         container.intre2=init_interpolation(x,y2re,config->gridpoints);
         container.intim2=init_interpolation(x,y2im,config->gridpoints);
+	
+	container.L=L;
+	container.Lprime=Lprime;
+	container.config=config;
 
 	xmin=0.0f;
 	xmax=config->cutoff;

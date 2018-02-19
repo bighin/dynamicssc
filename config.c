@@ -65,6 +65,13 @@ int configuration_handler(void *user,const char *section,const char *name,const 
 	{
 		pconfig->wtype=atoi(value);
 	}
+	else if(MATCH("transformation","fscale"))
+	{
+		if(!strcasecmp(value,"true"))
+			pconfig->fscale=true;
+		else
+			pconfig->fscale=false;
+	}
 	else if(MATCH("molecule","type"))
 	{
 		if(!strcmp(value,"I2"))

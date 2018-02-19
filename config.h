@@ -17,6 +17,7 @@ struct configuration_t
 	bool freeevolution;
 
 	short wtype;
+	bool fscale;
 
 #define MOLECULE_I2	(20)
 #define MOLECULE_CS2	(21)
