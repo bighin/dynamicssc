@@ -69,10 +69,6 @@ double omegak(double k)
 	num=k*(26565.2+k*(-1497.82+k*(129.012+k*(-7.37462+k*0.128625))));
 	den=1154.95+k*(-73.3346+k*(4.19356+k*(0.168494+k*(-0.0193761+k*0.000367499))));
 
-	return k*7.35;
-
-	return sqrt(k*k*(23*23+74*k*k));
-
 	return num/den;
 }
 
@@ -133,7 +129,7 @@ double U2morse(double n,double k,struct configuration_t *config)
 
 double U2(double n,double k,struct configuration_t *config)
 {
-	return U2morse(n,k,config);
+	return U2gaussian(n,k,config);
 }
 
 double V0(double k,double n,struct configuration_t *config)
@@ -195,7 +191,9 @@ double complex Pk(double complex En,int L,double k)
 
 double complex fscale(double k)
 {
-	return Pk(11.60+I*0.001,3,k)+I*0.001;
+	double epsilon=0.001f;
+	
+	return Pk(11.60+I*epsilon,3,k)+I*epsilon;
 }
 
 int fnorm(unsigned ndim,const double *x,void *fdata,unsigned fdim,double *fval)
@@ -568,10 +566,10 @@ int sc_time_evolution(double t,const double y[],double dydt[],void *p)
 
 	g=y[0]+I*y[1];
 
+	dgdt=-I*L*(L+1)*g;
+
 	if(config->freeevolution==true)
 	{
-		dgdt=-I*L*(L+1)*g;
-
 		dydt[0]=creal(dgdt);
 		dydt[1]=cimag(dgdt);
 
@@ -587,7 +585,7 @@ int sc_time_evolution(double t,const double y[],double dydt[],void *p)
 	localAminus=Aminus(t,y,p,localdensity);
 	localB=B(t,y,p,localdensity);
 
-	dgdt=-I*sqrt(6*L*(L+1))*(localAplus+localAminus);
+	dgdt+=-I*sqrt(6*L*(L+1))*(localAplus+localAminus);
 	dgdt+=I*localB;
 
 	dydt[0]=creal(dgdt);

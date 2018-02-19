@@ -78,10 +78,10 @@ int big_sc_time_evolution(double t,const double y[],double dydt[],void *data)
 
 			gLprimeM=y[local_offset+0]+I*y[local_offset+1];
 
-			dgLMdt+=-I*C*Q(GETL(d),GETL(c),GETM(),0)*gLprimeM;
+			dgLMdt+=I*C*Q(GETL(d),GETL(c),GETM(),0)*gLprimeM;
 		}
 
-		dgLMdt+=-I*(C/2.0f)*gLM;
+		dgLMdt+=I*(C/2.0f)*gLM;
 
 		dydt[offset+0]+=creal(dgLMdt);
 		dydt[offset+1]+=cimag(dgLMdt);
@@ -115,11 +115,11 @@ int big_sc_time_evolution(double t,const double y[],double dydt[],void *data)
 				xiLprimeM21=y[local_offset+2+10*i+6]+I*y[local_offset+2+10*i+7];
 				xiLprimeM22=y[local_offset+2+10*i+8]+I*y[local_offset+2+10*i+9];
 
-				dxiLM2m2dt+=-I*phasediff*C*Q(L,Lprime,GETM(),-2)*xiLprimeM2m2;
-				dxiLM2m1dt+=-I*phasediff*C*Q(L,Lprime,GETM(),-1)*xiLprimeM2m1;
-				dxiLM20dt+=-I*phasediff*C*Q(L,Lprime,GETM(),0)*xiLprimeM20;
-				dxiLM21dt+=-I*phasediff*C*Q(L,Lprime,GETM(),1)*xiLprimeM21;
-				dxiLM22dt+=-I*phasediff*C*Q(L,Lprime,GETM(),2)*xiLprimeM22;
+				dxiLM2m2dt+=I*phasediff*C*Q(L,Lprime,GETM(),-2)*xiLprimeM2m2;
+				dxiLM2m1dt+=I*phasediff*C*Q(L,Lprime,GETM(),-1)*xiLprimeM2m1;
+				dxiLM20dt+=I*phasediff*C*Q(L,Lprime,GETM(),0)*xiLprimeM20;
+				dxiLM21dt+=I*phasediff*C*Q(L,Lprime,GETM(),1)*xiLprimeM21;
+				dxiLM22dt+=I*phasediff*C*Q(L,Lprime,GETM(),2)*xiLprimeM22;
 			}
 
 			xiLM2m2=y[offset+2+10*i]+I*y[offset+2+10*i+1];
@@ -128,11 +128,11 @@ int big_sc_time_evolution(double t,const double y[],double dydt[],void *data)
 			xiLM21=y[offset+2+10*i+6]+I*y[offset+2+10*i+7];
 			xiLM22=y[offset+2+10*i+8]+I*y[offset+2+10*i+9];
 
-			dxiLM2m2dt+=-I*(C/2.0f)*xiLM2m2;
-			dxiLM2m1dt+=-I*(C/2.0f)*xiLM2m1;
-			dxiLM20dt+=-I*(C/2.0f)*xiLM20;
-			dxiLM21dt+=-I*(C/2.0f)*xiLM21;
-			dxiLM22dt+=-I*(C/2.0f)*xiLM22;
+			dxiLM2m2dt+=I*(C/2.0f)*xiLM2m2;
+			dxiLM2m1dt+=I*(C/2.0f)*xiLM2m1;
+			dxiLM20dt+=I*(C/2.0f)*xiLM20;
+			dxiLM21dt+=I*(C/2.0f)*xiLM21;
+			dxiLM22dt+=I*(C/2.0f)*xiLM22;
 
 			dydt[offset+2+10*i]+=creal(dxiLM2m2dt);
 			dydt[offset+2+10*i+1]+=cimag(dxiLM2m2dt);
