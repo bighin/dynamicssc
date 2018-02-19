@@ -69,6 +69,10 @@ double omegak(double k)
 	num=k*(26565.2+k*(-1497.82+k*(129.012+k*(-7.37462+k*0.128625))));
 	den=1154.95+k*(-73.3346+k*(4.19356+k*(0.168494+k*(-0.0193761+k*0.000367499))));
 
+	return k*7.35;
+
+	return sqrt(k*k*(23*23+74*k*k));
+
 	return num/den;
 }
 
@@ -566,7 +570,7 @@ int sc_time_evolution(double t,const double y[],double dydt[],void *p)
 
 	if(config->freeevolution==true)
 	{
-		dgdt=0.0f;
+		dgdt=-I*L*(L+1)*g;
 
 		dydt[0]=creal(dgdt);
 		dydt[1]=cimag(dgdt);
