@@ -255,8 +255,8 @@ double complex old_fcostheta2d(struct bigpsi_t *psi,int L,int Lprime,int M,int l
 	int offsetL=L*(2+10*config->gridpoints);
 	int offsetLprime=Lprime*(2+10*config->gridpoints);
 
-	gL=(psi->y[offsetL+0]+I*psi->y[offsetL+1])*timephase(L*(L+1),psi->t,config);
-	gLprime=(psi->y[offsetLprime+0]+I*psi->y[offsetLprime+1])*timephase(Lprime*(Lprime+1),psi->t,config);
+	gL=(psi->y[offsetL+0]+I*psi->y[offsetL+1])*timephase(-L*(L+1),psi->t,config);
+	gLprime=(psi->y[offsetLprime+0]+I*psi->y[offsetLprime+1])*timephase(-Lprime*(Lprime+1),psi->t,config);
 
 	res=conj(gL)*gLprime*sqrtf((2.0f*L+1.0f)/(2.0f*Lprime+1.0f))*sqrtf((2.0f*lambda+1.0f)/(4*M_PI));
 	res*=cg(L,M,lambda,0,Lprime,M)*cg(L,0,lambda,0,Lprime,0);
@@ -314,15 +314,15 @@ double complex fcostheta2d(struct bigpsi_t *psi,int L,int Lprime,int M,int lambd
 	int offsetL=L*(2+10*config->gridpoints);
 	int offsetLprime=Lprime*(2+10*config->gridpoints);
 
-	gL=(psi->y[offsetL+0]+I*psi->y[offsetL+1])*timephase(L*(L+1),psi->t,config);
-	gLprime=(psi->y[offsetLprime+0]+I*psi->y[offsetLprime+1])*timephase(Lprime*(Lprime+1),psi->t,config);
+	gL=(psi->y[offsetL+0]+I*psi->y[offsetL+1])*timephase(-L*(L+1),psi->t,config);
+	gLprime=(psi->y[offsetLprime+0]+I*psi->y[offsetLprime+1])*timephase(-Lprime*(Lprime+1),psi->t,config);
 
 	tmp=conj(gL)*gLprime*sqrtf((2.0f*L+1.0f)/(2.0f*Lprime+1.0f))*sqrtf((2.0f*lambda+1.0f)/(4*M_PI));
 	tmp*=cg(L,M,lambda,0,Lprime,M)*cg(L,0,lambda,0,Lprime,0);
 	res+=tmp;
 
-	gL=psi->y[offsetLprime+0]+I*psi->y[offsetLprime+1];
-	gLprime=psi->y[offsetL+0]+I*psi->y[offsetL+1];
+	gL=(psi->y[offsetLprime+0]+I*psi->y[offsetLprime+1])*timephase(-Lprime*(Lprime+1),psi->t,config);
+	gLprime=(psi->y[offsetL+0]+I*psi->y[offsetL+1])*timephase(-L*(L+1),psi->t,config);
 
 	tmp=conj(gL)*gLprime*sqrtf((2.0f*Lprime+1.0f)/(2.0f*L+1.0f))*sqrtf((2.0f*lambda+1.0f)/(4*M_PI));
 	tmp*=cg(Lprime,M,lambda,0,L,M)*cg(Lprime,0,lambda,0,L,0);
@@ -358,7 +358,7 @@ double complex fcostheta2d(struct bigpsi_t *psi,int L,int Lprime,int M,int lambd
 		{
 			if(across_has_been_calculated==0)
 				across=Across(psi,L,Lprime,n,config);
-			
+
 			across=conj(across);
 
 			tmp=across*sqrtf((2.0f*Lprime+1.0f)/(2.0f*L+1.0f))*sqrtf((2.0f*lambda+1.0f)/(4*M_PI));
@@ -412,8 +412,8 @@ double complex fcosthetasquared(struct bigpsi_t *psi,int L,int Lprime,int M,int 
 	if(lambda==2)
 		f=(4.0/3.0)*sqrt(M_PI/5.0f);
 
-	gL=(psi->y[offsetL+0]+I*psi->y[offsetL+1])*timephase(L*(L+1),psi->t,config);
-	gLprime=(psi->y[offsetLprime+0]+I*psi->y[offsetLprime+1])*timephase(Lprime*(Lprime+1),psi->t,config);
+	gL=(psi->y[offsetL+0]+I*psi->y[offsetL+1])*timephase(-L*(L+1),psi->t,config);
+	gLprime=(psi->y[offsetLprime+0]+I*psi->y[offsetLprime+1])*timephase(-Lprime*(Lprime+1),psi->t,config);
 
 	res=conj(gL)*gLprime*sqrtf((2.0f*L+1.0f)/(2.0f*Lprime+1.0f))*sqrtf((2.0f*lambda+1.0f)/(4*M_PI));
 	res*=cg(L,M,lambda,0,Lprime,M)*cg(L,0,lambda,0,Lprime,0);

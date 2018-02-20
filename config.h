@@ -50,6 +50,9 @@ struct configuration_t
 	double duration;
 	double milliwatts;
 	char *shapefile;
+	
+	bool overlap;
+	double overlapt0;
 };
 
 int configuration_handler(void *user,const char *section,const char *name,const char *value);

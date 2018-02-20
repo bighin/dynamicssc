@@ -12,6 +12,7 @@
 #include "bigpsi.h"
 #include "cos.h"
 #include "mixture.h"
+#include "observables.h"
 
 void print_header_g(FILE *out,int L,struct configuration_t *config)
 {
@@ -71,12 +72,12 @@ void print_header_alpha(FILE *out,int L,struct configuration_t *config)
 
 void print_header_norms(FILE *out)
 {
-	fprintf(out,"# <Time> <NormQP L=0> <NormPhonons L=0> ... <NormQP L=Lmax> <NormPhonons L=Lmax> <TotalNorm> <Re(AlignmentCosine)> <Im(AlignmentCosine)> <Re(Cos^2)> <Im(Cos^2)> <LaserIntensity> <BathIntensity>\n");
+	fprintf(out,"# <Time> <NormQP L=0> <NormPhonons L=0> ... <NormQP L=Lmax> <NormPhonons L=Lmax> <TotalNorm> <Re(AlignmentCosine)> <Im(AlignmentCosine)> <Re(Cos^2)> <Im(Cos^2)> <Re(S(t))> <Im(S(t))> <LaserIntensity> <BathIntensity>\n");
 }
 
 void print_header_summary(FILE *out)
 {
-	fprintf(out,"# <Time> <LaserIntensity> <BathIntensity> <Norm> <NormQP> <NormPhonons> <Re(AlignmentCosine)> <Im(AlignmentCosine)> <Completion%%> <LocalNormErr> <TimeDE> <TimeCos>\n");
+	fprintf(out,"# <Time> <LaserIntensity> <BathIntensity> <Norm> <NormQP> <NormPhonons> <Re(AlignmentCosine)> <Im(AlignmentCosine)> <Re(S(t))> <Im(S(t))> <Completion%%> <LocalNormErr> <TimeDE> <TimeCos>\n");
 }
 
 void dump_phonons(FILE *out,struct bigpsi_t *psi,int L,struct configuration_t *config)
@@ -124,6 +125,9 @@ int do_single(struct configuration_t *config)
 
 	char fname[1024];
 	int timedivs;
+
+	double *y0,t0;
+	bool overlap_snapshot_saved=false;
 
 	outgs=malloc(sizeof(FILE *)*config->maxl);
 	outalphas=malloc(sizeof(FILE *)*config->maxl);
@@ -180,11 +184,38 @@ int do_single(struct configuration_t *config)
 		double bath_intensity;
 		double completion,previousnorm,elapsed_time1,elapsed_time2;
 		double complex ac,cs;
+		double complex S=0.0f;
 
 		struct timeval starttime,endtime;
 
 		/*
-			At first we calculate the data at each step
+			If we are past the the overlap zero-time, and we don't have
+			a snapshot it's time to take it....
+		*/
+
+		if((overlap_snapshot_saved==false)&&(config->overlap==true))
+		{
+			if(config->overlapt0<ti)
+			{
+				int size=(2+10*config->gridpoints)*psi->nrpsis*sizeof(double);
+				
+				y0=malloc(size);
+				memcpy(y0,psi->y,size);
+				t0=psi->t;
+
+				overlap_snapshot_saved=true;
+			}
+		}
+
+		/*
+			...on the other hand, if we have a snapshot, we have to calcolate the overlap!
+		*/
+
+		if((overlap_snapshot_saved==true)&&(config->overlap==true))
+			S=overlapS(psi,y0,t0,config);
+
+		/*
+			Real time evolution: at first we calculate the data at each step
 		*/
 
 		gettimeofday(&starttime,NULL);
@@ -279,7 +310,7 @@ int do_single(struct configuration_t *config)
 			fprintf(norms,"%f %f ",norm_qp(ti,&psi->y[offset],&psi->params[d],config),norm_phonons(ti,&psi->y[offset],&psi->params[d],config));
 		}
 
-		fprintf(norms,"%f %f %f %f %f %f %f\n",total_norm(psi),creal(ac),cimag(ac),creal(cs),cimag(cs),get_laser_intensity(config->milliwatts,config->duration,ti,config),bath_intensity);
+		fprintf(norms,"%f %f %f %f %f %f %f %f %f\n",total_norm(psi),creal(ac),cimag(ac),creal(cs),cimag(cs),creal(S),cimag(S),get_laser_intensity(config->milliwatts,config->duration,ti,config),bath_intensity);
 		fflush(norms);
 
 		/*
@@ -288,7 +319,7 @@ int do_single(struct configuration_t *config)
 
 		completion=100.0f*(ti-config->starttime)/(config->endtime-config->starttime);
 
-		printf("%f %f %f %f %f %f %f %f %f %f %f%% ",ti,get_laser_intensity(config->milliwatts,config->duration,ti,config),bath_intensity,total_norm(psi),total_norm_qp(psi),total_norm_phonons(psi),creal(ac),cimag(ac),creal(cs),cimag(cs),completion);
+		printf("%f %f %f %f %f %f %f %f %f %f %f %f %f%% ",ti,get_laser_intensity(config->milliwatts,config->duration,ti,config),bath_intensity,total_norm(psi),total_norm_qp(psi),total_norm_phonons(psi),creal(ac),cimag(ac),creal(cs),cimag(cs),creal(S),cimag(S),completion);
 		printf("%f %f %f\n",previousnorm,elapsed_time1,elapsed_time2);
 		fflush(stdout);
 	}

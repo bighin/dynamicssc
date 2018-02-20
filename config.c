@@ -179,6 +179,17 @@ int configuration_handler(void *user,const char *section,const char *name,const 
 	{
 		pconfig->milliwatts=atof(value);
 	}
+	else if(MATCH("overlap","overlap"))
+	{
+		if((!strcasecmp(value,"true"))||(!strcasecmp(value,"on")))
+			pconfig->overlap=true;
+		else
+			pconfig->overlap=false;
+	}
+	else if(MATCH("overlap","t0"))
+	{
+		pconfig->overlapt0=atof(value);
+	}
 	else
 	{
 		return 0;  /* unknown section/name, error */
