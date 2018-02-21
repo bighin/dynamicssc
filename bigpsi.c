@@ -101,6 +101,9 @@ int big_sc_time_evolution(double t,const double y[],double dydt[],void *data)
 			double complex xiLM2m2,xiLM2m1,xiLM20,xiLM21,xiLM22;
 			double complex dxiLM2m2dt,dxiLM2m1dt,dxiLM20dt,dxiLM21dt,dxiLM22dt;
 			int L=GETL(d);
+			
+			double gridstep=config->cutoff/config->gridpoints;
+			double k=i*gridstep;
 
 			dxiLM2m2dt=dxiLM2m1dt=dxiLM20dt=dxiLM21dt=dxiLM22dt=0.0f;
 			for(int c=d-2;c<=d+2;c++)
@@ -109,6 +112,7 @@ int big_sc_time_evolution(double t,const double y[],double dydt[],void *data)
 
 				double complex xiLprimeM2m2,xiLprimeM2m1,xiLprimeM20,xiLprimeM21,xiLprimeM22;
 				double complex phasediff;
+				double complex scalefactor;
 
 				int Lprime;
 
@@ -125,11 +129,13 @@ int big_sc_time_evolution(double t,const double y[],double dydt[],void *data)
 				xiLprimeM21=y[local_offset+2+10*i+6]+I*y[local_offset+2+10*i+7];
 				xiLprimeM22=y[local_offset+2+10*i+8]+I*y[local_offset+2+10*i+9];
 
-				dxiLM2m2dt+=I*phasediff*C*Q(L,Lprime,GETM(),-2)*xiLprimeM2m2;
-				dxiLM2m1dt+=I*phasediff*C*Q(L,Lprime,GETM(),-1)*xiLprimeM2m1;
-				dxiLM20dt+=I*phasediff*C*Q(L,Lprime,GETM(),0)*xiLprimeM20;
-				dxiLM21dt+=I*phasediff*C*Q(L,Lprime,GETM(),1)*xiLprimeM21;
-				dxiLM22dt+=I*phasediff*C*Q(L,Lprime,GETM(),2)*xiLprimeM22;
+				scalefactor=fscale(k,L,config)/fscale(k,Lprime,config);
+
+				dxiLM2m2dt+=I*phasediff*C*Q(L,Lprime,GETM(),-2)*xiLprimeM2m2*scalefactor;
+				dxiLM2m1dt+=I*phasediff*C*Q(L,Lprime,GETM(),-1)*xiLprimeM2m1*scalefactor;
+				dxiLM20dt+=I*phasediff*C*Q(L,Lprime,GETM(),0)*xiLprimeM20*scalefactor;
+				dxiLM21dt+=I*phasediff*C*Q(L,Lprime,GETM(),1)*xiLprimeM21*scalefactor;
+				dxiLM22dt+=I*phasediff*C*Q(L,Lprime,GETM(),2)*xiLprimeM22*scalefactor;
 			}
 
 			xiLM2m2=y[offset+2+10*i]+I*y[offset+2+10*i+1];
