@@ -89,6 +89,13 @@ int big_sc_time_evolution(double t,const double y[],double dydt[],void *data)
 		dydt[offset+0]+=creal(dgLMdt);
 		dydt[offset+1]+=cimag(dgLMdt);
 
+		/*
+			The phonons with L=0 are not coupled to anything!
+		*/
+
+		if(L==0)
+			continue;
+
 		for(int i=0;i<config->gridpoints;i++)
 		{
 			double complex xiLM2m2,xiLM2m1,xiLM20,xiLM21,xiLM22;

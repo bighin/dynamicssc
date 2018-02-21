@@ -50,16 +50,16 @@ int fDcross(unsigned ndim,const double *x,void *fdata,unsigned fdim,double *fval
 /*
 	Dcross() calculates an integral involving two phonon distribution functions, more precisely:
 
-	\sum_k \alpha^{* L'}_{k 2 n} \alpha^{L'}_{k 2 n} f(k)
+	\sum_k \alpha^{* L'}_{k 2 n} \alpha^{L'}_{k 2 n'} f(k)
 
-	Note that the parameters L, Lprime and n are specified as arguments, Moreover one has
+	Note that the parameters L, Lprime, n and nprime are specified as arguments, Moreover one has
 
 	f(k) = 1		if mode == DINT_MODE_PLAIN
 	f(k) = omega(k)		if mode == DINT_MODE_OMEGAK
 	f(k) = (V2(k)/W(k))^2	if mode == DINT_MODE_VK
 */
 
-double complex Dcross(struct bigpsi_t *psi,int L,int Lprime,int n,int mode,struct configuration_t *config)
+double complex Dcross(struct bigpsi_t *psi,int L,int Lprime,int n,int nprime,int mode,struct configuration_t *config)
 {
 	struct dint_container_t container;
 	double *x,*y1re,*y1im,*y2re,*y2im;
@@ -67,7 +67,8 @@ double complex Dcross(struct bigpsi_t *psi,int L,int Lprime,int n,int mode,struc
 	double xmin,xmax,res[2],err[2],localdensity;
 	int c;
 
-	extern double relError,maxEval;
+	extern double relError;
+	extern size_t maxEval;
 
 	int offsetL=L*(2+10*config->gridpoints);
 	int offsetLprime=Lprime*(2+10*config->gridpoints);
@@ -82,7 +83,7 @@ double complex Dcross(struct bigpsi_t *psi,int L,int Lprime,int n,int mode,struc
 	{
                 double gridstep=config->cutoff/config->gridpoints;
                 double k=c*gridstep;
-		int noffset;
+		int noffset,nprimeoffset;
 
 		double complex phase1,phase2;
 
@@ -92,37 +93,66 @@ double complex Dcross(struct bigpsi_t *psi,int L,int Lprime,int n,int mode,struc
 		{
 			case -2:
 			phase1=timephase(-(L*(L+1.0f)+omegak(k)-2.0f),psi->t,config);
-			phase2=timephase(-(Lprime*(Lprime+1.0f)+omegak(k)-2.0f),psi->t,config);
 			noffset=0;
 			break;
 
 			case -1:
 			phase1=timephase(-(L*(L+1.0f)+omegak(k)+4.0f),psi->t,config);
-			phase2=timephase(-(Lprime*(Lprime+1.0f)+omegak(k)+4.0f),psi->t,config);
 			noffset=2;
 			break;
 
 			case 0:
 			phase1=timephase(-(L*(L+1.0f)+omegak(k)+6.0f),psi->t,config);
-			phase2=timephase(-(Lprime*(Lprime+1.0f)+omegak(k)+6.0f),psi->t,config);
 			noffset=4;
 			break;
 
 			case 1:
 			phase1=timephase(-(L*(L+1.0f)+omegak(k)+4.0f),psi->t,config);
-			phase2=timephase(-(Lprime*(Lprime+1.0f)+omegak(k)+4.0f),psi->t,config);
 			noffset=6;
 			break;
 
 			case 2:
 			phase1=timephase(-(L*(L+1.0f)+omegak(k)-2.0f),psi->t,config);
-			phase2=timephase(-(Lprime*(Lprime+1.0f)+omegak(k)-2.0f),psi->t,config);
 			noffset=8;
 			break;
 			
 			default:
-			phase1=phase2=0.0f;
+			phase1=0.0f;
 			noffset=0;
+			fprintf(stderr,"Bug in Dcross()\n");
+			exit(0);
+		}
+
+		switch(nprime)
+		{
+			case -2:
+			phase2=timephase(-(Lprime*(Lprime+1.0f)+omegak(k)-2.0f),psi->t,config);
+			nprimeoffset=0;
+			break;
+
+			case -1:
+			phase2=timephase(-(Lprime*(Lprime+1.0f)+omegak(k)+4.0f),psi->t,config);
+			nprimeoffset=2;
+			break;
+
+			case 0:
+			phase2=timephase(-(Lprime*(Lprime+1.0f)+omegak(k)+6.0f),psi->t,config);
+			nprimeoffset=4;
+			break;
+
+			case 1:
+			phase2=timephase(-(Lprime*(Lprime+1.0f)+omegak(k)+4.0f),psi->t,config);
+			nprimeoffset=6;
+			break;
+
+			case 2:
+			phase2=timephase(-(Lprime*(Lprime+1.0f)+omegak(k)-2.0f),psi->t,config);
+			nprimeoffset=8;
+			break;
+			
+			default:
+			phase2=0.0f;
+			nprimeoffset=0;
 			fprintf(stderr,"Bug in Dcross()\n");
 			exit(0);
 		}
@@ -130,8 +160,8 @@ double complex Dcross(struct bigpsi_t *psi,int L,int Lprime,int n,int mode,struc
                 y1re[c]=creal(phase1*(psi->y[offsetL+2+10*c+noffset]+I*psi->y[offsetL+2+10*c+noffset+1]));
                 y1im[c]=cimag(phase1*(psi->y[offsetL+2+10*c+noffset]+I*psi->y[offsetL+2+10*c+noffset+1]));
 
-                y2re[c]=creal(phase2*(psi->y[offsetLprime+2+10*c+noffset]+I*psi->y[offsetLprime+2+10*c+noffset+1]));
-                y2im[c]=cimag(phase2*(psi->y[offsetLprime+2+10*c+noffset]+I*psi->y[offsetLprime+2+10*c+noffset+1]));
+                y2re[c]=creal(phase2*(psi->y[offsetLprime+2+10*c+nprimeoffset]+I*psi->y[offsetLprime+2+10*c+nprimeoffset+1]));
+                y2im[c]=cimag(phase2*(psi->y[offsetLprime+2+10*c+nprimeoffset]+I*psi->y[offsetLprime+2+10*c+nprimeoffset+1]));
 	}
 
         container.intre1=init_interpolation(x,y1re,config->gridpoints);
@@ -228,7 +258,8 @@ double complex Dsingle(struct bigpsi_t *psi,int L,int Lprime,int n,int mode,stru
 	double complex g;
 	int c;
 
-	extern double relError,maxEval;
+	extern double relError;
+	extern size_t maxEval;
 
 	int offsetL=L*(2+10*config->gridpoints);
 	int offsetLprime=Lprime*(2+10*config->gridpoints);
@@ -307,8 +338,6 @@ double complex Dsingle(struct bigpsi_t *psi,int L,int Lprime,int n,int mode,stru
 
 	hcubature(2,fDsingle,&container,1,&xmin,&xmax,maxEval,0,10*relError,ERROR_INDIVIDUAL,res,err);
 
-	fini_interpolation(container.intre1);
-	fini_interpolation(container.intim1);
 	fini_interpolation(container.intre2);
 	fini_interpolation(container.intim2);
 
@@ -336,7 +365,8 @@ double complex Ecross(struct bigpsi_t *psi,int L,int Lprime,int n,double *y0,dou
 	double xmin,xmax,res[2],err[2],localdensity;
 	int c;
 
-	extern double relError,maxEval;
+	extern double relError;
+	extern size_t maxEval;
 
 	int offsetL=L*(2+10*config->gridpoints);
 	int offsetLprime=Lprime*(2+10*config->gridpoints);
@@ -457,21 +487,105 @@ double eta_sigma(int L, int lambda,int n,int nu)
 	return 0.0f;
 }
 
+int fD0(unsigned ndim,const double *x,void *fdata,unsigned fdim,double *fval)
+{
+        struct dint_container_t *container=(struct dint_container_t *)(fdata);
+	struct configuration_t *config=container->config;
+
+        /* The integration variables */
+
+        double k=x[0];
+
+        fval[0]=pow(V2(k,container->localdensity,config)/W(k,config),2.0f);
+
+        return 0;
+}
+
+double complex D0(double t,struct configuration_t *config)
+{
+	struct dint_container_t container;
+        double xmin,xmax,res,err;
+
+	extern double relError;
+	extern size_t maxEval;
+
+        xmin=0.0f;
+        xmax=config->cutoff;
+
+	container.config=config;
+
+        if(config->ramp==true)
+                container.localdensity=config->density*adiabatic_ramp(t,config);
+        else
+                container.localdensity=config->density;
+
+        hcubature(1,fD0,&container,1,&xmin,&xmax,maxEval,0,relError,ERROR_INDIVIDUAL,&res,&err);
+
+        return res;
+}
+
+double complex rotational_energy_L(int L,struct bigpsi_t *psi,struct configuration_t *config)
+{
+	double complex intD0=D0(psi->t,config);
+
+	int offsetL=L*(2+10*config->gridpoints);
+
+	double complex gL;
+	double complex A1,A2,B2b,B3,C1,C2a,C2b,C3;
+	
+	gL=(psi->y[offsetL+0]+I*psi->y[offsetL+1])*timephase(-L*(L+1),psi->t,config);
+
+	A1=conj(gL)*gL*L*(L+1);
+	A2=conj(gL)*gL*6.0*intD0;
+
+	B2b=B3=C1=C2a=C2b=C3=0.0f;
+
+	if(L>=1)
+	{
+		B2b=-6.0*Dsingle(psi,L,L,0,DINT_MODE_VK,config);
+
+		for(int n=-2;n<=2;n++)
+			B3+=2.0f*eta_sigma(L,6,0,n)*Dsingle(psi,L,L,n,DINT_MODE_VK,config);
+
+		for(int n=-2;n<=2;n++)
+			C1+=L*(L+1)*Dcross(psi,L,L,n,n,DINT_MODE_PLAIN,config);
+
+		for(int n=-2;n<=2;n++)
+		{
+			double complex tmp;
+
+			if((n!=+1)&&(n!=-1))
+				continue;
+
+			tmp=0.5*6.0f*pow(Dsingle(psi,L,L,n,DINT_MODE_VK,config),2.0f);
+	
+			C2a+=tmp+conj(tmp);
+		}
+
+		for(int n=-2;n<=2;n++)
+			C2b+=(6.0f+intD0)*Dcross(psi,L,L,n,n,DINT_MODE_PLAIN,config);
+
+		for(int n=-2;n<=2;n++)
+			for(int nprime=-2;nprime<=2;nprime++)
+				C3+=-2.0f*Dcross(psi,L,L,n,nprime,DINT_MODE_PLAIN,config)*eta_sigma(L,6,nprime,n);
+	}
+
+	return A1+A2+B2b+conj(B2b)+B3+conj(B3)+C1+C2a+C2b+C3;
+}
+
 double complex rotational_energy(struct bigpsi_t *psi,struct configuration_t *config)
 {
 	double complex ret=0.0f;
 
 	for(int L=0;L<config->maxl;L++)
-	{
-		//int offsetL=L*(2+10*config->gridpoints);
-
-		for(int n=-2;n<=2;n++)
-			ret+=Dcross(psi,L,L,n,DINT_MODE_PLAIN,config);
+		ret+=rotational_energy_L(L,psi,config);
 	
-		ret+=Dsingle(psi,L,L,0,DINT_MODE_PLAIN,config);
-	}
-
 	return ret;
+}
+
+double complex rcr(int L,struct bigpsi_t *psi,struct configuration_t *config)
+{
+	return rotational_energy_L(L,psi,config)/(L*(L+1));
 }
 
 double complex overlapS(struct bigpsi_t *psi,double *y0,double t0,struct configuration_t *config)

@@ -52,7 +52,8 @@ double complex Across(struct bigpsi_t *psi,int L,int Lprime,int n,struct configu
 	double xmin,xmax,res[2],err[2];
 	int c;
 
-	extern double relError,maxEval;
+	extern double relError;
+	extern size_t maxEval;
 
 	int offsetL=L*(2+10*config->gridpoints);
 	int offsetLprime=Lprime*(2+10*config->gridpoints);

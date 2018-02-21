@@ -209,6 +209,9 @@ int do_single(struct configuration_t *config)
 		if((overlap_snapshot_saved==true)&&(config->overlap==true))
 			S=overlapS(psi,y0,t0,config);
 
+#warning RemoveMePlease!
+		//printf("[%f]\n",creal(rotational_energy(psi,config)));
+
 		/*
 			Real time evolution: at first we calculate the data at each step
 		*/
@@ -488,6 +491,10 @@ int do_ini_file(char *inifile)
 	{
 		printf("\tDuration (ps, FWHM): %f\n",config.duration);
 	}
+
+	printf("\nDynamical overlap S(t) = <psi(t=0)|psi(t)> :\n");
+	printf("\tOverlap: %s\n",(config.overlap==true)?("ON"):("OFF"));
+	printf("\tReference time: %f\n",config.overlapt0);
 
 	printf("\nStarting simulation...\n");
 

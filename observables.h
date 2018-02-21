@@ -26,7 +26,7 @@ struct dint_container_t
 	double localdensity;
 };
 
-double complex Dcross(struct bigpsi_t *psi,int L,int Lprime,int n,int mode,struct configuration_t *config);
+double complex Dcross(struct bigpsi_t *psi,int L,int Lprime,int n,int nprime,int mode,struct configuration_t *config);
 double complex Dsingle(struct bigpsi_t *psi,int L,int Lprime,int n,int mode,struct configuration_t *config);
 double complex Ecross(struct bigpsi_t *psi,int L,int Lprime,int n,double *y0,double t0,struct configuration_t *config);
 
