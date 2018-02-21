@@ -94,11 +94,6 @@ void dump_phonons(FILE *out,struct bigpsi_t *psi,int L,struct configuration_t *c
 		double complex phase2m2,phase2m1,phase20,phase21,phase22;
 		double complex alpha2m2,alpha2m1,alpha20,alpha21,alpha22;
 
-#warning Delete me!
-
-		//if((d%5)!=0)
-		//	continue;
-
 		phase2m2=timephase(-(L*(L+1.0f)+omegak(k)-2.0f),ti,config);
 		phase2m1=timephase(-(L*(L+1.0f)+omegak(k)+4.0f),ti,config);
 		phase20=timephase(-(L*(L+1.0f)+omegak(k)+6.0f),ti,config);
@@ -335,9 +330,7 @@ int do_single(struct configuration_t *config)
 			goto cleanup;
 		}
 
-#warning Debug stuff!
-		//bigpsi_serialize(psi,finalconf);
-		dump_phonons(finalconf,psi,3,config);
+		bigpsi_serialize(psi,finalconf);
 
 		if(finalconf!=NULL)
 			fclose(finalconf);

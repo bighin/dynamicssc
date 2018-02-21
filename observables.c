@@ -463,7 +463,7 @@ double complex rotational_energy(struct bigpsi_t *psi,struct configuration_t *co
 
 	for(int L=0;L<config->maxl;L++)
 	{
-		int offsetL=L*(2+10*config->gridpoints);
+		//int offsetL=L*(2+10*config->gridpoints);
 
 		for(int n=-2;n<=2;n++)
 			ret+=Dcross(psi,L,L,n,DINT_MODE_PLAIN,config);

@@ -183,10 +183,6 @@ struct bigpsi_t *bigpsi_init(struct configuration_t *config,int L,int M)
 
 		for(int c=0;c<config->gridpoints;c++)
 		{
-			double gridstep=config->cutoff/config->gridpoints;
-			double k=c*gridstep;
-
-
 			psi->y[offset+2+10*c]=0.0f;
 			psi->y[offset+2+10*c+1]=0.0f;
 			psi->y[offset+2+10*c+2]=0.0f;
