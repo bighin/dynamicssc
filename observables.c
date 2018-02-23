@@ -526,7 +526,9 @@ double complex D0(double t,struct configuration_t *config)
 
 double complex rotational_energy_L(int L,struct bigpsi_t *psi,struct configuration_t *config)
 {
+#ifdef INCLUDE_EDEF
 	double complex intD0=D0(psi->t,config);
+#endif
 
 	int offsetL=L*(2+10*config->gridpoints);
 
@@ -536,7 +538,11 @@ double complex rotational_energy_L(int L,struct bigpsi_t *psi,struct configurati
 	gL=(psi->y[offsetL+0]+I*psi->y[offsetL+1])*timephase(-L*(L+1),psi->t,config);
 
 	A1=conj(gL)*gL*L*(L+1);
+	A2=0.0f;
+
+#ifdef INCLUDE_EDEF
 	A2=conj(gL)*gL*6.0*intD0;
+#endif
 
 	B2b=B3=C1=C2a=C2b=C3=0.0f;
 
@@ -545,29 +551,35 @@ double complex rotational_energy_L(int L,struct bigpsi_t *psi,struct configurati
 		B2b=-6.0*Dsingle(psi,L,L,0,DINT_MODE_VK,config);
 
 		for(int n=-2;n<=2;n++)
-			B3+=2.0f*eta_sigma(L,6,0,n)*Dsingle(psi,L,L,n,DINT_MODE_VK,config);
+			B3+=2.0f*eta_sigma(L,2,0,n)*Dsingle(psi,L,L,n,DINT_MODE_VK,config);
 
 		for(int n=-2;n<=2;n++)
 			C1+=L*(L+1)*Dcross(psi,L,L,n,n,DINT_MODE_PLAIN,config);
 
 		for(int n=-2;n<=2;n++)
 		{
-			double complex tmp;
+			double complex a,b;
 
 			if((n!=+1)&&(n!=-1))
 				continue;
 
-			tmp=0.5*6.0f*pow(Dsingle(psi,L,L,n,DINT_MODE_VK,config),2.0f);
-	
-			C2a+=tmp+conj(tmp);
+			a=Dsingle(psi,L,L,n,DINT_MODE_VK,config);
+			b=0.5*6.0f*a*conj(a);
+
+			C2a+=b+conj(b);
 		}
 
 		for(int n=-2;n<=2;n++)
-			C2b+=(6.0f+intD0)*Dcross(psi,L,L,n,n,DINT_MODE_PLAIN,config);
+		{
+			C2b+=6.0f*Dcross(psi,L,L,n,n,DINT_MODE_PLAIN,config);
+#ifdef INCLUDE_EDEF
+			C2b+=6.0*intD0*Dcross(psi,L,L,n,n,DINT_MODE_PLAIN,config);
+#endif
+		}
 
 		for(int n=-2;n<=2;n++)
 			for(int nprime=-2;nprime<=2;nprime++)
-				C3+=-2.0f*Dcross(psi,L,L,n,nprime,DINT_MODE_PLAIN,config)*eta_sigma(L,6,nprime,n);
+				C3+=-2.0f*Dcross(psi,L,L,n,nprime,DINT_MODE_PLAIN,config)*eta_sigma(L,2,nprime,n);
 	}
 
 	return A1+A2+B2b+conj(B2b)+B3+conj(B3)+C1+C2a+C2b+C3;

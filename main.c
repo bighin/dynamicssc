@@ -209,9 +209,6 @@ int do_single(struct configuration_t *config)
 		if((overlap_snapshot_saved==true)&&(config->overlap==true))
 			S=overlapS(psi,y0,t0,config);
 
-#warning RemoveMePlease!
-		//printf("[%f]\n",creal(rotational_energy(psi,config)));
-
 		/*
 			Real time evolution: at first we calculate the data at each step
 		*/
