@@ -419,7 +419,7 @@ double complex fcosthetasquared(struct bigpsi_t *psi,int L,int Lprime,int M,int 
 	res=conj(gL)*gLprime*sqrtf((2.0f*L+1.0f)/(2.0f*Lprime+1.0f))*sqrtf((2.0f*lambda+1.0f)/(4*M_PI));
 	res*=cg(L,M,lambda,0,Lprime,M)*cg(L,0,lambda,0,Lprime,0);
 
-	if(config->freeevolution==true)
+	if((config->freeevolution==true)||(config->altcos==true))
 		return f*res;
 
 	for(n=-2;n<=2;n++)
