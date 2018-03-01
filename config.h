@@ -9,7 +9,8 @@ struct configuration_t
 	bool writephonons;
 	bool cos2d;
 	bool savefinalconf;
-	
+	bool altcos;
+
 	int maxl;
 	double starttime;
 	double endtime;

@@ -38,6 +38,14 @@ int configuration_handler(void *user,const char *section,const char *name,const 
 		else
 			pconfig->savefinalconf=false;
 	}
+	if(MATCH("output","altcos"))
+	{
+		if(!strcasecmp(value,"true"))
+			pconfig->altcos=true;
+		else
+			pconfig->altcos=false;
+	}
+
 	else if(MATCH("general","maxl"))
 	{
 		pconfig->maxl=atoi(value);
