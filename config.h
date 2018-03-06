@@ -26,7 +26,8 @@ struct configuration_t
 	short moleculetype;
 
 	bool mixture;
-	int startl;
+	int nrl;
+	int startl[128];
 	int startm;
 
 	double cutoff;

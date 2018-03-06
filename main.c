@@ -127,7 +127,7 @@ int do_single(struct configuration_t *config)
 	outgs=malloc(sizeof(FILE *)*config->maxl);
 	outalphas=malloc(sizeof(FILE *)*config->maxl);
 
-	psi=bigpsi_init(config,config->startl,config->startm);
+	psi=bigpsi_init(config,BIGPSI_INIT_FROM_CONFIG,0,0);
 
 	for(int c=0;c<config->maxl;c++)
 		outgs[c]=outalphas[c]=NULL;
@@ -427,8 +427,23 @@ int do_ini_file(char *inifile)
 	if(config.mixture==false)
 	{
 		printf("\tSingle initial state:\n");
-		printf("\tL: %d\n",config.startl);
-		printf("\tM: %d\n",config.startm);
+		printf("\tL: ");
+
+		for(int d=0;d<config.nrl;d++)
+		{
+			printf("%d",config.startl[d]);
+		
+			if((d+1)!=config.nrl)
+				printf(", ");
+		}
+
+		if(config.nrl<=0)
+		{
+			printf("Error: If not working with a mixture, please specify at least on L.");
+			exit(0);
+		}
+
+		printf("\n\tM: %d\n",config.startm);
 	}
 	else
 	{

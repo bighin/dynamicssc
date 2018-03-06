@@ -49,7 +49,10 @@ struct bigpsi_t
 
 int big_sc_time_evolution(double t,const double y[],double dydt[],void *data);
 
-struct bigpsi_t *bigpsi_init(struct configuration_t *config,int L,int M);
+#define BIGPSI_INIT_FROM_CONFIG	(31)
+#define BIGPSI_INIT_FROM_VALUES	(32)
+
+struct bigpsi_t *bigpsi_init(struct configuration_t *config,int mode,int L,int M);
 void bigpsi_fini(struct bigpsi_t *psi);
 
 void bigpsi_serialize(struct bigpsi_t *psi,FILE *out);

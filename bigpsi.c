@@ -170,7 +170,7 @@ int big_sc_time_evolution(double t,const double y[],double dydt[],void *data)
 	return GSL_SUCCESS;
 }
 
-struct bigpsi_t *bigpsi_init(struct configuration_t *config,int L,int M)
+struct bigpsi_t *bigpsi_init(struct configuration_t *config,int mode,int L,int M)
 {
 	struct bigpsi_t *psi;
 	
@@ -187,12 +187,26 @@ struct bigpsi_t *bigpsi_init(struct configuration_t *config,int L,int M)
 	{
 		int offset=d*(2+10*config->gridpoints);
 
-		if(d==L)
-			psi->y[offset+0]=1.0f;
-		else
-			psi->y[offset+0]=0.0f;
+		psi->y[offset+0]=psi->y[offset+1]=0.0f;
 
-		psi->y[offset+1]=0.0f;
+		if(mode==BIGPSI_INIT_FROM_CONFIG)
+		{
+			for(int c=0;c<config->nrl;c++)
+				if(d==config->startl[c])
+					psi->y[offset+0]=1.0f/sqrt(config->nrl);
+		}
+
+		if(mode==BIGPSI_INIT_FROM_VALUES)
+		{
+			if(M!=config->startm)
+			{
+				printf("Internal inconsistency in bigpsi_init()\n.");
+				exit(0);
+			}
+
+			if(d==L)
+				psi->y[offset+0]=1.0f;
+		}
 
 		for(int c=0;c<config->gridpoints;c++)
 		{
@@ -212,7 +226,7 @@ struct bigpsi_t *bigpsi_init(struct configuration_t *config,int L,int M)
 	for(int d=0;d<psi->nrpsis;d++)
 	{
 		psi->params[d].L=d;
-		psi->params[d].M=M;
+		psi->params[d].M=config->startm;
 		psi->params[d].config=config;
 	}
 
@@ -284,7 +298,7 @@ struct bigpsi_t *bigpsi_deserialize(FILE *in,struct configuration_t *config)
 		return NULL;
 
 	ydim=(2+10*config->gridpoints)*config->maxl;
-	psi=bigpsi_init(config,config->startl,config->startm);
+	psi=bigpsi_init(config,BIGPSI_INIT_FROM_CONFIG,0,0);
 
 	if(fread(&psi->nrpsis,sizeof(int),1,in)!=1)
 		goto cleanup;

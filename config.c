@@ -45,7 +45,6 @@ int configuration_handler(void *user,const char *section,const char *name,const 
 		else
 			pconfig->altcos=false;
 	}
-
 	else if(MATCH("general","maxl"))
 	{
 		pconfig->maxl=atoi(value);
@@ -100,7 +99,19 @@ int configuration_handler(void *user,const char *section,const char *name,const 
 	}
 	else if(MATCH("initialconditions","l"))
 	{
-		pconfig->startl=atoi(value);
+		char *token,*string,*tofree;
+		
+		tofree=string=strdup(value);
+
+		while((token=strsep(&string,","))!=NULL)
+		{
+			int lval=atoi(token);
+			
+			pconfig->startl[pconfig->nrl]=lval;
+			pconfig->nrl++;
+		}
+
+		free(tofree);
 	}
 	else if(MATCH("initialconditions","m"))
 	{

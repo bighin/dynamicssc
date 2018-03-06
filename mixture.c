@@ -33,7 +33,7 @@ int do_run(int L,int M,struct info_t *info,bool silent,struct configuration_t *c
 
 	fprintf(details,"<Time> <Intensity> <BathIntensity> <Re(L=0)> ... <Re(L=3)> <Re(cos3d)> <Im(cos3d)> <Re(cos2d)> <Im(cos2d)> <AOS> <TotalNorm> <TotalNormQP> <NormQP (L=0)> <NormQP (L=Lmax)>\n");
 
-	psi=bigpsi_init(config,L,M);
+	psi=bigpsi_init(config,BIGPSI_INIT_FROM_VALUES,L,M);
 
 	timedivs=(config->endtime-config->starttime)/config->timestep;
 
