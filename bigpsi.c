@@ -198,12 +198,6 @@ struct bigpsi_t *bigpsi_init(struct configuration_t *config,int mode,int L,int M
 
 		if(mode==BIGPSI_INIT_FROM_VALUES)
 		{
-			if(M!=config->startm)
-			{
-				printf("Internal inconsistency in bigpsi_init()\n.");
-				exit(0);
-			}
-
 			if(d==L)
 				psi->y[offset+0]=1.0f;
 		}
@@ -226,7 +220,12 @@ struct bigpsi_t *bigpsi_init(struct configuration_t *config,int mode,int L,int M
 	for(int d=0;d<psi->nrpsis;d++)
 	{
 		psi->params[d].L=d;
-		psi->params[d].M=config->startm;
+		
+		if(mode==BIGPSI_INIT_FROM_VALUES)
+			psi->params[d].M=M;
+		else if(mode==BIGPSI_INIT_FROM_CONFIG)
+			psi->params[d].M=config->startm;
+		
 		psi->params[d].config=config;
 	}
 
