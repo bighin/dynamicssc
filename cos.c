@@ -395,6 +395,9 @@ double complex costheta2d(struct bigpsi_t *psi,struct configuration_t *config)
 		}
 	}
 
+	if(config->altcos==true)
+		return total/total_norm_qp(psi);
+
 	return total;
 }
 
@@ -459,6 +462,9 @@ double complex costhetasquared(struct bigpsi_t *psi,struct configuration_t *conf
 			}
 		}
 	}
+
+	if(config->altcos==true)
+		return total/total_norm_qp(psi);
 
 	return total;
 }
