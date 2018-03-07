@@ -129,6 +129,9 @@ double U2morse(double n,double k,struct configuration_t *config)
 
 double U2(double n,double k,struct configuration_t *config)
 {
+	if(config->morse==true)
+		return U2morse(n,k,config);
+
 	return U2gaussian(n,k,config);
 }
 

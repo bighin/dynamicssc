@@ -464,6 +464,11 @@ int do_ini_file(char *inifile)
 	printf("\tr2: %f\n",config.r2);
 	printf("\tDensity: %f\n",config.density);
 
+	if(config.morse==true)
+		printf("Using effective Morse potential.\n");
+	else
+		printf("Using Gaussian form factors.\n");
+
 	printf("\nNumerical precision:\n");
 	printf("\thstart: %e\n",config.hstart);
 	printf("\tepsabs: %e\n",config.epsabs);

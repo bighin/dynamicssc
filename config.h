@@ -38,6 +38,7 @@ struct configuration_t
 	double r0;
 	double r2;
 	double density;
+	bool morse;
 
 	bool ramp;
 	double rampcenter;

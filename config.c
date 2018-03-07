@@ -145,6 +145,13 @@ int configuration_handler(void *user,const char *section,const char *name,const 
 	{
 		pconfig->density=atof(value);
 	}
+	else if(MATCH("potential","morse"))
+	{
+		if((!strcasecmp(value,"true"))||(!strcasecmp(value,"on")))
+			pconfig->morse=true;
+		else
+			pconfig->morse=false;
+	}
 	else if(MATCH("precision","hstart"))
 	{
 		pconfig->hstart=atof(value);
