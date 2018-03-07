@@ -384,7 +384,8 @@ int do_ini_file(char *inifile)
 	printf("\tOutput prefix: %s\n",config.prefix);
 	printf("\tOutput mode: %s\n",(config.writephonons==false)?("light (no phonons)"):("full (incl. phonons)"));
 	printf("\tAlignment cosine: %s\n",(config.cos2d==false)?("not calculated (only 3D cosine)"):("calculated"));
-	
+	printf("\tUsing molecular cosine: %s\n",(config.altcos==false)?("false"):("true"));
+
 	if(config.savefinalconf==true)
 		printf("\tFinal configuration will be saved to: %s.final.dat\n",config.prefix);
 
@@ -432,7 +433,7 @@ int do_ini_file(char *inifile)
 		for(int d=0;d<config.nrl;d++)
 		{
 			printf("%d",config.startl[d]);
-		
+
 			if((d+1)!=config.nrl)
 				printf(", ");
 		}
@@ -465,9 +466,9 @@ int do_ini_file(char *inifile)
 	printf("\tDensity: %f\n",config.density);
 
 	if(config.morse==true)
-		printf("Using effective Morse potential.\n");
+		printf("\tUsing effective Morse potential.\n");
 	else
-		printf("Using Gaussian form factors.\n");
+		printf("\tUsing Gaussian form factors.\n");
 
 	printf("\nNumerical precision:\n");
 	printf("\thstart: %e\n",config.hstart);
