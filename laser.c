@@ -125,15 +125,11 @@ double get_laser_intensity(double fluence,double pulse_duration,double t,struct 
 	switch(config->moleculetype)
 	{
 		case MOLECULE_I2:
-		eta=9.35*(10/0.034/pulse_duration)*fluence;
+		eta=9.35*(6.0993/0.03739/pulse_duration)*fluence;
 		break;
 
 		case MOLECULE_CS2:
-		
-		printf("Please use I2, I still have to implement CS2!\n");
-		exit(0);
-		
-		//eta=(10.5/6.1)*10.5*0.71*(mw/10.0f);
+		eta=9.35*(10.3/0.10927/pulse_duration)*fluence;		
 		break;
 		
 		default:
