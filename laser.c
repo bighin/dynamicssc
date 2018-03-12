@@ -108,28 +108,32 @@ double almost_gaussian(double x,struct configuration_t *config)
 	return B_in_ps(config)*almost_gaussian_ps(x*B_in_ps(config));
 }
 
-double get_laser_intensity(double mw,double pulse_duration,double t,struct configuration_t *config)
+double get_laser_intensity(double fluence,double pulse_duration,double t,struct configuration_t *config)
 {
 	double eta,pulse_fwhm,pulse_sigma;
 	
 	/*
-		The fluence is 0.71 for a pulse at 10 mW and increases linearly
-		with the pulse intensity.
-
-		The usual formula is valid for I2, to get the same formula for CS2 we
-		just multiply it by the polarizability ratio.
+		The formule we use is:
 	
-		This was confirmed by Lars by email.
+		eta(t) = \eta f(t)
+	
+		where f(t) is a normalized Gaussian and
+	
+		\eta = 9.35 * \Delta [Å^3] F [J/cm^2] / ( B [cm^-1] FWHM [ps])
 	*/
 
 	switch(config->moleculetype)
 	{
 		case MOLECULE_I2:
-	        eta=10.5*0.71*(mw/10.0f);
+		eta=9.35*(10/0.034/pulse_duration)*fluence;
 		break;
 
 		case MOLECULE_CS2:
-	        eta=(10.5/6.1)*10.5*0.71*(mw/10.0f);
+		
+		printf("Please use I2, I still have to implement CS2!\n");
+		exit(0);
+		
+		//eta=(10.5/6.1)*10.5*0.71*(mw/10.0f);
 		break;
 		
 		default:

@@ -20,7 +20,7 @@ bool laser_is_on(struct configuration_t *config,double t)
 	if(config->laser==false)
 		return false;
 	
-	if(get_laser_intensity(config->milliwatts,config->duration,t,config)>1e-4)
+	if(get_laser_intensity(config->fluence,config->duration,t,config)>1e-4)
 		return true;
 	
 	return false;
@@ -55,7 +55,7 @@ int big_sc_time_evolution(double t,const double y[],double dydt[],void *data)
 	if(laser_is_on(config,t)==false)
 		return GSL_SUCCESS;
 
-	C=(2.0f/3.0f)*get_laser_intensity(config->milliwatts,config->duration,t,config);
+	C=(2.0f/3.0f)*get_laser_intensity(config->fluence,config->duration,t,config);
 
 #define GETL(x) (params[x].L)
 #define GETM() 	(params[0].M)

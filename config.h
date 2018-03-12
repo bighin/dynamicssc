@@ -51,7 +51,7 @@ struct configuration_t
 
 	bool laser;
 	double duration;
-	double milliwatts;
+	double fluence;
 	char *shapefile;
 	
 	bool overlap;

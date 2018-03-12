@@ -201,9 +201,9 @@ int configuration_handler(void *user,const char *section,const char *name,const 
 	{
 		pconfig->shapefile=strdup(value);
 	}
-	else if(MATCH("pulse","milliwatts"))
+	else if(MATCH("pulse","fluence"))
 	{
-		pconfig->milliwatts=atof(value);
+		pconfig->fluence=atof(value);
 	}
 	else if(MATCH("overlap","overlap"))
 	{

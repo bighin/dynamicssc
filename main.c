@@ -26,7 +26,7 @@ void print_header_g(FILE *out,int L,struct configuration_t *config)
 
 	if(!config->shapefile)
 	{
-		fprintf(out,"# Intensity (mW): %f\n",config->milliwatts);
+		fprintf(out,"# Fluence (J/cm^2): %f\n",config->fluence);
 		fprintf(out,"# Duration (ps): %f\n",config->duration);
 	}
 	else
@@ -54,7 +54,7 @@ void print_header_alpha(FILE *out,int L,struct configuration_t *config)
 
 	if(!config->shapefile)
 	{
-		fprintf(out,"# Intensity (mW): %f\n",config->milliwatts);
+		fprintf(out,"# Fluence (J/cm^2): %f\n",config->fluence);
 		fprintf(out,"# Duration (ps): %f\n",config->duration);
 	}
 	else
@@ -305,7 +305,7 @@ int do_single(struct configuration_t *config)
 			fprintf(norms,"%f %f ",norm_qp(ti,&psi->y[offset],&psi->params[d],config),norm_phonons(ti,&psi->y[offset],&psi->params[d],config));
 		}
 
-		fprintf(norms,"%f %f %f %f %f %f %f %f %f\n",total_norm(psi),creal(ac),cimag(ac),creal(cs),cimag(cs),creal(S),cimag(S),get_laser_intensity(config->milliwatts,config->duration,ti,config),bath_intensity);
+		fprintf(norms,"%f %f %f %f %f %f %f %f %f\n",total_norm(psi),creal(ac),cimag(ac),creal(cs),cimag(cs),creal(S),cimag(S),get_laser_intensity(config->fluence,config->duration,ti,config),bath_intensity);
 		fflush(norms);
 
 		/*
@@ -314,7 +314,7 @@ int do_single(struct configuration_t *config)
 
 		completion=100.0f*(ti-config->starttime)/(config->endtime-config->starttime);
 
-		printf("%f %f %f %f %f %f %f %f %f %f %f %f %f%% ",ti,get_laser_intensity(config->milliwatts,config->duration,ti,config),bath_intensity,total_norm(psi),total_norm_qp(psi),total_norm_phonons(psi),creal(ac),cimag(ac),creal(cs),cimag(cs),creal(S),cimag(S),completion);
+		printf("%f %f %f %f %f %f %f %f %f %f %f %f %f%% ",ti,get_laser_intensity(config->fluence,config->duration,ti,config),bath_intensity,total_norm(psi),total_norm_qp(psi),total_norm_phonons(psi),creal(ac),cimag(ac),creal(cs),cimag(cs),creal(S),cimag(S),completion);
 		printf("%f %f %f\n",previousnorm,elapsed_time1,elapsed_time2);
 		fflush(stdout);
 	}
@@ -497,7 +497,7 @@ int do_ini_file(char *inifile)
 
 	printf("\nLaser pulse:\n");
 	printf("\tLaser: %s\n",(config.laser==true)?("ON"):("OFF"));
-	printf("\tIntensity (mW): %f\n",config.milliwatts);
+	printf("\tFluence (J/cm^2): %f\n",config.fluence);
 
 	if(config.shapefile!=NULL)
 	{

@@ -51,7 +51,7 @@ int do_run(int L,int M,struct info_t *info,bool silent,struct configuration_t *c
 
 		info[c].totalnorm=total_norm(psi);
 		info[c].totalnorm_qp=total_norm_qp(psi);
-		info[c].intensity=get_laser_intensity(config->milliwatts,config->duration,ti,config);
+		info[c].intensity=get_laser_intensity(config->fluence,config->duration,ti,config);
 
                 if(config->ramp)
                         info[c].bath_intensity=adiabatic_ramp(ti,config);
@@ -81,7 +81,7 @@ int do_run(int L,int M,struct info_t *info,bool silent,struct configuration_t *c
 			reL2=psi->y[REPSI_OFFSET(2)];
 			reL3=psi->y[REPSI_OFFSET(3)];
 		
-			printf("%f %f %f ",ti,get_laser_intensity(config->milliwatts,config->duration,ti,config),adiabatic_ramp(ti,config));
+			printf("%f %f %f ",ti,get_laser_intensity(config->fluence,config->duration,ti,config),adiabatic_ramp(ti,config));
 			printf("%f %f %f %f ",reL0,reL1,reL2,reL3);
 			printf("%f %f %f %f %f %f",creal(info[c].cos2d),cimag(info[c].cos2d),creal(info[c].cossquared),cimag(info[c].cossquared),info[c].totalnorm,info[c].totalnorm_qp);
 		}
@@ -89,7 +89,7 @@ int do_run(int L,int M,struct info_t *info,bool silent,struct configuration_t *c
 		completion=100.0f*(ti-config->starttime)/(config->endtime-config->starttime);
 
 		printf("# L=%d, M=%d, norm=%f, localdensity=%f, %f%%, time=%f\n",L,M,info[c].totalnorm,config->density*adiabatic_ramp(ti,config),completion,elapsed_time);
-		fprintf(details,"%f %f %f ",ti,get_laser_intensity(config->milliwatts,config->duration,ti,config),adiabatic_ramp(ti,config));
+		fprintf(details,"%f %f %f ",ti,get_laser_intensity(config->fluence,config->duration,ti,config),adiabatic_ramp(ti,config));
 
 		{
 			double reL0,reL1,reL2,reL3;
