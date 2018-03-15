@@ -60,5 +60,6 @@ struct configuration_t
 
 void load_config_defaults(struct configuration_t *config);
 int configuration_handler(void *user,const char *section,const char *name,const char *value);
+void save_ini_backup(struct configuration_t *config,char *inifile);
 
 #endif //__CONFIG_H__

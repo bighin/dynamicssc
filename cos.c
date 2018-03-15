@@ -410,8 +410,6 @@ double complex fcosthetasquared(struct bigpsi_t *psi,int L,int Lprime,int M,int 
 	int offsetL=L*(2+10*config->gridpoints);
 	int offsetLprime=Lprime*(2+10*config->gridpoints);
 
-#warning CheckMe! Just one here?
-
 	if(lambda==0)
 		f=(1.0f/3.0f)*sqrt(4.0f*M_PI);
 

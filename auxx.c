@@ -106,6 +106,18 @@ double get_point(struct interpolation_t *it,double x)
 	return y;
 }
 
+void fcopy(FILE *f1,FILE *f2)
+{
+	char buffer[1024];
+	size_t n;
+
+	while((n=fread(buffer,sizeof(char),1024,f1))>0)
+	{
+		if (fwrite(buffer,sizeof(char),n,f2)!=n)
+			perror("Write failed!\n");
+	}
+}
+
 FILE *fopen_mkdir(const char *name,const char *mode)
 {
 	char *mname=strdup(name);

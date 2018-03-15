@@ -6,6 +6,7 @@
 
 #include "inih/ini.h"
 #include "config.h"
+#include "auxx.h"
 
 void load_config_defaults(struct configuration_t *config)
 {
@@ -276,4 +277,32 @@ int configuration_handler(void *user,const char *section,const char *name,const 
 	}
 
 	return 1;
+}
+
+void save_ini_backup(struct configuration_t *config,char *inifile)
+{
+	FILE *in,*out;
+	char fname[1024];
+	
+	snprintf(fname,1024,"%s.inibackup.dat",config->prefix);
+	fname[1023]='\0';
+
+	if(!(in=fopen(inifile,"r")))
+		return;
+
+	if(!(out=fopen(fname,"w+")))
+	{
+		if(in)
+			fclose(in);
+	
+		return;
+	}
+
+	fcopy(in,out);
+
+	if(in)
+		fclose(in);
+
+	if(out)
+		fclose(out);
 }

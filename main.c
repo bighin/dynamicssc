@@ -377,6 +377,8 @@ int do_ini_file(char *inifile)
 		return 1;
 	}
 
+	save_ini_backup(&config,inifile);
+
 	printf("Angulon dynamics, strong coupling.\n");
 	printf("Loaded configuration from: %s\n",inifile);
 
