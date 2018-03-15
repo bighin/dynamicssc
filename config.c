@@ -7,6 +7,60 @@
 #include "inih/ini.h"
 #include "config.h"
 
+void load_config_defaults(struct configuration_t *config)
+{
+	memset(config,0,sizeof(struct configuration_t));
+
+	config->prefix="dsc";
+	config->writephonons=false;
+	config->cos2d=false;
+	config->savefinalconf=false;
+	config->altcos=false;
+
+	config->maxl=32;
+	config->starttime=-5.0f;
+	config->endtime=5.0f;
+	config->timestep=0.01f;
+	config->freeevolution=false;
+
+	config->wtype=1;
+	config->fscale=true;
+
+	config->moleculetype=MOLECULE_I2;
+
+	config->mixture=false;
+	config->nrl=1;
+	config->startl[0]=0;
+	config->startm=0;
+
+	config->cutoff=8.0f;
+	config->gridpoints=800;
+
+	config->u0=0.0f;
+	config->u2=600.0f;
+	config->r0=0.0f;
+	config->r2=1.0f;
+	config->density=74;
+	config->morse=false;
+
+	config->ramp=false;
+	config->rampcenter=0.0f;
+	config->rampdelta=2.0f;
+
+	config->hstart=1e-6;
+	config->epsabs=1e-6;
+	config->epsrel=1e-6;
+	config->normalize=true;
+
+	config->laser=true;
+	config->duration=20;
+	config->fluence=0.4;
+	config->shapefile=NULL;
+
+	config->overlap=false;
+	config->overlapt0=-2.5;
+}
+
 int configuration_handler(void *user,const char *section,const char *name,const char *value)
 {
 	struct configuration_t *pconfig=(struct configuration_t *)(user);

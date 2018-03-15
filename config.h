@@ -58,6 +58,7 @@ struct configuration_t
 	double overlapt0;
 };
 
+void load_config_defaults(struct configuration_t *config);
 int configuration_handler(void *user,const char *section,const char *name,const char *value);
 
 #endif //__CONFIG_H__

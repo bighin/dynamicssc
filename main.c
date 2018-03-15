@@ -369,7 +369,7 @@ int do_ini_file(char *inifile)
 {
 	struct configuration_t config;
 
-	config.shapefile=NULL;
+	load_config_defaults(&config);
 
 	if(ini_parse(inifile,configuration_handler,&config)<0)
 	{
