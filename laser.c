@@ -119,17 +119,17 @@ double get_laser_intensity(double fluence,double pulse_duration,double t,struct 
 	
 		where f(t) is a normalized Gaussian and
 	
-		\eta = 9.35 * \Delta [Å^3] F [J/cm^2] / ( B [cm^-1] FWHM [ps])
+		\eta = 9.36 * \Delta [Å^3] F [J/cm^2] / ( B [cm^-1] FWHM [ps])
 	*/
 
 	switch(config->moleculetype)
 	{
 		case MOLECULE_I2:
-		eta=9.35*(6.0993/0.03739/pulse_duration)*fluence;
+		eta=9.36*(6.0993/0.03739/pulse_duration)*fluence;
 		break;
 
 		case MOLECULE_CS2:
-		eta=9.35*(10.3/0.10927/pulse_duration)*fluence;		
+		eta=9.36*(10.3/0.10901/pulse_duration)*fluence;
 		break;
 		
 		default:

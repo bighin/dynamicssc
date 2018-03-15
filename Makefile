@@ -3,6 +3,9 @@ LIBS = -lgsl -lncurses -lm -lblas
 CC = gcc
 CFLAGS = -O2 -Wall -std=gnu11 -I/opt/local/include/ -fopenmp
 LDFLAGS = -L/opt/local/lib/
+COMMIT=$(shell git log -1 --pretty='%h')
+
+CFLAGS+=-DGITCOMMIT=\"$(COMMIT)\"
 
 OS := $(shell uname)
 ifeq ($(OS), Darwin)

@@ -155,13 +155,14 @@ int configuration_handler(void *user,const char *section,const char *name,const 
 	else if(MATCH("initialconditions","l"))
 	{
 		char *token,*string,*tofree;
-		
+
+		pconfig->nrl=0;		
 		tofree=string=strdup(value);
 
 		while((token=strsep(&string,","))!=NULL)
 		{
 			int lval=atoi(token);
-			
+
 			pconfig->startl[pconfig->nrl]=lval;
 			pconfig->nrl++;
 		}
@@ -298,6 +299,7 @@ void save_ini_backup(struct configuration_t *config,char *inifile)
 		return;
 	}
 
+	fprintf(out,"; Binary compiled from commit: %s\n",GITCOMMIT);
 	fcopy(in,out);
 
 	if(in)
