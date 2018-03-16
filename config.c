@@ -57,6 +57,7 @@ void load_config_defaults(struct configuration_t *config)
 	config->duration=20;
 	config->fluence=0.4;
 	config->shapefile=NULL;
+	config->shapemax=1.0f;
 
 	config->overlap=false;
 	config->overlapt0=-2.5;

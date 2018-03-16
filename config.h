@@ -53,6 +53,7 @@ struct configuration_t
 	double duration;
 	double fluence;
 	char *shapefile;
+	double shapemax;
 	
 	bool overlap;
 	double overlapt0;

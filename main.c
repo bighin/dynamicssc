@@ -13,6 +13,7 @@
 #include "cos.h"
 #include "mixture.h"
 #include "observables.h"
+#include "molecules.h"
 
 void print_header_g(FILE *out,int L,struct configuration_t *config)
 {
@@ -370,6 +371,7 @@ int do_ini_file(char *inifile)
 	struct configuration_t config;
 
 	load_config_defaults(&config);
+	load_molecules_files("molecules.ini");
 
 	if(ini_parse(inifile,configuration_handler,&config)<0)
 	{
@@ -504,7 +506,7 @@ int do_ini_file(char *inifile)
 	if(config.shapefile!=NULL)
 	{
 		printf("\tLoading pulse shape from '%s'...",config.shapefile);
-		load_almost_gaussian(config.shapefile);
+		load_almost_gaussian(config.shapefile,&config.shapemax);
 		printf(" Done!\n");
 	}
 	else
