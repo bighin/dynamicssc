@@ -19,19 +19,14 @@ int do_run(int L,int M,struct info_t *info,bool silent,struct configuration_t *c
 	char fname[1024];
 	FILE *details;
 
-	if(silent==false)
-	{
-		printf("Running simulation with L=%d, M=%d, as part of a statistical mixture.\n",L,M);
-		printf("<Time> <Intensity> <BathIntensity> <Re(L=0)> ... <Re(L=3)> <Re(cos2d)> <Im(cos2d)> <TotalNorm>\n");
-	}
-
 	snprintf(fname,1024,"%s.singlestate.L%d.M%d.dat",config->prefix,L,M);
 	fname[1023]='\0';
 
 	if(!(details=fopen(fname,"w+")))
 		fprintf(stderr,"Couldn't open %s for writing.\n",fname);
 
-	fprintf(details,"<Time> <Intensity> <BathIntensity> <Re(L=0)> ... <Re(L=3)> <Re(cos3d)> <Im(cos3d)> <Re(cos2d)> <Im(cos2d)> <AOS> <TotalNorm> <TotalNormQP> <NormQP (L=0)> <NormQP (L=Lmax)>\n");
+	fprintf(details,"# Running simulation with L=%d, M=%d, as part of a statistical mixture.\n",L,M);
+	fprintf(details,"# <Time> <Intensity> <BathIntensity> <Re(L=0)> ... <Re(L=3)> <Re(cos3d)> <Im(cos3d)> <Re(cos2d)> <Im(cos2d)> <AOS> <TotalNorm> <TotalNormQP> <NormQP (L=0)> <NormQP (L=Lmax)>\n");
 
 	psi=bigpsi_init(config,BIGPSI_INIT_FROM_VALUES,L,M);
 
@@ -81,15 +76,15 @@ int do_run(int L,int M,struct info_t *info,bool silent,struct configuration_t *c
 			reL2=psi->y[REPSI_OFFSET(2)];
 			reL3=psi->y[REPSI_OFFSET(3)];
 		
-			printf("%f %f %f ",ti,get_laser_intensity(config->fluence,config->duration,ti,config),adiabatic_ramp(ti,config));
+			printf("%f %f %f ",ti,get_laser_intensity(config->fluence,config->duration,ti,config),info[c].bath_intensity);
 			printf("%f %f %f %f ",reL0,reL1,reL2,reL3);
 			printf("%f %f %f %f %f %f",creal(info[c].cos2d),cimag(info[c].cos2d),creal(info[c].cossquared),cimag(info[c].cossquared),info[c].totalnorm,info[c].totalnorm_qp);
 		}
 	
 		completion=100.0f*(ti-config->starttime)/(config->endtime-config->starttime);
 
-		printf("# L=%d, M=%d, norm=%f, localdensity=%f, %f%%, time=%f\n",L,M,info[c].totalnorm,config->density*adiabatic_ramp(ti,config),completion,elapsed_time);
-		fprintf(details,"%f %f %f ",ti,get_laser_intensity(config->fluence,config->duration,ti,config),adiabatic_ramp(ti,config));
+		printf("# L=%d, M=%d, norm=%f, localdensity=%f, %f%%, time=%f\n",L,M,info[c].totalnorm,config->density*info[c].bath_intensity,completion,elapsed_time);
+		fprintf(details,"%f %f %f ",ti,get_laser_intensity(config->fluence,config->duration,ti,config),info[c].bath_intensity);
 
 		{
 			double reL0,reL1,reL2,reL3;
@@ -98,7 +93,7 @@ int do_run(int L,int M,struct info_t *info,bool silent,struct configuration_t *c
 			reL1=psi->y[REPSI_OFFSET(1)];
 			reL2=psi->y[REPSI_OFFSET(2)];
 			reL3=psi->y[REPSI_OFFSET(3)];
-			
+
 			fprintf(details,"%f %f %f %f ",reL0,reL1,reL2,reL3);
 			
 		}
@@ -138,8 +133,13 @@ void do_mixture(struct configuration_t *config)
 	char outfile[1024];
 
 	/*
-		Statistical mixture for CS2, see EnsableAveragesCS2.nb
+		Statistical mixture for CS2, see EnsableAveragesCS2.nb and BW.nb for better precision.
 	*/
+
+#warning Use also the free weights (calculate without rotational constant renormalization)
+
+#define USE_RENORMALIZED_WEIGHTS
+#ifdef USE_RENORMALIZED_WEIGHTS
 
 #define NR_CS2_STATES	(16)
 
@@ -149,35 +149,71 @@ void do_mixture(struct configuration_t *config)
 		{4, 0}, {6, 6}, {6, 5}, {6, 4}, {6, 3}, {6, 2}, {6, 1}, {6, 0}
 	};
 
+
   	double cs2weights[NR_CS2_STATES]=
 	{
-		0.239754, 0.226504, 0.226504, 0.113252, 0.0393605, 0.0393605,
-		0.0393605, 0.0393605, 0.0196802, 0.00251623, 0.00251623, 0.00251623,
-		0.00251623, 0.00251623, 0.00251623, 0.00125812
+		0.237716, 0.226174, 0.226174, 0.113087, 0.0399576, 0.0399576,
+		0.0399576, 0.0399576, 0.0199788, 0.00262157, 0.00262157, 0.00262157,
+		0.00262157, 0.00262157, 0.00262157, 0.00131079
 	};
-	
+
 	/*
-		Statistical mixture for I2, see EnsableAveragesCS2.nb
+		Statistical mixture for I2, see EnsableAveragesCS2.nb and BW.nb for better precision.
 	*/
 
 #define NR_I2_STATES	(28)
 
 	int i2states[NR_I2_STATES][2]=
 	{
-		{0, 0}, {1, 1}, {1, 0}, {2, 2}, {2, 1}, {2, 0}, {3, 3}, {3, 2}, {3, 1},
-		{3, 0}, {4, 4}, {4, 3}, {4, 2}, {4, 1}, {4, 0}, {5, 5}, {5, 4}, {5, 3},
-		{5, 2}, {5, 1}, {5, 0}, {6, 6}, {6, 5}, {6, 4}, {6, 3}, {6, 2}, {6, 1},
-		{6, 0}
+		{0, 0}, {1, 0}, {1, 1}, {2, 0}, {2, 1}, {2, 2}, {3, 0}, {3, 1},
+		{3, 2}, {3, 3}, {4, 0}, {4, 1}, {4, 2}, {4, 3}, {4, 4}, {5, 0},
+		{5, 1}, {5, 2}, {5, 3}, {5, 4}, {5, 5}, {6, 0}, {6, 1}, {6, 2},
+		{6, 3}, {6, 4}, {6, 5}, {6, 6}
 	};
 
 	double i2weights[NR_I2_STATES]=
 	{
-		0.163746, 0.27673, 0.138365, 0.197591, 0.197591, 0.0987956,
-		0.119216, 0.119216, 0.119216, 0.059608, 0.0607795, 0.0607795,
-		0.0607795, 0.0607795, 0.0303898, 0.026184, 0.026184, 0.026184,
-		0.026184, 0.026184, 0.013092, 0.00953168, 0.00953168, 0.00953168,
-		0.00953168, 0.00953168, 0.00953168, 0.00476584
+		0.165773, 0.142302, 0.284604, 0.0997231, 0.199446, 0.199446,
+		0.0610023, 0.122005, 0.122005, 0.122005, 0.0304639, 0.0609277,
+		0.0609277, 0.0609277, 0.0609277, 0.0132797, 0.0265595, 0.0265595,
+		0.0265595, 0.0265595, 0.0265595, 0.00472587, 0.00945174, 0.00945174,
+		0.00945174, 0.00945174, 0.00945174, 0.00945174
 	};
+
+#else
+
+#define NR_CS2_STATES	(9)
+
+	int cs2states[NR_CS2_STATES][2]=
+	{
+		{0, 0}, {2, 2}, {2, 1}, {2, 0}, {4, 4}, {4, 3}, {4, 2}, {4, 1}, {4, 0}
+	};
+
+  	double cs2weights[NR_CS2_STATES]=
+	{
+		0.702956, 0.11816, 0.11816, 0.0590798, 0.00036559,
+		0.00036559,0.00036559, 0.00036559, 0.000182795
+	};
+
+#define NR_I2_STATES	(28)
+
+	int i2states[NR_I2_STATES][2]=
+	{
+		{0, 0}, {1, 0}, {1, 1}, {2, 0}, {2, 1}, {2, 2}, {3, 0}, {3, 1},
+		{3, 2}, {3, 3}, {4, 0}, {4, 1}, {4, 2}, {4, 3}, {4, 4}, {5, 0},
+	        {5, 1}, {5, 2}, {5, 3}, {5, 4}, {5, 5}, {6, 0}, {6, 1}, {6, 2},
+		{6, 3}, {6, 4}, {6, 5}, {6, 6}
+	};
+
+	double i2weights[NR_I2_STATES]=
+	{
+		0.269354, 0.203366, 0.406732, 0.115467, 0.230934, 0.230934,
+		0.0495644, 0.0991289, 0.0991289, 0.0991289, 0.0159995, 0.031999,
+		0.031999, 0.031999, 0.031999, 0.00390459, 0.00780918, 0.00780918,
+		0.00780918, 0.00780918, 0.00780918, 0.000716585, 0.00143317,
+		0.00143317, 0.00143317, 0.00143317, 0.00143317, 0.00143317
+	};
+#endif
 
 	double *weights;
 
