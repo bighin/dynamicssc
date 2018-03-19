@@ -26,7 +26,7 @@ int do_run(int L,int M,struct info_t *info,bool silent,struct configuration_t *c
 		fprintf(stderr,"Couldn't open %s for writing.\n",fname);
 
 	fprintf(details,"# Running simulation with L=%d, M=%d, as part of a statistical mixture.\n",L,M);
-	fprintf(details,"# <Time> <Intensity> <BathIntensity> <Re(L=0)> ... <Re(L=3)> <Re(cos3d)> <Im(cos3d)> <Re(cos2d)> <Im(cos2d)> <AOS> <TotalNorm> <TotalNormQP> <NormQP (L=0)> <NormQP (L=Lmax)>\n");
+	fprintf(details,"# <Time> <Intensity> <BathIntensity> <Re(L=0)> <Im(L=0)> ... <Re(L=Lmax)> <Im(L=Lmax)> <Re(cos3d)> <Im(cos3d)> <Re(cos2d)> <Im(cos2d)> <AOS> <TotalNorm> <TotalNormQP> <NormQP (L=0)> <NormQP (L=Lmax)>\n");
 
 	psi=bigpsi_init(config,BIGPSI_INIT_FROM_VALUES,L,M);
 
@@ -68,16 +68,20 @@ int do_run(int L,int M,struct info_t *info,bool silent,struct configuration_t *c
 		{
 
 #define REPSI_OFFSET(L)	(L*(2+10*config->gridpoints))
+#define IMPSI_OFFSET(L)	(1+L*(2+10*config->gridpoints))
 
-			double reL0,reL1,reL2,reL3;
-
-			reL0=psi->y[REPSI_OFFSET(0)];
-			reL1=psi->y[REPSI_OFFSET(1)];
-			reL2=psi->y[REPSI_OFFSET(2)];
-			reL3=psi->y[REPSI_OFFSET(3)];
+			double reL,imL;
 		
 			printf("%f %f %f ",ti,get_laser_intensity(config->fluence,config->duration,ti,config),info[c].bath_intensity);
-			printf("%f %f %f %f ",reL0,reL1,reL2,reL3);
+
+			for(int L=0;L<=2;L++)
+			{
+				reL=psi->y[REPSI_OFFSET(L)];
+				imL=psi->y[IMPSI_OFFSET(L)];
+
+				printf("%f %f ",reL,imL);
+			}
+
 			printf("%f %f %f %f %f %f",creal(info[c].cos2d),cimag(info[c].cos2d),creal(info[c].cossquared),cimag(info[c].cossquared),info[c].totalnorm,info[c].totalnorm_qp);
 		}
 	
@@ -87,15 +91,15 @@ int do_run(int L,int M,struct info_t *info,bool silent,struct configuration_t *c
 		fprintf(details,"%f %f %f ",ti,get_laser_intensity(config->fluence,config->duration,ti,config),info[c].bath_intensity);
 
 		{
-			double reL0,reL1,reL2,reL3;
+			double reL,imL;
 
-			reL0=psi->y[REPSI_OFFSET(0)];
-			reL1=psi->y[REPSI_OFFSET(1)];
-			reL2=psi->y[REPSI_OFFSET(2)];
-			reL3=psi->y[REPSI_OFFSET(3)];
+			for(int L=0;L<=config->maxl;L++)
+			{
+				reL=psi->y[REPSI_OFFSET(L)];
+				imL=psi->y[IMPSI_OFFSET(L)];
 
-			fprintf(details,"%f %f %f %f ",reL0,reL1,reL2,reL3);
-			
+				fprintf(details,"%f %f ",reL,imL);
+			}			
 		}
 
 		fprintf(details,"%f %f %f %f %f %f %f ",creal(info[c].cos2d),cimag(info[c].cos2d),creal(info[c].cossquared),cimag(info[c].cossquared),info[c].aos,info[c].totalnorm,info[c].totalnorm_qp);
