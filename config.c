@@ -24,6 +24,9 @@ void load_config_defaults(struct configuration_t *config)
 	config->timestep=0.01f;
 	config->freeevolution=false;
 
+	config->dispersion_is_experimental=true;
+	config->soundspeed=23.00;
+
 	config->wtype=1;
 	config->fscale=true;
 
@@ -123,6 +126,17 @@ int configuration_handler(void *user,const char *section,const char *name,const 
 			pconfig->freeevolution=true;
 		else
 			pconfig->freeevolution=false;
+	}
+	else if(MATCH("dispersion","dispersion"))
+	{
+		if(!strcasecmp(value,"linear"))
+			pconfig->dispersion_is_experimental=false;
+		else
+			pconfig->dispersion_is_experimental=true;
+	}
+	else if(MATCH("dispersion","soundspeed"))
+	{
+		pconfig->soundspeed=atof(value);
 	}
 	else if(MATCH("transformation","wtype"))
 	{

@@ -95,11 +95,11 @@ void dump_phonons(FILE *out,struct bigpsi_t *psi,int L,struct configuration_t *c
 		double complex phase2m2,phase2m1,phase20,phase21,phase22;
 		double complex alpha2m2,alpha2m1,alpha20,alpha21,alpha22;
 
-		phase2m2=timephase(-(L*(L+1.0f)+omegak(k)-2.0f),ti,config);
-		phase2m1=timephase(-(L*(L+1.0f)+omegak(k)+4.0f),ti,config);
-		phase20=timephase(-(L*(L+1.0f)+omegak(k)+6.0f),ti,config);
-		phase21=timephase(-(L*(L+1.0f)+omegak(k)+4.0f),ti,config);
-		phase22=timephase(-(L*(L+1.0f)+omegak(k)-2.0f),ti,config);
+		phase2m2=timephase(-(L*(L+1.0f)+omegak(k,config)-2.0f),ti,config);
+		phase2m1=timephase(-(L*(L+1.0f)+omegak(k,config)+4.0f),ti,config);
+		phase20=timephase(-(L*(L+1.0f)+omegak(k,config)+6.0f),ti,config);
+		phase21=timephase(-(L*(L+1.0f)+omegak(k,config)+4.0f),ti,config);
+		phase22=timephase(-(L*(L+1.0f)+omegak(k,config)-2.0f),ti,config);
 
 		alpha2m2=phase2m2*(y[2+10*d]+I*y[2+10*d+1]);
 		alpha2m1=phase2m1*(y[2+10*d+2]+I*y[2+10*d+3]);
@@ -259,14 +259,14 @@ int do_single(struct configuration_t *config)
 					double complex phase2m2,phase2m1,phase20,phase21,phase22;
 					double complex alpha2m2,alpha2m1,alpha20,alpha21,alpha22;
 
-					if((d%5)!=0)
-						continue;
+					//if((d%5)!=0)
+					//	continue;
 
-					phase2m2=timephase(-(L*(L+1.0f)+omegak(k)-2.0f),ti,config);
-					phase2m1=timephase(-(L*(L+1.0f)+omegak(k)+4.0f),ti,config);
-					phase20=timephase(-(L*(L+1.0f)+omegak(k)+6.0f),ti,config);
-					phase21=timephase(-(L*(L+1.0f)+omegak(k)+4.0f),ti,config);
-					phase22=timephase(-(L*(L+1.0f)+omegak(k)-2.0f),ti,config);
+					phase2m2=timephase(-(L*(L+1.0f)+omegak(k,config)-2.0f),ti,config);
+					phase2m1=timephase(-(L*(L+1.0f)+omegak(k,config)+4.0f),ti,config);
+					phase20=timephase(-(L*(L+1.0f)+omegak(k,config)+6.0f),ti,config);
+					phase21=timephase(-(L*(L+1.0f)+omegak(k,config)+4.0f),ti,config);
+					phase22=timephase(-(L*(L+1.0f)+omegak(k,config)-2.0f),ti,config);
 
 					alpha2m2=phase2m2*(y[2+10*d]+I*y[2+10*d+1]);
 					alpha2m1=phase2m1*(y[2+10*d+2]+I*y[2+10*d+3]);
@@ -479,6 +479,13 @@ int do_ini_file(char *inifile)
 	printf("\tepsabs: %e\n",config.epsabs);
 	printf("\tepsrel: %e\n",config.epsrel);
 	printf("\tNormalization after each step: %s\n",(config.normalize==true)?("ON"):("OFF"));
+
+	printf("\nDispersion: ");
+
+	if(config.dispersion_is_experimental==true)
+		printf("from experimental data.\n");
+	else
+		printf("linear, with sound speed %f (in units of B).\n",config.soundspeed);
 
 	printf("\nTransformation:\n");
 

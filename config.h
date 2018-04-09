@@ -17,6 +17,9 @@ struct configuration_t
 	double timestep;
 	bool freeevolution;
 
+	bool dispersion_is_experimental;
+	double soundspeed;
+
 	short wtype;
 	bool fscale;
 

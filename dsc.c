@@ -58,9 +58,12 @@ double ek(double k)
 	with constraints \omega(0)=0 and \omega(\infty)=350.
 */
 
-double omegak(double k)
+double omegak(double k,struct configuration_t *config)
 {
 	double num,den;
+
+	if(config->dispersion_is_experimental==false)
+		return k*config->soundspeed;
 
 	/*
 		Padè approximant for the dispersion relation
@@ -80,7 +83,7 @@ double U0(double n,double k,struct configuration_t *config)
 {
 	double a,b,c;
 
-	a=sqrt((8.0f*n*k*k*ek(k))/(omegak(k)));
+	a=sqrt((8.0f*n*k*k*ek(k))/(omegak(k,config)));
 	b=exp(-0.5f*k*k*pow(config->r0,2.0));
 	c=4*M_PI*pow(config->r0,-3.0f);
 
@@ -92,7 +95,7 @@ double U2gaussian(double n,double k,struct configuration_t *config)
 	double a,b,c,d,z;
 
 	z=k*config->r2;
-	a=sqrt((8.0f*n*k*k*ek(k))/(5.0f*omegak(k)));
+	a=sqrt((8.0f*n*k*k*ek(k))/(5.0f*omegak(k,config)));
 	b=-2.0f*exp(-0.5*z*z)*z*(3.0f+z*z);
 	c=3.0f*sqrt(2.0f*M_PI)*erf(z/sqrt(2.0f));
 	d=8.0f*pow(k,3.0f)*M_PI;
@@ -124,7 +127,7 @@ double U2morse(double n,double k,struct configuration_t *config)
 
 	z=-expAre/(2.0f*sqrt(2.0f)*k3*pow(M_PI,3.0f/2.0f));
 	
-	return config->u2*sqrt((8.0f*n*k*k*ek(k))/(5.0f*omegak(k)))*z*(x1+x2+x3+x4+x5+x6);
+	return config->u2*sqrt((8.0f*n*k*k*ek(k))/(5.0f*omegak(k,config)))*z*(x1+x2+x3+x4+x5+x6);
 }
 
 double U2(double n,double k,struct configuration_t *config)
@@ -181,13 +184,13 @@ double adiabatic_ramp(double t,struct configuration_t *config)
 	return 0.5f*(1.0f+tanh((t-rampcenter)/delta));
 }
 
-double complex Pk(double complex En,int L,double k)
+double complex Pk(double complex En,int L,double k,struct configuration_t *config)
 {
         double complex a,b,c;
 
-        a=-En+L*(L+1)+omegak(k)+4.0f;
-        b=-En+L*(L+1)+omegak(k)+6.0f;
-        c=-En+L*(L+1)+omegak(k)-2.0f;
+        a=-En+L*(L+1)+omegak(k,config)+4.0f;
+        b=-En+L*(L+1)+omegak(k,config)+6.0f;
+        c=-En+L*(L+1)+omegak(k,config)-2.0f;
 
 	return a-(12.0f*L*(L+1))/b-(4.0f*(L*(L+1)-2.0f))/c;
 }
@@ -198,7 +201,7 @@ double complex fscale(double k,int L,struct configuration_t *config)
 	double en=L*(L+1);
 	
 	if(config->fscale==true)
-		return Pk(0.9*en+I*epsilon,L,k)/(1.0f+k*k)+I*epsilon;
+		return Pk(0.9*en+I*epsilon,L,k,config)/(1.0f+k*k)+I*epsilon;
 
 	return 1.0;
 }
@@ -343,10 +346,10 @@ double norm(double t,const double y[],struct params_t *params,struct configurati
 double W(double k,struct configuration_t *config)
 {
 	if(config->wtype==1)
-		return omegak(k);
+		return omegak(k,config);
 
 	if(config->wtype==2)
-		return omegak(k)+6.0f;
+		return omegak(k,config)+6.0f;
 
 	fprintf(stderr,"Fatal error: wrong wtype in configuration");
 	exit(0);
@@ -374,7 +377,7 @@ int fAplus(unsigned ndim,const double *x,void *fdata,unsigned fdim,double *fval)
 	
 	k=x[0];
 
-	phase21=timephase(-(omegak(k)+4.0f),t,config);
+	phase21=timephase(-(omegak(k,config)+4.0f),t,config);
 	f=V2(k,localdensity,config)/W(k,config)*phase21*(get_point(container->intrexi21,k)+I*get_point(container->intimxi21,k));
 	f/=fscale(k,L,config);
 
@@ -448,7 +451,7 @@ int fAminus(unsigned ndim,const double *x,void *fdata,unsigned fdim,double *fval
 
 	k=x[0];
 
-	phase2m1=timephase(-(omegak(k)+4.0f),t,config);
+	phase2m1=timephase(-(omegak(k,config)+4.0f),t,config);
 	f=V2(k,localdensity,config)/W(k,config)*phase2m1*(get_point(container->intrexi2m1,k)+I*get_point(container->intimxi2m1,k));
 	f/=fscale(k,L,config);
 
@@ -522,8 +525,8 @@ int fB(unsigned ndim,const double *x,void *fdata,unsigned fdim,double *fval)
 
 	k=x[0];
 
-	phase20=timephase(-(omegak(k)+6.0f),t,config);
-	f=V2(k,localdensity,config)/W(k,config)*phase20*(get_point(container->intrexi20,k)+I*get_point(container->intimxi20,k))*(omegak(k)+6.0-W(k,config));
+	phase20=timephase(-(omegak(k,config)+6.0f),t,config);
+	f=V2(k,localdensity,config)/W(k,config)*phase20*(get_point(container->intrexi20,k)+I*get_point(container->intimxi20,k))*(omegak(k,config)+6.0-W(k,config));
 	f/=fscale(k,L,config);
 
 	fval[0]=creal(f);
@@ -639,7 +642,7 @@ int sc_time_evolution(double t,const double y[],double dydt[],void *p)
 		{
 			double complex invphase2m1;
 
-			invphase2m1=timephase(omegak(k)+4.0f,t,config);
+			invphase2m1=timephase(omegak(k,config)+4.0f,t,config);
 
 			dxi2m1dt+=-I*6.0f*V2(k,localdensity,config)/W(k,config)*invphase2m1*fscale(k,L,config)*localAminus;
 			dxi2m1dt+=-I*V2(k,localdensity,config)/W(k,config)*sqrt(6*L*(L+1))*invphase2m1*fscale(k,L,config)*g;
@@ -648,7 +651,7 @@ int sc_time_evolution(double t,const double y[],double dydt[],void *p)
 		dxi20dt=I*sqrt(6*L*(L+1))*timephase(2.0f,t,config)*(xi2m1+xi21);
 		
 		if(c!=0)
-			dxi20dt+=I*g*V2(k,localdensity,config)/W(k,config)*(omegak(k)+6.0-W(k,config))*timephase(omegak(k)+6.0f,t,config)*fscale(k,L,config);
+			dxi20dt+=I*g*V2(k,localdensity,config)/W(k,config)*(omegak(k,config)+6.0-W(k,config))*timephase(omegak(k,config)+6.0f,t,config)*fscale(k,L,config);
 
 		dxi21dt=I*sqrt(6*L*(L+1))*timephase(-2.0f,t,config)*xi20+I*2.0f*sqrt(L*(L+1)-2)*timephase(6.0f,t,config)*xi22;
 
@@ -656,7 +659,7 @@ int sc_time_evolution(double t,const double y[],double dydt[],void *p)
 		{
 			double complex invphase21;
 
-			invphase21=timephase(omegak(k)+4.0f,t,config);
+			invphase21=timephase(omegak(k,config)+4.0f,t,config);
 
 			dxi21dt+=-I*6.0f*V2(k,localdensity,config)/W(k,config)*invphase21*fscale(k,L,config)*localAplus;
 			dxi21dt+=-I*V2(k,localdensity,config)/W(k,config)*sqrt(6*L*(L+1))*invphase21*fscale(k,L,config)*g;

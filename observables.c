@@ -33,7 +33,7 @@ int fDcross(unsigned ndim,const double *x,void *fdata,unsigned fdim,double *fval
 		break;
 
 		case DINT_MODE_OMEGAK:
-		f*=omegak(k);
+		f*=omegak(k,config);
 		break;
 
 		case DINT_MODE_VK:
@@ -92,27 +92,27 @@ double complex Dcross(struct bigpsi_t *psi,int L,int Lprime,int n,int nprime,int
 		switch(n)
 		{
 			case -2:
-			phase1=timephase(-(L*(L+1.0f)+omegak(k)-2.0f),psi->t,config);
+			phase1=timephase(-(L*(L+1.0f)+omegak(k,config)-2.0f),psi->t,config);
 			noffset=0;
 			break;
 
 			case -1:
-			phase1=timephase(-(L*(L+1.0f)+omegak(k)+4.0f),psi->t,config);
+			phase1=timephase(-(L*(L+1.0f)+omegak(k,config)+4.0f),psi->t,config);
 			noffset=2;
 			break;
 
 			case 0:
-			phase1=timephase(-(L*(L+1.0f)+omegak(k)+6.0f),psi->t,config);
+			phase1=timephase(-(L*(L+1.0f)+omegak(k,config)+6.0f),psi->t,config);
 			noffset=4;
 			break;
 
 			case 1:
-			phase1=timephase(-(L*(L+1.0f)+omegak(k)+4.0f),psi->t,config);
+			phase1=timephase(-(L*(L+1.0f)+omegak(k,config)+4.0f),psi->t,config);
 			noffset=6;
 			break;
 
 			case 2:
-			phase1=timephase(-(L*(L+1.0f)+omegak(k)-2.0f),psi->t,config);
+			phase1=timephase(-(L*(L+1.0f)+omegak(k,config)-2.0f),psi->t,config);
 			noffset=8;
 			break;
 			
@@ -126,27 +126,27 @@ double complex Dcross(struct bigpsi_t *psi,int L,int Lprime,int n,int nprime,int
 		switch(nprime)
 		{
 			case -2:
-			phase2=timephase(-(Lprime*(Lprime+1.0f)+omegak(k)-2.0f),psi->t,config);
+			phase2=timephase(-(Lprime*(Lprime+1.0f)+omegak(k,config)-2.0f),psi->t,config);
 			nprimeoffset=0;
 			break;
 
 			case -1:
-			phase2=timephase(-(Lprime*(Lprime+1.0f)+omegak(k)+4.0f),psi->t,config);
+			phase2=timephase(-(Lprime*(Lprime+1.0f)+omegak(k,config)+4.0f),psi->t,config);
 			nprimeoffset=2;
 			break;
 
 			case 0:
-			phase2=timephase(-(Lprime*(Lprime+1.0f)+omegak(k)+6.0f),psi->t,config);
+			phase2=timephase(-(Lprime*(Lprime+1.0f)+omegak(k,config)+6.0f),psi->t,config);
 			nprimeoffset=4;
 			break;
 
 			case 1:
-			phase2=timephase(-(Lprime*(Lprime+1.0f)+omegak(k)+4.0f),psi->t,config);
+			phase2=timephase(-(Lprime*(Lprime+1.0f)+omegak(k,config)+4.0f),psi->t,config);
 			nprimeoffset=6;
 			break;
 
 			case 2:
-			phase2=timephase(-(Lprime*(Lprime+1.0f)+omegak(k)-2.0f),psi->t,config);
+			phase2=timephase(-(Lprime*(Lprime+1.0f)+omegak(k,config)-2.0f),psi->t,config);
 			nprimeoffset=8;
 			break;
 			
@@ -223,7 +223,7 @@ int fDsingle(unsigned ndim,const double *x,void *fdata,unsigned fdim,double *fva
 		break;
 
 		case DINT_MODE_OMEGAK:
-		f*=omegak(k);
+		f*=omegak(k,config);
 		break;
 
 		case DINT_MODE_VK:
@@ -283,27 +283,27 @@ double complex Dsingle(struct bigpsi_t *psi,int L,int Lprime,int n,int mode,stru
 		switch(n)
 		{
 			case -2:
-			phase2=timephase(-(Lprime*(Lprime+1.0f)+omegak(k)-2.0f),psi->t,config);
+			phase2=timephase(-(Lprime*(Lprime+1.0f)+omegak(k,config)-2.0f),psi->t,config);
 			noffset=0;
 			break;
 
 			case -1:
-			phase2=timephase(-(Lprime*(Lprime+1.0f)+omegak(k)+4.0f),psi->t,config);
+			phase2=timephase(-(Lprime*(Lprime+1.0f)+omegak(k,config)+4.0f),psi->t,config);
 			noffset=2;
 			break;
 
 			case 0:
-			phase2=timephase(-(Lprime*(Lprime+1.0f)+omegak(k)+6.0f),psi->t,config);
+			phase2=timephase(-(Lprime*(Lprime+1.0f)+omegak(k,config)+6.0f),psi->t,config);
 			noffset=4;
 			break;
 
 			case 1:
-			phase2=timephase(-(Lprime*(Lprime+1.0f)+omegak(k)+4.0f),psi->t,config);
+			phase2=timephase(-(Lprime*(Lprime+1.0f)+omegak(k,config)+4.0f),psi->t,config);
 			noffset=6;
 			break;
 
 			case 2:
-			phase2=timephase(-(Lprime*(Lprime+1.0f)+omegak(k)-2.0f),psi->t,config);
+			phase2=timephase(-(Lprime*(Lprime+1.0f)+omegak(k,config)-2.0f),psi->t,config);
 			noffset=8;
 			break;
 			
@@ -390,32 +390,32 @@ double complex Ecross(struct bigpsi_t *psi,int L,int Lprime,int n,double *y0,dou
 		switch(n)
 		{
 			case -2:
-			phase1=timephase(-(L*(L+1.0f)+omegak(k)-2.0f),t0,config);
-			phase2=timephase(-(Lprime*(Lprime+1.0f)+omegak(k)-2.0f),psi->t,config);
+			phase1=timephase(-(L*(L+1.0f)+omegak(k,config)-2.0f),t0,config);
+			phase2=timephase(-(Lprime*(Lprime+1.0f)+omegak(k,config)-2.0f),psi->t,config);
 			noffset=0;
 			break;
 
 			case -1:
-			phase1=timephase(-(L*(L+1.0f)+omegak(k)+4.0f),t0,config);
-			phase2=timephase(-(Lprime*(Lprime+1.0f)+omegak(k)+4.0f),psi->t,config);
+			phase1=timephase(-(L*(L+1.0f)+omegak(k,config)+4.0f),t0,config);
+			phase2=timephase(-(Lprime*(Lprime+1.0f)+omegak(k,config)+4.0f),psi->t,config);
 			noffset=2;
 			break;
 
 			case 0:
-			phase1=timephase(-(L*(L+1.0f)+omegak(k)+6.0f),t0,config);
-			phase2=timephase(-(Lprime*(Lprime+1.0f)+omegak(k)+6.0f),psi->t,config);
+			phase1=timephase(-(L*(L+1.0f)+omegak(k,config)+6.0f),t0,config);
+			phase2=timephase(-(Lprime*(Lprime+1.0f)+omegak(k,config)+6.0f),psi->t,config);
 			noffset=4;
 			break;
 
 			case 1:
-			phase1=timephase(-(L*(L+1.0f)+omegak(k)+4.0f),t0,config);
-			phase2=timephase(-(Lprime*(Lprime+1.0f)+omegak(k)+4.0f),psi->t,config);
+			phase1=timephase(-(L*(L+1.0f)+omegak(k,config)+4.0f),t0,config);
+			phase2=timephase(-(Lprime*(Lprime+1.0f)+omegak(k,config)+4.0f),psi->t,config);
 			noffset=6;
 			break;
 
 			case 2:
-			phase1=timephase(-(L*(L+1.0f)+omegak(k)-2.0f),t0,config);
-			phase2=timephase(-(Lprime*(Lprime+1.0f)+omegak(k)-2.0f),psi->t,config);
+			phase1=timephase(-(L*(L+1.0f)+omegak(k,config)-2.0f),t0,config);
+			phase2=timephase(-(Lprime*(Lprime+1.0f)+omegak(k,config)-2.0f),psi->t,config);
 			noffset=8;
 			break;
 			

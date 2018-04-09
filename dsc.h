@@ -18,7 +18,7 @@
 double wigner3j(int l1,int l2,int l3,int m1,int m2,int m3);
 double cg(int j1,int m1,int j2,int m2,int j,int m);
 
-double omegak(double k);
+double omegak(double k,struct configuration_t *config);
 double U0(double n,double k,struct configuration_t *config);
 double U2(double n,double k,struct configuration_t *config);
 double V0(double k,double n,struct configuration_t *config);
