@@ -61,6 +61,7 @@ double ek(double k)
 double omegak(double k,struct configuration_t *config)
 {
 	double num,den;
+	double a0,a1,a2,a3,a4,a5,b0,b1,b2,b3,b4,b5;
 
 	if(config->dispersion_is_experimental==false)
 		return k*config->soundspeed;
@@ -69,8 +70,57 @@ double omegak(double k,struct configuration_t *config)
 		Padè approximant for the dispersion relation
 	*/
 
-	num=k*(26565.2+k*(-1497.82+k*(129.012+k*(-7.37462+k*0.128625))));
-	den=1154.95+k*(-73.3346+k*(4.19356+k*(0.168494+k*(-0.0193761+k*0.000367499))));
+	//num=k*(26565.2+k*(-1497.82+k*(129.012+k*(-7.37462+k*0.128625))));
+	//den=1154.95+k*(-73.3346+k*(4.19356+k*(0.168494+k*(-0.0193761+k*0.000367499))));
+
+	if(config->moleculetype==MOLECULE_I2)
+	{
+		/*
+			Coefficients for I2
+		*/
+
+		a0=0.0f;
+		a1=78979.82692539008;
+		a2=-4453.106390752133;
+		a3=383.5583835895215;
+		a4=-21.92511621355489;
+		a5=0.3824072227009381;
+
+		b0=3433.7252161679503;
+		b1=-218.02760941323945;
+		b2=12.467652732020886;
+		b3=0.5009420138478766;
+		b4=-0.05760613914422612;
+		b5=0.0010925920648598231;
+	}
+	else if(config->moleculetype==MOLECULE_CS2)
+	{
+		/*
+			Coefficients for CS2
+		*/
+
+		a0=0.0f;
+		a1=39815.65200133856;
+		a2=-4031.0062614672765;
+		a3=570.0463741407423;
+		a4=-54.18214205687705;
+		a5=1.6053060335262601;
+
+		b0=2961.928011862246;
+		b1=-334.1600104773988;
+		b2=32.52943513283185;
+		b3=1.9844702294478243;
+		b4=-0.409499213901235;
+		b5=0.013377550279385501;
+	}
+	else
+	{
+		fprintf(stderr,"Unknown molecule type!\n");
+		exit(0);
+	}
+
+	num=a0+k*(a1+k*(a2+k*(a3+k*(a4+k*a5))));
+	den=b0+k*(b1+k*(b2+k*(b3+k*(b4+k*b5))));
 
 	return num/den;
 }
