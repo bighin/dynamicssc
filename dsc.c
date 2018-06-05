@@ -629,7 +629,7 @@ double complex B(double t,const double y[],struct params_t *params,double locald
 	return res[0]+I*res[1];
 }
 
-int sc_time_evolution(double t,const double y[],double dydt[],void *p)
+int sc_time_evolution_t0(double t,const double y[],double dydt[],void *p)
 {
 	struct params_t *params=(struct params_t *)(p);
 	struct configuration_t *config=params->config;
@@ -699,7 +699,7 @@ int sc_time_evolution(double t,const double y[],double dydt[],void *p)
 		}
 
 		dxi20dt=I*sqrt(6*L*(L+1))*timephase(2.0f,t,config)*(xi2m1+xi21);
-		
+
 		if(c!=0)
 			dxi20dt+=I*g*V2(k,localdensity,config)/W(k,config)*(omegak(k,config)+6.0-W(k,config))*timephase(omegak(k,config)+6.0f,t,config)*fscale(k,L,config);
 
@@ -730,4 +730,499 @@ int sc_time_evolution(double t,const double y[],double dydt[],void *p)
 	}
 
 	return GSL_SUCCESS;
+}
+
+/*
+	The Bose-Einstein distribution
+*/
+
+double fbe(struct configuration_t *config,double x)
+{
+	double temperature,beta;
+	
+	if(config->moleculetype==MOLECULE_I2)
+	{
+		/*
+			Inverse temperature of the bath, in units of B, for I2
+		*/
+
+		temperature=0.38/0.0536459;
+		beta=1.0f/temperature;
+	}
+	else if(config->moleculetype==MOLECULE_CS2)
+	{
+		/*
+			Inverse temperature of the bath, in units of B, for CS2
+		*/
+
+		temperature=0.38/0.156839;
+		beta=1.0f/temperature;
+	}
+	else
+	{
+		fprintf(stderr,"Unknown molecule type!\n");
+		exit(0);
+	}
+
+	return 1.0f/(exp(beta*x)-1.0f);
+}
+
+int fAplus_thermal(unsigned ndim,const double *x,void *fdata,unsigned fdim,double *fval)
+{
+        /* The context from which we read the global variables */
+
+        struct container_t *container=(struct container_t *)(fdata);
+	struct configuration_t *config=container->params->config;
+
+        /* The integration variables and other auxiliary variables */
+
+        double k;
+	double complex f,phase21;
+	double t,localdensity,fbek;
+	int L;
+	
+	t=container->t;
+	localdensity=container->localdensity;
+	L=container->params->L;
+
+	k=x[0];
+	
+	/*
+		Note that here we can take fbek to be zero at zero,
+		since the macroscopic occupation of the ground state
+		has been accounted for a long time ago while doing
+		Bogoliubov transformation.
+
+		The same applies to fAplus_thermal() and to fB_thermal().
+
+		Probably this check is check is not even needed, since
+		the integration routine shouldn't evaluate the integral
+		at the edges of the integration domain.
+	*/
+
+#warning Check the last statement of the comment! One could remove the ALMOST_ZERO() macro which is a bit unnatural.
+
+#define ALMOST_ZERO(x)	(fabs(x)<=1e-8)
+
+	fbek=(ALMOST_ZERO(k))?(0.0f):(fbe(config,omegak(k,config)));
+
+	phase21=timephase(-(omegak(k,config)+4.0f),t,config);
+	f=V2(k,localdensity,config)/W(k,config)*phase21*(get_point(container->intrexi21,k)+I*get_point(container->intimxi21,k));
+	f*=(1.0f+fbek);
+	f/=fscale(k,L,config);
+
+	fval[0]=creal(f);
+	fval[1]=cimag(f);
+
+	return 0;
+}
+
+double complex Aplus_thermal(double t,const double y[],struct params_t *params,double localdensity)
+{
+	struct container_t container;
+	struct configuration_t *config=params->config;
+
+	double *x,*yre,*yim;
+	double xmin,xmax,res[2],err[2];
+	int c;
+
+	x=malloc(sizeof(double)*config->gridpoints);
+	yre=malloc(sizeof(double)*config->gridpoints);
+	yim=malloc(sizeof(double)*config->gridpoints);
+
+        for(c=0;c<config->gridpoints;c++)
+	{
+                double gridstep=config->cutoff/config->gridpoints;
+                double k=c*gridstep;
+
+                x[c]=k;
+                yre[c]=y[2+10*c+6];
+                yim[c]=y[2+10*c+7];
+	}
+
+        container.intrexi21=init_interpolation(x,yre,config->gridpoints);
+        container.intimxi21=init_interpolation(x,yim,config->gridpoints);
+	container.t=t;
+	container.params=params;
+	container.localdensity=localdensity;
+
+	xmin=0.0f;
+	xmax=config->cutoff;
+
+	hcubature(2,fAplus_thermal,&container,1,&xmin,&xmax,maxEval,0,relError,ERROR_INDIVIDUAL,res,err);
+
+	fini_interpolation(container.intrexi21);
+	fini_interpolation(container.intimxi21);
+
+	if(x)	free(x);
+	if(yre)	free(yre);
+	if(yim)	free(yim);
+
+	return res[0]+I*res[1];
+}
+
+int fAminus_thermal(unsigned ndim,const double *x,void *fdata,unsigned fdim,double *fval)
+{
+        /* The context from which we read the global variables */
+
+        struct container_t *container=(struct container_t *)(fdata);
+	struct configuration_t *config=container->params->config;
+
+        /* The integration variables and other auxiliary variables */
+
+        double k;
+	double complex f,phase2m1;
+	double t,localdensity,fbek;
+	int L;
+	
+	t=container->t;
+	localdensity=container->localdensity;
+	L=container->params->L;
+
+	k=x[0];
+	fbek=(ALMOST_ZERO(k))?(0.0f):(fbe(config,omegak(k,config)));
+
+	phase2m1=timephase(-(omegak(k,config)+4.0f),t,config);
+	f=V2(k,localdensity,config)/W(k,config)*phase2m1*(get_point(container->intrexi2m1,k)+I*get_point(container->intimxi2m1,k));
+	f*=(1.0f+fbek);
+	f/=fscale(k,L,config);
+
+	fval[0]=creal(f);
+	fval[1]=cimag(f);
+
+	return 0;
+}
+
+double complex Aminus_thermal(double t,const double y[],struct params_t *params,double localdensity)
+{
+	struct container_t container;
+	struct configuration_t *config=params->config;
+
+	double *x,*yre,*yim;
+	double xmin,xmax,res[2],err[2];
+	int c;
+
+	x=malloc(sizeof(double)*config->gridpoints);
+	yre=malloc(sizeof(double)*config->gridpoints);
+	yim=malloc(sizeof(double)*config->gridpoints);
+
+        for(c=0;c<config->gridpoints;c++)
+	{
+                double gridstep=config->cutoff/config->gridpoints;
+                double k=c*gridstep;
+
+                x[c]=k;
+                yre[c]=y[2+10*c+2];
+                yim[c]=y[2+10*c+3];
+	}
+
+        container.intrexi2m1=init_interpolation(x,yre,config->gridpoints);
+        container.intimxi2m1=init_interpolation(x,yim,config->gridpoints);
+	container.t=t;
+	container.params=params;
+	container.localdensity=localdensity;
+
+	xmin=0.0f;
+	xmax=config->cutoff;
+
+	hcubature(2,fAminus_thermal,&container,1,&xmin,&xmax,maxEval,0,relError,ERROR_INDIVIDUAL,res,err);
+
+	fini_interpolation(container.intrexi2m1);
+	fini_interpolation(container.intimxi2m1);
+
+	if(x)	free(x);
+	if(yre)	free(yre);
+	if(yim)	free(yim);
+
+	return res[0]+I*res[1];
+}
+
+int fB_thermal(unsigned ndim,const double *x,void *fdata,unsigned fdim,double *fval)
+{
+        /* The context from which we read the global variables */
+
+        struct container_t *container=(struct container_t *)(fdata);
+	struct configuration_t *config=container->params->config;
+
+        /* The integration variables and other auxiliary variables */
+
+        double k;
+	double complex f,phase20;
+	double t,localdensity,fbek;
+	int L;
+
+	t=container->t;
+	localdensity=container->localdensity;
+	L=container->params->L;
+
+	k=x[0];
+	fbek=(ALMOST_ZERO(k))?(0.0f):(fbe(config,omegak(k,config)));
+
+	phase20=timephase(-(omegak(k,config)+6.0f),t,config);
+	f=V2(k,localdensity,config)/W(k,config)*phase20*(get_point(container->intrexi20,k)+I*get_point(container->intimxi20,k))*(omegak(k,config)+6.0-W(k,config));
+	f*=(1.0f+fbek);
+	f/=fscale(k,L,config);
+
+	fval[0]=creal(f);
+	fval[1]=cimag(f);
+
+	return 0;
+}
+
+double complex B_thermal(double t,const double y[],struct params_t *params,double localdensity)
+{
+	struct container_t container;
+	struct configuration_t *config=params->config;
+
+	double *x,*yre,*yim;
+	double xmin,xmax,res[2],err[2];
+	int c;
+
+	x=malloc(sizeof(double)*config->gridpoints);
+	yre=malloc(sizeof(double)*config->gridpoints);
+	yim=malloc(sizeof(double)*config->gridpoints);
+
+        for(c=0;c<config->gridpoints;c++)
+	{
+                double gridstep=config->cutoff/config->gridpoints;
+                double k=c*gridstep;
+
+                x[c]=k;
+                yre[c]=y[2+10*c+4];
+                yim[c]=y[2+10*c+5];
+	}
+
+        container.intrexi20=init_interpolation(x,yre,config->gridpoints);
+        container.intimxi20=init_interpolation(x,yim,config->gridpoints);
+	container.t=t;
+	container.params=params;
+	container.localdensity=localdensity;
+
+	xmin=0.0f;
+	xmax=config->cutoff;
+
+	hcubature(2,fB_thermal,&container,1,&xmin,&xmax,maxEval,0,relError,ERROR_INDIVIDUAL,res,err);
+
+	fini_interpolation(container.intrexi20);
+	fini_interpolation(container.intimxi20);
+
+	if(x)	free(x);
+	if(yre)	free(yre);
+	if(yim)	free(yim);
+
+	return res[0]+I*res[1];
+}
+
+int fC_thermal(unsigned ndim,const double *x,void *fdata,unsigned fdim,double *fval)
+{
+        /* The context from which we read the global variables */
+
+        struct container_t *container=(struct container_t *)(fdata);
+	struct configuration_t *config=container->params->config;
+
+        /* The integration variables and other auxiliary variables */
+
+        double k;
+	double complex f,phase20;
+	double t,localdensity,fbek;
+	int L;
+
+	t=container->t;
+	localdensity=container->localdensity;
+	L=container->params->L;
+
+	k=x[0];
+	fbek=(ALMOST_ZERO(k))?(0.0f):(fbe(config,omegak(k,config)));
+
+	phase20=timephase(-(omegak(k,config)+6.0f),t,config);
+	f=V2(k,localdensity,config)/W(k,config)*phase20*(get_point(container->intrexi20,k)+I*get_point(container->intimxi20,k));
+	f*=(1.0f+fbek);
+	f*=fbek;
+	f/=fscale(k,L,config);
+
+	fval[0]=creal(f);
+	fval[1]=cimag(f);
+
+	return 0;
+}
+
+double complex C_thermal(double t,const double y[],struct params_t *params,double localdensity)
+{
+	struct container_t container;
+	struct configuration_t *config=params->config;
+
+	double *x,*yre,*yim;
+	double xmin,xmax,res[2],err[2];
+	int c;
+
+	x=malloc(sizeof(double)*config->gridpoints);
+	yre=malloc(sizeof(double)*config->gridpoints);
+	yim=malloc(sizeof(double)*config->gridpoints);
+
+        for(c=0;c<config->gridpoints;c++)
+	{
+                double gridstep=config->cutoff/config->gridpoints;
+                double k=c*gridstep;
+
+                x[c]=k;
+                yre[c]=y[2+10*c+4];
+                yim[c]=y[2+10*c+5];
+	}
+
+        container.intrexi20=init_interpolation(x,yre,config->gridpoints);
+        container.intimxi20=init_interpolation(x,yim,config->gridpoints);
+	container.t=t;
+	container.params=params;
+	container.localdensity=localdensity;
+
+	xmin=0.0f;
+	xmax=config->cutoff;
+
+	hcubature(2,fC_thermal,&container,1,&xmin,&xmax,maxEval,0,relError,ERROR_INDIVIDUAL,res,err);
+
+	fini_interpolation(container.intrexi20);
+	fini_interpolation(container.intimxi20);
+
+	if(x)	free(x);
+	if(yre)	free(yre);
+	if(yim)	free(yim);
+
+	return res[0]+I*res[1];
+}
+
+int sc_time_evolution_finite_t(double t,const double y[],double dydt[],void *p)
+{
+	struct params_t *params=(struct params_t *)(p);
+	struct configuration_t *config=params->config;
+
+	double complex localAplus,localAminus,localB,localC;
+	double complex g,dgdt;
+	double localdensity;
+	int c,L;
+
+	L=params->L;
+
+	g=y[0]+I*y[1];
+
+	dgdt=0.0f;
+
+	if(config->freeevolution==true)
+	{
+		dydt[0]=creal(dgdt);
+		dydt[1]=cimag(dgdt);
+
+		return GSL_SUCCESS;
+	}
+
+	if(config->ramp==true)
+		localdensity=config->density*adiabatic_ramp(t,config);
+	else
+		localdensity=config->density;
+
+	localAplus=Aplus_thermal(t,y,p,localdensity);
+	localAminus=Aminus_thermal(t,y,p,localdensity);
+	localB=B_thermal(t,y,p,localdensity);
+	localC=C_thermal(t,y,p,localdensity);
+
+	dgdt+=-I*sqrt(6*L*(L+1))*(localAplus+localAminus);
+	dgdt+=I*localB;
+	dgdt+=-I*12.0f*localC;
+
+	dydt[0]=creal(dgdt);
+	dydt[1]=cimag(dgdt);
+
+	if(L<=0)
+		return GSL_SUCCESS;
+
+	for(c=0;c<config->gridpoints;c++)
+	{
+		double gridstep=config->cutoff/config->gridpoints;
+		double k=gridstep*c;
+
+		double complex xi2m2,xi2m1,xi20,xi21,xi22;
+		double complex dxi2m2dt,dxi2m1dt,dxi20dt,dxi21dt,dxi22dt;
+
+		/*
+			The Bose-Einstein distribution for omega(k).
+		
+			Note that is does not make sense for c=0, i.e. k=0.
+		*/
+
+		double fbek=(c==0)?(0.0f):(fbe(config,omegak(k,config)));
+
+		xi2m2=y[2+10*c]+I*y[2+10*c+1];
+		xi2m1=y[2+10*c+2]+I*y[2+10*c+3];
+		xi20=y[2+10*c+4]+I*y[2+10*c+5];
+		xi21=y[2+10*c+6]+I*y[2+10*c+7];
+		xi22=y[2+10*c+8]+I*y[2+10*c+9];
+
+		dxi2m2dt=I*2.0f*sqrt(L*(L+1)-2)*timephase(-6.0f,t,config)*xi2m1*(1.0f+fbek);
+		dxi2m1dt=I*sqrt(6*L*(L+1))*timephase(-2.0f,t,config)*xi20*(1.0f+fbek)+I*2.0f*sqrt(L*(L+1)-2)*timephase(6.0f,t,config)*xi2m2*(1.0f+fbek);
+
+ 		if(c!=0)
+		{
+			double complex invphase2m1;
+
+			invphase2m1=timephase(omegak(k,config)+4.0f,t,config);
+
+			dxi2m1dt+=-I*6.0f*V2(k,localdensity,config)/W(k,config)*invphase2m1*fscale(k,L,config)*localAminus;
+			dxi2m1dt+=-I*V2(k,localdensity,config)/W(k,config)*sqrt(6*L*(L+1))*invphase2m1*fscale(k,L,config)*g;
+		}
+
+		dxi20dt=I*sqrt(6*L*(L+1))*timephase(2.0f,t,config)*(xi2m1+xi21)*(1.0f+fbek);
+
+		if(c!=0)
+		{
+			dxi20dt+=I*g*V2(k,localdensity,config)/W(k,config)*(omegak(k,config)+6.0-W(k,config))*timephase(omegak(k,config)+6.0f,t,config)*fscale(k,L,config);
+			dxi20dt+=-12.0f*I*g*V2(k,localdensity,config)/W(k,config)*fbek*timephase(omegak(k,config)+6.0f,t,config)*fscale(k,L,config);
+		}
+
+		dxi21dt=I*sqrt(6*L*(L+1))*timephase(-2.0f,t,config)*xi20*(1.0f+fbek)+I*2.0f*sqrt(L*(L+1)-2)*timephase(6.0f,t,config)*xi22*(1.0f+fbek);
+
+ 		if(c!=0)
+		{
+			double complex invphase21;
+
+			invphase21=timephase(omegak(k,config)+4.0f,t,config);
+
+			dxi21dt+=-I*6.0f*V2(k,localdensity,config)/W(k,config)*invphase21*fscale(k,L,config)*localAplus;
+			dxi21dt+=-I*V2(k,localdensity,config)/W(k,config)*sqrt(6*L*(L+1))*invphase21*fscale(k,L,config)*g;
+		}
+
+		dxi22dt=I*2.0f*sqrt(L*(L+1)-2)*timephase(-6.0f,t,config)*xi21*(1.0f+fbek);
+
+		/*
+			Additional phases which are not completely removed by the transformation.
+		*/
+
+		dxi2m2dt+=-I*(omegak(k,config)-2.0f)*fbek*xi2m2;
+		dxi2m1dt+=-I*(omegak(k,config)+4.0f)*fbek*xi2m1;
+		dxi20dt+=-I*(omegak(k,config)+6.0f)*fbek*xi20;
+		dxi21dt+=-I*(omegak(k,config)+4.0f)*fbek*xi21;
+		dxi22dt+=-I*(omegak(k,config)-2.0f)*fbek*xi22;
+
+		dydt[2+10*c]=creal(dxi2m2dt);
+		dydt[2+10*c+1]=cimag(dxi2m2dt);
+		dydt[2+10*c+2]=creal(dxi2m1dt);
+		dydt[2+10*c+3]=cimag(dxi2m1dt);
+		dydt[2+10*c+4]=creal(dxi20dt);
+		dydt[2+10*c+5]=cimag(dxi20dt);
+		dydt[2+10*c+6]=creal(dxi21dt);
+		dydt[2+10*c+7]=cimag(dxi21dt);
+		dydt[2+10*c+8]=creal(dxi22dt);
+		dydt[2+10*c+9]=cimag(dxi22dt);
+	}
+
+	return GSL_SUCCESS;
+}
+
+int sc_time_evolution(double t,const double y[],double dydt[],void *p)
+{
+	struct params_t *params=(struct params_t *)(p);
+	struct configuration_t *config=params->config;
+
+	if(config->bosonsfinitetemperature==true)
+		return sc_time_evolution_finite_t(t,y,dydt,p);
+
+	return sc_time_evolution_t0(t,y,dydt,p);
 }

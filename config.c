@@ -23,6 +23,7 @@ void load_config_defaults(struct configuration_t *config)
 	config->endtime=5.0f;
 	config->timestep=0.01f;
 	config->freeevolution=false;
+	config->bosonsfinitetemperature=false;
 
 	config->dispersion_is_experimental=true;
 	config->soundspeed=23.00;
@@ -126,6 +127,13 @@ int configuration_handler(void *user,const char *section,const char *name,const 
 			pconfig->freeevolution=true;
 		else
 			pconfig->freeevolution=false;
+	}
+	else if(MATCH("general","bosonsfinitetemperature"))
+	{
+		if(!strcasecmp(value,"true"))
+			pconfig->bosonsfinitetemperature=true;
+		else
+			pconfig->bosonsfinitetemperature=false;
 	}
 	else if(MATCH("dispersion","dispersion"))
 	{
