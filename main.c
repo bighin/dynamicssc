@@ -78,7 +78,7 @@ void print_header_norms(FILE *out)
 
 void print_header_summary(FILE *out)
 {
-	fprintf(out,"# <Time> <LaserIntensity> <BathIntensity> <Norm> <NormQP> <NormPhonons> <Re(AlignmentCosine)> <Im(AlignmentCosine)> <Re(S(t))> <Im(S(t))> <Completion%%> <LocalNormErr> <TimeDE> <TimeCos>\n");
+	fprintf(out,"# <Time> <LaserIntensity> <BathIntensity> <Norm> <NormQP> <NormPhonons> <Re(AlignmentCosine)> <Im(AlignmentCosine)> <Re(S(t))> <Im(S(t))> <Completion%%> <LocalNormErr> <TimeDE> <TimeCos> <Torque>\n");
 }
 
 void dump_phonons(FILE *out,struct bigpsi_t *psi,int L,struct configuration_t *config)
@@ -181,6 +181,7 @@ int do_single(struct configuration_t *config)
 		double completion,previousnorm,elapsed_time1,elapsed_time2;
 		double complex ac,cs;
 		double complex S=0.0f;
+		double trq;
 
 		struct timeval starttime,endtime;
 
@@ -230,6 +231,7 @@ int do_single(struct configuration_t *config)
 		gettimeofday(&starttime,NULL);
 		ac=(config->cos2d==true)?(costheta2d(psi,config)):(0.0f);
 		cs=costhetasquared(psi,config);
+		trq=torque(psi,config->startl[0],config->startm,config);
 		gettimeofday(&endtime,NULL);
 
 		elapsed_time2=(endtime.tv_sec-starttime.tv_sec)*1000.0;
@@ -316,7 +318,7 @@ int do_single(struct configuration_t *config)
 		completion=100.0f*(ti-config->starttime)/(config->endtime-config->starttime);
 
 		printf("%f %f %f %f %f %f %f %f %f %f %f %f %f%% ",ti,get_laser_intensity(config->fluence,config->duration,ti,config),bath_intensity,total_norm(psi),total_norm_qp(psi),total_norm_phonons(psi),creal(ac),cimag(ac),creal(cs),cimag(cs),creal(S),cimag(S),completion);
-		printf("%f %f %f\n",previousnorm,elapsed_time1,elapsed_time2);
+		printf("%f %f %f %f\n",previousnorm,elapsed_time1,elapsed_time2,trq);
 		fflush(stdout);
 	}
 
@@ -422,7 +424,11 @@ int do_ini_file(char *inifile)
 		case MOLECULE_CS2:
 		printf("CS2\n");
 		break;
-		
+
+		case MOLECULE_OCS:
+		printf("OCS\n");
+		break;
+
 		default:
 		printf("ERROR!\n");
 		break;

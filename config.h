@@ -26,6 +26,7 @@ struct configuration_t
 
 #define MOLECULE_I2	(20)
 #define MOLECULE_CS2	(21)
+#define MOLECULE_OCS	(22)
 
 	short moleculetype;
 

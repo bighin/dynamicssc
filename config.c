@@ -163,6 +163,8 @@ int configuration_handler(void *user,const char *section,const char *name,const 
 			pconfig->moleculetype=MOLECULE_I2;
 		else if(!strcmp(value,"CS2"))
 			pconfig->moleculetype=MOLECULE_CS2;
+		else if(!strcmp(value,"OCS"))
+			pconfig->moleculetype=MOLECULE_OCS;
 		else
 			fprintf(stderr,"Warning: invalid molecule type '%s'\n",value);
 	}

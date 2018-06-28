@@ -10,6 +10,7 @@
 #include "laser.h"
 #include "bigpsi.h"
 #include "cos.h"
+#include "observables.h"
 
 int do_run(int L,int M,struct info_t *info,bool silent,struct configuration_t *config)
 {
@@ -57,6 +58,7 @@ int do_run(int L,int M,struct info_t *info,bool silent,struct configuration_t *c
 
 		info[c].cossquared=costhetasquared(psi,config);
 		info[c].aos=get_aos(psi);
+		info[c].torque=fabs(torque(psi,L,M,config));
 
 		gettimeofday(&endtime,NULL);
 
@@ -153,7 +155,6 @@ void do_mixture(struct configuration_t *config)
 		{4, 0}, {6, 6}, {6, 5}, {6, 4}, {6, 3}, {6, 2}, {6, 1}, {6, 0}
 	};
 
-
   	double cs2weights[NR_CS2_STATES]=
 	{
 		0.237716, 0.226174, 0.226174, 0.113087, 0.0399576, 0.0399576,
@@ -182,6 +183,25 @@ void do_mixture(struct configuration_t *config)
 		0.0609277, 0.0609277, 0.0609277, 0.0132797, 0.0265595, 0.0265595,
 		0.0265595, 0.0265595, 0.0265595, 0.00472587, 0.00945174, 0.00945174,
 		0.00945174, 0.00945174, 0.00945174, 0.00945174
+	};
+
+	/*
+		Statistical mixture for OCS.
+	*/
+
+#define NR_OCS_STATES	(15)
+
+	int ocsstates[NR_OCS_STATES][2]=
+	{
+		{0, 0}, {1, 1}, {1, 0}, {2, 2}, {2, 1}, {2, 0}, {3, 3}, {3, 2},
+		{3, 1}, {3, 0}, {4, 4}, {4, 3}, {4, 2}, {4, 1}, {4, 0}
+	};
+
+	double ocsweights[NR_OCS_STATES]=
+	{
+		0.25211, 0.290036, 0.145018, 0.0959652, 0.0959652, 0.0479826,
+		0.0182645, 0.0182645, 0.0182645, 0.00913223, 0.00199955, 0.00199955,
+		0.00199955, 0.00199955, 0.000999773
 	};
 
 #else
@@ -217,6 +237,23 @@ void do_mixture(struct configuration_t *config)
 		0.00780918, 0.00780918, 0.00780918, 0.000716585, 0.00143317,
 		0.00143317, 0.00143317, 0.00143317, 0.00143317, 0.00143317
 	};
+
+#define NR_OCS_STATES	(10)
+
+	int ocsstates[NR_OCS_STATES][2]=
+	{
+		{0, 0}, {1, 1}, {1, 0}, {2, 2}, {2, 1}, {2, 0},
+		{3, 3}, {3, 2}, {3, 1}, {3, 0}
+	};
+
+	double ocsweights[NR_OCS_STATES]=
+	{
+		0.5895641146383894, 0.2537612526886281, 0.12688062634431405,
+		0.011753138525620587, 0.011753138525620587, 0.005876569262810293,
+		0.00011715118150224684, 0.00011715118150224684,0.00011715118150224684,
+		0.00005857559075112342
+	};
+
 #endif
 
 	double *weights;
@@ -243,6 +280,11 @@ void do_mixture(struct configuration_t *config)
                 case MOLECULE_CS2:
 		nr_states=NR_CS2_STATES;
 		weights=cs2weights;
+                break;
+
+                case MOLECULE_OCS:
+		nr_states=NR_OCS_STATES;
+		weights=ocsweights;
                 break;
 
                 default:
@@ -280,19 +322,25 @@ void do_mixture(struct configuration_t *config)
 	                case MOLECULE_CS2:
 			do_run(cs2states[c][0],cs2states[c][1],infos[c],false,config);
 	                break;
+
+	                case MOLECULE_OCS:
+			do_run(ocsstates[c][0],ocsstates[c][1],infos[c],false,config);
+	                break;
 		}
 	}
 
-	printf("# <Time> <Intensity (arbitrary units)> <BathIntensity> <Re(cos2d)> <Im(cos2d)> <Re(cos^2)> <Im(cos^2)> <AverageOccupiedState> <WeightedTotalNorm> <TotalOfWeights>\n");
-	fprintf(out,"# <Time> <Intensity (arbitrary units)> <BathIntensity> <Re(cos2d)> <Im(cos2d)> <Re(cos^2)> <Im(cos^2)> <AverageOccupiedState> <WeightedTotalNorm> <TotalOfWeights>\n");
+	printf("# <Time> <Intensity (arbitrary units)> <BathIntensity> <Re(cos2d)> <Im(cos2d)> <Re(cos^2)> <Im(cos^2)> <AverageOccupiedState> <WeightedTotalNorm> <TotalOfWeights> <Torque>\n");
+	fprintf(out,"# <Time> <Intensity (arbitrary units)> <BathIntensity> <Re(cos2d)> <Im(cos2d)> <Re(cos^2)> <Im(cos^2)> <AverageOccupiedState> <WeightedTotalNorm> <TotalOfWeights> <Torque>\n");
 
 	for(d=0;d<=timedivs;d++)
 	{
 		double complex aceven=0.0f,cseven=0.0f;
 		double complex acodd=0.0f,csodd=0.0f;
 		double complex aosodd=0.0f,aoseven=0.0f;
+		double trqodd=0.0,trqeven=0.0f;
 		double complex ac,cs;
 		double aos;
+		double trq;
 		double atn=0.0f,tw=0.0f;
 
 		for(c=0;c<nr_states;c++)
@@ -309,6 +357,10 @@ void do_mixture(struct configuration_t *config)
 				statel=cs2states[c][0];
 		                break;
 
+		                case MOLECULE_OCS:
+				statel=ocsstates[c][0];
+		                break;
+
 				/*
 					To silence silly gcc warnings.
 				*/
@@ -323,12 +375,14 @@ void do_mixture(struct configuration_t *config)
 				aceven+=weights[c]*infos[c][d].cos2d;
 				cseven+=weights[c]*infos[c][d].cossquared;
 				aoseven+=weights[c]*infos[c][d].aos;
+				trqeven+=weights[c]*infos[c][d].torque;
 			}
 			else
 			{
 				acodd+=weights[c]*infos[c][d].cos2d;
 				csodd+=weights[c]*infos[c][d].cossquared;
 				aosodd+=weights[c]*infos[c][d].aos;
+				trqodd+=weights[c]*infos[c][d].torque;
 			}
 
 			atn+=infos[c][d].totalnorm;
@@ -341,25 +395,34 @@ void do_mixture(struct configuration_t *config)
 			ac=(15.0f*aceven+21.0f*acodd)/(15.0f+21.0f);
 			cs=(15.0f*cseven+21.0f*csodd)/(15.0f+21.0f);
 			aos=(15.0f*aoseven+21.0f*aosodd)/(15.0f+21.0f);
+			trq=(15.0f*trqeven+21.0f*trqodd)/(15.0f+21.0f);
 			break;
 
 	                case MOLECULE_CS2:
 			ac=aceven;
 			cs=cseven;
 			aos=aoseven;
-	                break;
-		
+			trq=trqeven;
+			break;
+
+	                case MOLECULE_OCS:
+			ac=(aceven+acodd)/(2.0f);
+			cs=(cseven+csodd)/(2.0f);
+			aos=(aoseven+aosodd)/(2.0f);
+			trq=(trqeven+trqodd)/(2.0f);
+			break;
+
 			/*
 				Again, just to silence silly gcc warnings.
 			*/
 		
 			default:
-			ac=cs=aos=0.0f;
+			ac=cs=aos=trq=0.0f;
 			break;
 		}
 
-		printf("%f %f %f %f %f %f %f %f %f %f\n",infos[0][d].t,infos[0][d].intensity,infos[0][d].bath_intensity,creal(ac),cimag(ac),creal(cs),cimag(cs),aos,atn/nr_states,tw);
-		fprintf(out,"%f %f %f %f %f %f %f %f %f %f\n",infos[0][d].t,infos[0][d].intensity,infos[0][d].bath_intensity,creal(ac),cimag(ac),creal(cs),cimag(cs),aos,atn/nr_states,tw);
+		printf("%f %f %f %f %f %f %f %f %f %f %f\n",infos[0][d].t,infos[0][d].intensity,infos[0][d].bath_intensity,creal(ac),cimag(ac),creal(cs),cimag(cs),aos,atn/nr_states,tw,trq);
+		fprintf(out,"%f %f %f %f %f %f %f %f %f %f %f\n",infos[0][d].t,infos[0][d].intensity,infos[0][d].bath_intensity,creal(ac),cimag(ac),creal(cs),cimag(cs),aos,atn/nr_states,tw,trq);
 	}
 
 	if(infos)

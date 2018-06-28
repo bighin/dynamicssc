@@ -152,6 +152,10 @@ double get_laser_intensity(double fluence,double pulse_duration,double t,struct 
 		etamax=9.91175*(10.3/0.10901/pulse_duration)*fluence;
 		break;
 
+		case MOLECULE_OCS:
+		etamax=9.91175*(4.67/0.20286/pulse_duration)*fluence;
+		break;
+
 		default:
 		fprintf(stderr,"Fatal error: unknown molecular species!\n");
 		exit(0);
@@ -198,6 +202,10 @@ double B_in_ps(struct configuration_t *config)
 
 		case MOLECULE_CS2:
 	        return 48.2;
+		break;
+
+		case MOLECULE_OCS:
+	        return 26.1;
 		break;
 	}
 

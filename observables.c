@@ -39,6 +39,11 @@ int fDcross(unsigned ndim,const double *x,void *fdata,unsigned fdim,double *fval
 		case DINT_MODE_VK:
 		f*=pow(V2(k,container->localdensity,config)/W(k,config),2.0f);
 		break;
+
+		default:
+		fprintf(stderr,"Unknown integration mode in Dcross()!\n");
+		exit(0);
+		break;
 	}
 
 	fval[0]=creal(f);
@@ -229,6 +234,15 @@ int fDsingle(unsigned ndim,const double *x,void *fdata,unsigned fdim,double *fva
 		case DINT_MODE_VK:
 		f*=V2(k,container->localdensity,config)/W(k,config);
 		break;
+
+		case DINT_MODE_VK0:
+		f*=V2(k,container->localdensity,config);
+		break;
+
+		default:
+		fprintf(stderr,"Unknown integration mode in Dcross()!\n");
+		exit(0);
+		break;
 	}
 
 	fval[0]=creal(f);
@@ -247,6 +261,7 @@ int fDsingle(unsigned ndim,const double *x,void *fdata,unsigned fdim,double *fva
 	f(k) = 1		if mode == DINT_MODE_PLAIN
 	f(k) = omega(k)		if mode == DINT_MODE_OMEGAK
 	f(k) = V2(k)/W(k)	if mode == DINT_MODE_VK
+	f(k) = V2(k)		if mode == DINT_MODE_VK0
 */
 
 double complex Dsingle(struct bigpsi_t *psi,int L,int Lprime,int n,int mode,struct configuration_t *config)
@@ -622,4 +637,28 @@ double complex overlapS(struct bigpsi_t *psi,double *y0,double t0,struct configu
 	}
 
 	return ret;
+}
+
+double torque(struct bigpsi_t *psi,int L,int M,struct configuration_t *config)
+{
+	double complex gLM;
+	double cg;
+	double complex integral;
+	int offsetL;
+
+	if(L==0)
+		return 0.0f;
+
+	offsetL=L*(2+10*config->gridpoints);
+	gLM=timephase(-L*(L+1.0f),psi->t,config)*(psi->y[offsetL+0]+I*psi->y[offsetL+1]);
+
+	cg=1.0f*M/sqrtf(L*L+L);
+	integral=conj(Dsingle(psi,L,L,1,DINT_MODE_VK0,config)+Dsingle(psi,L,L,-1,DINT_MODE_VK0,config));
+
+	/*
+		Note: we return the torque normalized by |g_{LM}|^2
+	*/
+
+	//return 2.0f*sqrtf(6.0f)*cg*cimag(integral)/(conj(gLM)*gLM);
+	return 2.0f*sqrtf(6.0f)*cg*cimag(integral);
 }

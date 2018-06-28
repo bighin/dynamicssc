@@ -18,6 +18,7 @@ struct dint_container_t
 #define DINT_MODE_PLAIN		(21)
 #define DINT_MODE_OMEGAK	(22)
 #define DINT_MODE_VK		(23)
+#define DINT_MODE_VK0		(24)
 
 	int L,Lprime,mode;
 	
@@ -35,5 +36,6 @@ double eta_sigma(int L, int lambda,int n,int nu);
 double complex rotational_energy(struct bigpsi_t *psi,struct configuration_t *config);
 double complex rcr(int L,struct bigpsi_t *psi,struct configuration_t *config);
 double complex overlapS(struct bigpsi_t *psi,double *y0,double t0,struct configuration_t *config);
+double torque(struct bigpsi_t *psi,int L,int M,struct configuration_t *config);
 
 #endif //__OBSERVABLES_H__

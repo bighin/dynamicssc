@@ -70,9 +70,6 @@ double omegak(double k,struct configuration_t *config)
 		Padè approximant for the dispersion relation
 	*/
 
-	//num=k*(26565.2+k*(-1497.82+k*(129.012+k*(-7.37462+k*0.128625))));
-	//den=1154.95+k*(-73.3346+k*(4.19356+k*(0.168494+k*(-0.0193761+k*0.000367499))));
-
 	if(config->moleculetype==MOLECULE_I2)
 	{
 		/*
@@ -112,6 +109,26 @@ double omegak(double k,struct configuration_t *config)
 		b3=1.9844702294478243;
 		b4=-0.409499213901235;
 		b5=0.013377550279385501;
+	}
+	else if(config->moleculetype==MOLECULE_OCS)
+	{
+		/*
+			Coefficients for OCS
+		*/
+
+		a0=0.0f;
+		a1=22655.7;
+		a2=-4009.93;
+		a3=602.768;
+		a4=-62.1808;
+		a5=2.3052;
+
+		b0=2256.28;
+		b1=-421.22;
+		b2=53.0869;
+		b3=1.39869;
+		b4=-0.713085;
+		b5=0.0329314;
 	}
 	else
 	{
@@ -795,7 +812,7 @@ int fAplus_thermal(unsigned ndim,const double *x,void *fdata,unsigned fdim,doubl
 
 		The same applies to fAplus_thermal() and to fB_thermal().
 
-		Probably this check is check is not even needed, since
+		Probably this check is not even needed, since
 		the integration routine shouldn't evaluate the integral
 		at the edges of the integration domain.
 	*/
@@ -1126,6 +1143,8 @@ int sc_time_evolution_finite_t(double t,const double y[],double dydt[],void *p)
 
 	dgdt+=-I*sqrt(6*L*(L+1))*(localAplus+localAminus);
 	dgdt+=I*localB;
+
+#warning ERROR HERE MAYBE! G PHASE AND ALPHA PHASE
 	dgdt+=-I*12.0f*localC;
 
 	dydt[0]=creal(dgdt);
@@ -1174,6 +1193,8 @@ int sc_time_evolution_finite_t(double t,const double y[],double dydt[],void *p)
 		if(c!=0)
 		{
 			dxi20dt+=I*g*V2(k,localdensity,config)/W(k,config)*(omegak(k,config)+6.0-W(k,config))*timephase(omegak(k,config)+6.0f,t,config)*fscale(k,L,config);
+
+#warning ERROR HERE! OR AT LEAST CHECK! G PHASE AND ALPHA PHASE
 			dxi20dt+=-12.0f*I*g*V2(k,localdensity,config)/W(k,config)*fbek*timephase(omegak(k,config)+6.0f,t,config)*fscale(k,L,config);
 		}
 
@@ -1193,6 +1214,12 @@ int sc_time_evolution_finite_t(double t,const double y[],double dydt[],void *p)
 
 		/*
 			Additional phases which are not completely removed by the transformation.
+
+			We could include them in the transformation, but that would mean using two
+			different transformations at T=0 and at finite temperature.
+		
+			For simplicity's sake, since these phases are slowly-oscillating, we leave
+			them here.
 		*/
 
 		dxi2m2dt+=-I*(omegak(k,config)-2.0f)*fbek*xi2m2;
