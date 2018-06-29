@@ -656,7 +656,7 @@ double torque(struct bigpsi_t *psi,int L,int M,struct configuration_t *config)
 	integral=conj(Dsingle(psi,L,L,1,DINT_MODE_VK0,config)+Dsingle(psi,L,L,-1,DINT_MODE_VK0,config));
 
 	/*
-		Note: we return the torque normalized by |g_{LM}|^2
+		Note: we could also return the torque normalized by |g_{LM}|^2
 	*/
 
 	//return 2.0f*sqrtf(6.0f)*cg*cimag(integral)/(conj(gLM)*gLM);

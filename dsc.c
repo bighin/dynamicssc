@@ -775,6 +775,15 @@ double fbe(struct configuration_t *config,double x)
 		temperature=0.38/0.156839;
 		beta=1.0f/temperature;
 	}
+	else if(config->moleculetype==MOLECULE_OCS)
+	{
+		/*
+			Inverse temperature of the bath, in units of B, for CS2
+		*/
+
+		temperature=0.38/0.291866;
+		beta=1.0f/temperature;
+	}
 	else
 	{
 		fprintf(stderr,"Unknown molecule type!\n");
@@ -816,8 +825,6 @@ int fAplus_thermal(unsigned ndim,const double *x,void *fdata,unsigned fdim,doubl
 		the integration routine shouldn't evaluate the integral
 		at the edges of the integration domain.
 	*/
-
-#warning Check the last statement of the comment! One could remove the ALMOST_ZERO() macro which is a bit unnatural.
 
 #define ALMOST_ZERO(x)	(fabs(x)<=1e-8)
 
