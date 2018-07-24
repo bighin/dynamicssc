@@ -563,7 +563,7 @@ double complex rotational_energy_L(int L,struct bigpsi_t *psi,struct configurati
 
 		for(int n=-2;n<=2;n++)
 		{
-			double complex B;
+			double complex B=0.0;
 			
 			if((n!=+1)&&(n!=-1))
 				continue;
