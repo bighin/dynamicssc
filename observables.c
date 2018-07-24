@@ -539,6 +539,53 @@ double complex D0(double t,struct configuration_t *config)
         return res;
 }
 
+double complex bosons_rotational_energy_L(int L,struct bigpsi_t *psi,struct configuration_t *config)
+{
+	int offsetL=L*(2+10*config->gridpoints);
+
+	double complex gL;
+	double complex A1,A2,A3,A4;
+	
+	gL=(psi->y[offsetL+0]+I*psi->y[offsetL+1])*timephase(-L*(L+1),psi->t,config);
+
+	A2=6.0*conj(gL)*gL*D0(psi->t,config);
+
+	A1=A3=A4=0.0f;
+
+	if(L>=1)
+	{
+		for(int n=-2;n<=2;n++)
+			A1+=6.0f*Dcross(psi,L,L,n,n,DINT_MODE_PLAIN,config);
+
+		for(int n=-2;n<=2;n++)
+		{
+			double complex B=0.0;
+			
+			if((n!=+1)&&(n!=-1))
+				continue;
+
+			if(fabs(gL)>1e-5)
+				B=Dsingle(psi,L,L,n,DINT_MODE_VK,config)/conj(gL);
+
+			A3+=6.0*B*conj(B);
+		}
+
+		A4+=-6.0*Dsingle(psi,L,L,0,DINT_MODE_VK,config);
+	}
+
+	return A1+A2+A3+A4+conj(A4);
+}
+
+double complex bosons_rotational_energy(struct bigpsi_t *psi,struct configuration_t *config)
+{
+	double complex ret=0.0f;
+
+	for(int L=0;L<config->maxl;L++)
+		ret+=bosons_rotational_energy_L(L,psi,config);
+	
+	return ret;
+}
+
 double complex rotational_energy_L(int L,struct bigpsi_t *psi,struct configuration_t *config)
 {
 	int offsetL=L*(2+10*config->gridpoints);
@@ -571,7 +618,7 @@ double complex rotational_energy_L(int L,struct bigpsi_t *psi,struct configurati
 			if(fabs(gL)>1e-5)
 				B=Dsingle(psi,L,L,n,DINT_MODE_VK,config)/conj(gL);
 
-			A4+=B*conj(B);
+			A4+=6.0*B*conj(B);
 			A5+=sqrt(6.0*L*(L+1))*conj(Dsingle(psi,L,L,n,DINT_MODE_VK,config));
 		}
 	}
