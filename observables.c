@@ -548,14 +548,13 @@ double complex bosons_rotational_energy_L(int L,struct bigpsi_t *psi,struct conf
 	
 	gL=(psi->y[offsetL+0]+I*psi->y[offsetL+1])*timephase(-L*(L+1),psi->t,config);
 
-	A2=6.0*conj(gL)*gL*D0(psi->t,config);
+	A2=6.0*D0(psi->t,config);
 
 	A1=A3=A4=0.0f;
 
 	if(L>=1)
 	{
-		for(int n=-2;n<=2;n++)
-			A1+=6.0f*Dcross(psi,L,L,n,n,DINT_MODE_PLAIN,config);
+		A1+=6.0*(1.0f-conj(gL)*gL);
 
 		for(int n=-2;n<=2;n++)
 		{
