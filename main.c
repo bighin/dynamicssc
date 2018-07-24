@@ -73,7 +73,7 @@ void print_header_alpha(FILE *out,int L,struct configuration_t *config)
 
 void print_header_norms(FILE *out)
 {
-	fprintf(out,"# <Time> <NormQP L=0> <NormPhonons L=0> ... <NormQP L=Lmax> <NormPhonons L=Lmax> <TotalNorm> <Re(AlignmentCosine)> <Im(AlignmentCosine)> <Re(Cos^2)> <Im(Cos^2)> <Re(S(t))> <Im(S(t))> <LaserIntensity> <BathIntensity>\n");
+	fprintf(out,"# <Time> <NormQP L=0> <NormPhonons L=0> ... <NormQP L=Lmax> <NormPhonons L=Lmax> <TotalNorm> <Re(AlignmentCosine)> <Im(AlignmentCosine)> <Re(Cos^2)> <Im(Cos^2)> <Re(S(t))> <Im(S(t))> <LaserIntensity> <BathIntensity> <RotationalEnergy>\n");
 }
 
 void print_header_summary(FILE *out)
@@ -310,7 +310,7 @@ int do_single(struct configuration_t *config)
 			fprintf(norms,"%f %f ",norm_qp(ti,&psi->y[offset],&psi->params[d],config),norm_phonons(ti,&psi->y[offset],&psi->params[d],config));
 		}
 
-		fprintf(norms,"%f %f %f %f %f %f %f %f %f\n",total_norm(psi),creal(ac),cimag(ac),creal(cs),cimag(cs),creal(S),cimag(S),get_laser_intensity(config->fluence,config->duration,ti,config),bath_intensity);
+		fprintf(norms,"%f %f %f %f %f %f %f %f %f %f\n",total_norm(psi),creal(ac),cimag(ac),creal(cs),cimag(cs),creal(S),cimag(S),get_laser_intensity(config->fluence,config->duration,ti,config),bath_intensity,rotational_e);
 		fflush(norms);
 
 		/*
