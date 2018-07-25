@@ -587,7 +587,7 @@ double complex bosons_rotational_energy(struct bigpsi_t *psi,struct configuratio
 	return ret;
 }
 
-double complex rotational_energy_L(int L,struct bigpsi_t *psi,struct configuration_t *config)
+double complex molecular_rotational_energy_L(int L,struct bigpsi_t *psi,struct configuration_t *config)
 {
 	int offsetL=L*(2+10*config->gridpoints);
 
@@ -613,19 +613,37 @@ double complex rotational_energy_L(int L,struct bigpsi_t *psi,struct configurati
 	return bosons_rotational_energy_L(L,psi,config)+A1+A2+A3;
 }
 
-double complex rotational_energy(struct bigpsi_t *psi,struct configuration_t *config)
+double complex molecular_rotational_energy(struct bigpsi_t *psi,struct configuration_t *config)
 {
 	double complex ret=0.0f;
 
 	for(int L=0;L<config->maxl;L++)
-		ret+=rotational_energy_L(L,psi,config);
+		ret+=molecular_rotational_energy_L(L,psi,config);
+	
+	return ret;
+}
+
+double complex total_rotational_energy(struct bigpsi_t *psi,struct configuration_t *config)
+{
+	double complex ret=0.0f;
+
+	for(int L=0;L<config->maxl;L++)
+	{
+		int offsetL;
+		double normL;
+
+		offsetL=L*(2+10*config->gridpoints);
+		normL=norm(psi->t,&psi->y[offsetL],&psi->params[L],config);
+
+		ret+=normL*L*(L+1);
+	}
 	
 	return ret;
 }
 
 double complex rcr(int L,struct bigpsi_t *psi,struct configuration_t *config)
 {
-	return rotational_energy_L(L,psi,config)/(L*(L+1));
+	return molecular_rotational_energy_L(L,psi,config)/(L*(L+1));
 }
 
 double complex overlapS(struct bigpsi_t *psi,double *y0,double t0,struct configuration_t *config)
