@@ -531,7 +531,7 @@ double complex D0(double t,struct configuration_t *config)
 
         if(config->ramp==true)
                 container.localdensity=config->density*adiabatic_ramp(t,config);
-        else
+	else
                 container.localdensity=config->density;
 
         hcubature(1,fD0,&container,1,&xmin,&xmax,maxEval,0,relError,ERROR_INDIVIDUAL,&res,&err);
@@ -544,18 +544,20 @@ double complex bosons_rotational_energy_L(int L,struct bigpsi_t *psi,struct conf
 	int offsetL=L*(2+10*config->gridpoints);
 
 	double complex gL;
+	double normL;
 	double complex A1,A2,A3,A4;
 	
 	gL=(psi->y[offsetL+0]+I*psi->y[offsetL+1])*timephase(-L*(L+1),psi->t,config);
 
-	A2=6.0*D0(psi->t,config);
+	A1=A2=A3=A4=0.0f;
+	
+	normL=norm(psi->t,&psi->y[offsetL],&psi->params[L],config);
 
-	A1=A3=A4=0.0f;
+	A1=6.0*D0(psi->t,config)*normL;
+	A2=6.0*(normL-conj(gL)*gL);
 
 	if(L>=1)
 	{
-		A1+=6.0*(1.0f-conj(gL)*gL);
-
 		for(int n=-2;n<=2;n++)
 		{
 			double complex B=0.0;
@@ -566,13 +568,13 @@ double complex bosons_rotational_energy_L(int L,struct bigpsi_t *psi,struct conf
 			if(fabs(gL)>1e-5)
 				B=Dsingle(psi,L,L,n,DINT_MODE_VK,config)/conj(gL);
 
-			A3+=6.0*B*conj(B);
+			A4+=6.0*B*conj(B);
 		}
 
-		A4+=-6.0*Dsingle(psi,L,L,0,DINT_MODE_VK,config);
+		A3+=-6.0*Dsingle(psi,L,L,0,DINT_MODE_VK,config);
 	}
 
-	return A1+A2+A3+A4+conj(A4);
+	return A1+A2+A3+conj(A3)+A4;
 }
 
 double complex bosons_rotational_energy(struct bigpsi_t *psi,struct configuration_t *config)
@@ -589,40 +591,26 @@ double complex rotational_energy_L(int L,struct bigpsi_t *psi,struct configurati
 {
 	int offsetL=L*(2+10*config->gridpoints);
 
-	double complex gL;
-	double complex A1,A2,A3,A4,A5;
-	
-	gL=(psi->y[offsetL+0]+I*psi->y[offsetL+1])*timephase(-L*(L+1),psi->t,config);
+	double normL;
+	double complex A1,A2,A3;
 
-	A1=conj(gL)*gL*L*(L+1);
+	normL=norm(psi->t,&psi->y[offsetL],&psi->params[L],config);
 
-	A2=A3=A4=A5=0.0f;
+	A1=A2=A3=0.0f;
+
+	A1=normL*L*(L+1);
 
 	if(L>=1)
 	{
 		for(int n=-2;n<=2;n++)
-			A2+=(L*(L+1)+6.0f)*Dcross(psi,L,L,n,n,DINT_MODE_PLAIN,config);
-
-		for(int n=-2;n<=2;n++)
 			for(int nprime=-2;nprime<=2;nprime++)
-				A3+=-2.0f*eta_sigma(L,2,n,nprime)*Dcross(psi,L,L,n,nprime,DINT_MODE_PLAIN,config);
+				A3+=-2.0f*eta_sigma(L,2,nprime,n)*Dcross(psi,L,L,nprime,n,DINT_MODE_PLAIN,config);
 
 		for(int n=-2;n<=2;n++)
-		{
-			double complex B=0.0;
-			
-			if((n!=+1)&&(n!=-1))
-				continue;
-
-			if(fabs(gL)>1e-5)
-				B=Dsingle(psi,L,L,n,DINT_MODE_VK,config)/conj(gL);
-
-			A4+=6.0*B*conj(B);
-			A5+=sqrt(6.0*L*(L+1))*conj(Dsingle(psi,L,L,n,DINT_MODE_VK,config));
-		}
+			A2+=2.0f*eta_sigma(L,2,0,n)*Dsingle(psi,L,L,n,DINT_MODE_VK,config);
 	}
 
-	return A1+A2+A3+A4+A5;
+	return bosons_rotational_energy_L(L,psi,config)+A1+A2+A3;
 }
 
 double complex rotational_energy(struct bigpsi_t *psi,struct configuration_t *config)
