@@ -550,7 +550,7 @@ double complex bosons_rotational_energy_L(int L,struct bigpsi_t *psi,struct conf
 	gL=(psi->y[offsetL+0]+I*psi->y[offsetL+1])*timephase(-L*(L+1),psi->t,config);
 
 	A1=A2=A3=A4=0.0f;
-	
+
 	normL=norm(psi->t,&psi->y[offsetL],&psi->params[L],config);
 
 	A1=6.0*D0(psi->t,config)*normL;
@@ -583,7 +583,7 @@ double complex bosons_rotational_energy(struct bigpsi_t *psi,struct configuratio
 
 	for(int L=0;L<config->maxl;L++)
 		ret+=bosons_rotational_energy_L(L,psi,config);
-	
+
 	return ret;
 }
 

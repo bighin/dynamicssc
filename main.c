@@ -260,10 +260,13 @@ int do_single(struct configuration_t *config)
 				for(int d=0;d<config->gridpoints;d++)
 				{
 		                	double gridstep=config->cutoff/config->gridpoints;
-					double k=d*gridstep;
+					double k,scalefactor;
 
 					double complex phase2m2,phase2m1,phase20,phase21,phase22;
 					double complex alpha2m2,alpha2m1,alpha20,alpha21,alpha22;
+
+					k=d*gridstep;
+					scalefactor=1.0f/fscale(k,L,config);
 
 					//if((d%5)!=0)
 					//	continue;
@@ -274,11 +277,11 @@ int do_single(struct configuration_t *config)
 					phase21=timephase(-(L*(L+1.0f)+omegak(k,config)+4.0f),ti,config);
 					phase22=timephase(-(L*(L+1.0f)+omegak(k,config)-2.0f),ti,config);
 
-					alpha2m2=phase2m2*(y[2+10*d]+I*y[2+10*d+1]);
-					alpha2m1=phase2m1*(y[2+10*d+2]+I*y[2+10*d+3]);
-					alpha20=phase20*(y[2+10*d+4]+I*y[2+10*d+5]);
-					alpha21=phase21*(y[2+10*d+6]+I*y[2+10*d+7]);
-					alpha22=phase22*(y[2+10*d+8]+I*y[2+10*d+9]);
+					alpha2m2=phase2m2*(y[2+10*d]+I*y[2+10*d+1])*scalefactor;
+					alpha2m1=phase2m1*(y[2+10*d+2]+I*y[2+10*d+3])*scalefactor;
+					alpha20=phase20*(y[2+10*d+4]+I*y[2+10*d+5])*scalefactor;
+					alpha21=phase21*(y[2+10*d+6]+I*y[2+10*d+7])*scalefactor;
+					alpha22=phase22*(y[2+10*d+8]+I*y[2+10*d+9])*scalefactor;
 
 					fprintf(outalphas[n],"%f %f %f %f %f %f %f %f %f %f %f %f\n",ti,k,creal(alpha2m2),cimag(alpha2m2),creal(alpha2m1),cimag(alpha2m1),creal(alpha20),cimag(alpha20),creal(alpha21),cimag(alpha21),creal(alpha22),cimag(alpha22));
 				}
