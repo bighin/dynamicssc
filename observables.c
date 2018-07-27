@@ -544,17 +544,17 @@ double complex bosons_rotational_energy_L(int L,struct bigpsi_t *psi,struct conf
 	int offsetL=L*(2+10*config->gridpoints);
 
 	double complex gL;
-	double normL;
+	double norm2L;
 	double complex A1,A2,A3,A4;
 	
 	gL=(psi->y[offsetL+0]+I*psi->y[offsetL+1])*timephase(-L*(L+1),psi->t,config);
 
 	A1=A2=A3=A4=0.0f;
 
-	normL=norm(psi->t,&psi->y[offsetL],&psi->params[L],config);
+	norm2L=pow(norm(psi->t,&psi->y[offsetL],&psi->params[L],config),2.0f);
 
-	A1=6.0*D0(psi->t,config)*normL;
-	A2=6.0*(normL-conj(gL)*gL);
+	A1=6.0*D0(psi->t,config)*norm2L;
+	A2=6.0*(norm2L-conj(gL)*gL);
 
 	if(L>=1)
 	{
@@ -591,14 +591,14 @@ double complex molecular_rotational_energy_L(int L,struct bigpsi_t *psi,struct c
 {
 	int offsetL=L*(2+10*config->gridpoints);
 
-	double normL;
+	double norm2L;
 	double complex A1,A2,A3;
 
-	normL=norm(psi->t,&psi->y[offsetL],&psi->params[L],config);
+	norm2L=pow(norm(psi->t,&psi->y[offsetL],&psi->params[L],config),2.0f);
 
 	A1=A2=A3=0.0f;
 
-	A1=normL*L*(L+1);
+	A1=norm2L*L*(L+1);
 
 	if(L>=1)
 	{
@@ -630,12 +630,12 @@ double complex total_rotational_energy(struct bigpsi_t *psi,struct configuration
 	for(int L=0;L<config->maxl;L++)
 	{
 		int offsetL;
-		double normL;
+		double norm2L;
 
 		offsetL=L*(2+10*config->gridpoints);
-		normL=norm(psi->t,&psi->y[offsetL],&psi->params[L],config);
+		norm2L=pow(norm(psi->t,&psi->y[offsetL],&psi->params[L],config),2.0f);
 
-		ret+=normL*L*(L+1);
+		ret+=norm2L*L*(L+1);
 	}
 	
 	return ret;
