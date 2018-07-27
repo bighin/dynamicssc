@@ -235,6 +235,10 @@ int fDsingle(unsigned ndim,const double *x,void *fdata,unsigned fdim,double *fva
 		f*=V2(k,container->localdensity,config)/W(k,config);
 		break;
 
+		case DINT_MODE_VK_OMEGAK:
+		f*=omegak(k,config)*V2(k,container->localdensity,config)/W(k,config);
+		break;
+
 		case DINT_MODE_VK0:
 		f*=V2(k,container->localdensity,config);
 		break;
@@ -258,10 +262,11 @@ int fDsingle(unsigned ndim,const double *x,void *fdata,unsigned fdim,double *fva
 
 	Note that the parameters L, Lprime and n are specified as arguments, Moreover one has
 
-	f(k) = 1		if mode == DINT_MODE_PLAIN
-	f(k) = omega(k)		if mode == DINT_MODE_OMEGAK
-	f(k) = V2(k)/W(k)	if mode == DINT_MODE_VK
-	f(k) = V2(k)		if mode == DINT_MODE_VK0
+	f(k) = 1			if mode == DINT_MODE_PLAIN
+	f(k) = omega(k)			if mode == DINT_MODE_OMEGAK
+	f(k) = V2(k)/W(k)		if mode == DINT_MODE_VK
+	f(k) = V2(k)			if mode == DINT_MODE_VK0
+	f(k) = omega(k)*V2(k)/W(k)	if mode == DINT_MODE_VK_OMEGAK
 */
 
 double complex Dsingle(struct bigpsi_t *psi,int L,int Lprime,int n,int mode,struct configuration_t *config)
@@ -539,22 +544,104 @@ double complex D0(double t,struct configuration_t *config)
         return res;
 }
 
+int fD1(unsigned ndim,const double *x,void *fdata,unsigned fdim,double *fval)
+{
+        struct dint_container_t *container=(struct dint_container_t *)(fdata);
+	struct configuration_t *config=container->config;
+
+        /* The integration variables */
+
+        double k=x[0];
+
+        fval[0]=omegak(k,config)*pow(V2(k,container->localdensity,config)/W(k,config),2.0f);
+
+        return 0;
+}
+
+double complex D1(double t,struct configuration_t *config)
+{
+	struct dint_container_t container;
+        double xmin,xmax,res,err;
+
+	extern double relError;
+	extern size_t maxEval;
+
+        xmin=0.0f;
+        xmax=config->cutoff;
+
+	container.config=config;
+
+        if(config->ramp==true)
+                container.localdensity=config->density*adiabatic_ramp(t,config);
+	else
+                container.localdensity=config->density;
+
+        hcubature(1,fD1,&container,1,&xmin,&xmax,maxEval,0,relError,ERROR_INDIVIDUAL,&res,&err);
+
+        return res;
+}
+
+int fD2(unsigned ndim,const double *x,void *fdata,unsigned fdim,double *fval)
+{
+        struct dint_container_t *container=(struct dint_container_t *)(fdata);
+	struct configuration_t *config=container->config;
+
+        /* The integration variables */
+
+        double k=x[0];
+
+        fval[0]=pow(V2(k,container->localdensity,config),2.0f)/W(k,config);
+
+        return 0;
+}
+
+double complex D2(double t,struct configuration_t *config)
+{
+	struct dint_container_t container;
+        double xmin,xmax,res,err;
+
+	extern double relError;
+	extern size_t maxEval;
+
+        xmin=0.0f;
+        xmax=config->cutoff;
+
+	container.config=config;
+
+        if(config->ramp==true)
+                container.localdensity=config->density*adiabatic_ramp(t,config);
+	else
+                container.localdensity=config->density;
+
+        hcubature(1,fD2,&container,1,&xmin,&xmax,maxEval,0,relError,ERROR_INDIVIDUAL,&res,&err);
+
+        return res;
+}
+
 double complex bosons_rotational_energy_L(int L,struct bigpsi_t *psi,struct configuration_t *config)
 {
 	int offsetL=L*(2+10*config->gridpoints);
 
 	double complex gL;
 	double norm2L;
-	double complex A1,A2,A3,A4;
+
+	/*
+		A2C2p1 contains A2 and the first part of C2
+		C2p2 contains the second part of C2
+
+		...and so on!
+	*/
+
+	double complex A2C2p1,C2p2,B2,C2p3;
 	
 	gL=(psi->y[offsetL+0]+I*psi->y[offsetL+1])*timephase(-L*(L+1),psi->t,config);
 
-	A1=A2=A3=A4=0.0f;
+	A2C2p1=C2p2=B2=C2p3=0.0f;
 
 	norm2L=pow(norm(psi->t,&psi->y[offsetL],&psi->params[L],config),2.0f);
 
-	A1=6.0*D0(psi->t,config)*norm2L;
-	A2=6.0*(norm2L-conj(gL)*gL);
+	A2C2p1=6.0*D0(psi->t,config)*norm2L;
+	C2p2=6.0*(norm2L-conj(gL)*gL);
 
 	if(L>=1)
 	{
@@ -568,13 +655,13 @@ double complex bosons_rotational_energy_L(int L,struct bigpsi_t *psi,struct conf
 			if(fabs(gL)>1e-5)
 				B=Dsingle(psi,L,L,n,DINT_MODE_VK,config)/conj(gL);
 
-			A4+=6.0*B*conj(B);
+			C2p3+=6.0*B*conj(B);
 		}
 
-		A3+=-6.0*Dsingle(psi,L,L,0,DINT_MODE_VK,config);
+		B2+=-6.0*Dsingle(psi,L,L,0,DINT_MODE_VK,config);
 	}
 
-	return A1+A2+A3+conj(A3)+A4;
+	return A2C2p1+C2p2+B2+conj(B2)+C2p3;
 }
 
 double complex bosons_rotational_energy(struct bigpsi_t *psi,struct configuration_t *config)
@@ -592,25 +679,25 @@ double complex molecular_rotational_energy_L(int L,struct bigpsi_t *psi,struct c
 	int offsetL=L*(2+10*config->gridpoints);
 
 	double norm2L;
-	double complex A1,A2,A3;
+	double complex A1C1,B3,C3;
 
 	norm2L=pow(norm(psi->t,&psi->y[offsetL],&psi->params[L],config),2.0f);
 
-	A1=A2=A3=0.0f;
+	A1C1=B3=C3=0.0f;
 
-	A1=norm2L*L*(L+1);
+	A1C1=norm2L*L*(L+1);
 
 	if(L>=1)
 	{
 		for(int n=-2;n<=2;n++)
 			for(int nprime=-2;nprime<=2;nprime++)
-				A3+=-2.0f*eta_sigma(L,2,nprime,n)*Dcross(psi,L,L,nprime,n,DINT_MODE_PLAIN,config);
+				C3+=-2.0f*eta_sigma(L,2,nprime,n)*Dcross(psi,L,L,nprime,n,DINT_MODE_PLAIN,config);
 
 		for(int n=-2;n<=2;n++)
-			A2+=2.0f*eta_sigma(L,2,0,n)*Dsingle(psi,L,L,n,DINT_MODE_VK,config);
+			B3+=2.0f*eta_sigma(L,2,0,n)*Dsingle(psi,L,L,n,DINT_MODE_VK,config);
 	}
 
-	return bosons_rotational_energy_L(L,psi,config)+A1+A2+A3;
+	return bosons_rotational_energy_L(L,psi,config)+A1C1+B3+conj(B3)+C3;
 }
 
 double complex molecular_rotational_energy(struct bigpsi_t *psi,struct configuration_t *config)
@@ -636,6 +723,50 @@ double complex total_rotational_energy(struct bigpsi_t *psi,struct configuration
 		norm2L=pow(norm(psi->t,&psi->y[offsetL],&psi->params[L],config),2.0f);
 
 		ret+=norm2L*L*(L+1);
+	}
+	
+	return ret;
+}
+
+double complex total_energy_L(int L,struct bigpsi_t *psi,struct configuration_t *config)
+{
+	int offsetL;
+	double complex gL;
+	double complex A4,A5,B4,B5,C4,C5;
+	
+	offsetL=L*(2+10*config->gridpoints);
+	gL=(psi->y[offsetL+0]+I*psi->y[offsetL+1])*timephase(-L*(L+1),psi->t,config);
+
+	A4=A5=B4=B5=C4=C5=0.0f;
+
+	A4=D1(psi->t,config)*conj(gL)*gL;
+	A5=-2.0f*D2(psi->t,config)*conj(gL)*gL;
+
+	if(L>=1)
+	{
+		B4+=-Dsingle(psi,L,L,0,DINT_MODE_VK_OMEGAK,config);
+		B5+=Dsingle(psi,L,L,0,DINT_MODE_VK0,config);
+
+		for(int n=-2;n<=2;n++)
+		{
+			C4+=Dcross(psi,L,L,n,n,DINT_MODE_OMEGAK,config);
+			C4+=D1(psi->t,config)*Dcross(psi,L,L,n,n,DINT_MODE_PLAIN,config);
+
+			C5+=-2.0f*D2(psi->t,config)*Dcross(psi,L,L,n,n,DINT_MODE_PLAIN,config);
+		}
+	}
+
+	return A4+A5+B4+conj(B4)+B5+conj(B5)+C4+C5;
+}
+
+double complex total_energy(struct bigpsi_t *psi,struct configuration_t *config)
+{
+	double complex ret=0.0f;
+
+	for(int L=0;L<config->maxl;L++)
+	{
+		ret+=molecular_rotational_energy_L(L,psi,config);
+		ret+=total_energy_L(L,psi,config);
 	}
 	
 	return ret;
