@@ -55,7 +55,7 @@ int fDcross(unsigned ndim,const double *x,void *fdata,unsigned fdim,double *fval
 /*
 	Dcross() calculates an integral involving two phonon distribution functions, more precisely:
 
-	\sum_k \alpha^{* L'}_{k 2 n} \alpha^{L'}_{k 2 n'} f(k)
+	\sum_k \alpha^{* L}_{k 2 n} \alpha^{L'}_{k 2 n'} f(k)
 
 	Note that the parameters L, Lprime, n and nprime are specified as arguments, Moreover one has
 
@@ -770,6 +770,114 @@ double complex total_energy(struct bigpsi_t *psi,struct configuration_t *config)
 	}
 	
 	return ret;
+}
+
+double sigmamatrix(int i,int n,int nprime)
+{
+	if((abs(n)>2)||(abs(nprime)>2))
+	{
+		printf("Error in sigmamatrix(): wrong arguments.");
+		exit(0);
+	}
+
+#warning Are we using the same convention as in the PRX?
+
+	switch(i)
+	{
+		case 1:
+
+		if((n==-2)&&(nprime==-1))
+			return 2.0f;
+		
+		if((n==-1)&&(nprime==0))
+			return sqrtf(6.0f);
+
+		if((n==0)&&(nprime==1))
+			return sqrtf(6.0f);
+
+		if((n==1)&&(nprime==2))
+			return 2.0f;
+
+		break;
+
+		case 0:
+
+		if(n==nprime)
+			return -n;
+
+		break;
+
+		case -1:
+		
+		if((n==-1)&&(nprime==-2))
+			return 2.0f;
+		
+		if((n==0)&&(nprime==-1))
+			return sqrtf(6.0f);
+
+		if((n==1)&&(nprime==0))
+			return sqrtf(6.0f);
+
+		if((n==2)&&(nprime==1))
+			return 2.0f;
+
+		break;
+	}
+	
+	return 0.0f;
+}
+
+void debug_sigmamatrices(void)
+{
+	for(int i=-1;i<=1;i++)
+	{
+		for(int n=-2;n<=2;n++)
+		{
+			for(int nprime=-2;nprime<=2;nprime++)
+			{
+				printf("%f ",sigmamatrix(i,n,nprime));
+			}
+
+			printf("\n");
+		}
+		
+		printf("\n\n");
+	}
+}
+
+double complex JdotLambda_L(int L,struct bigpsi_t *psi,struct configuration_t *config)
+{
+	double complex X3,Y3;
+	int M;
+	
+	X3=Y3=0.0f;
+	M=psi->params[L].M;
+
+	if(L>=1)
+	{
+		for(int n=-2;n<=2;n++)
+			X3-=Dcross(psi,L,L,n,n,DINT_MODE_PLAIN,config)*pow(cg(L,n,1,0,L,n),2.0f)*n;
+	
+		for(int i=-1;i<=1;i++)
+			for(int n=-2;n<=2;n++)
+				if(abs(n+i)<=2)
+					Y3-=Dcross(psi,L,L,n,n+i,DINT_MODE_PLAIN,config)*cg(L,n,1,i,L,n+i)*sigmamatrix(i,n,n+i)*(n+i);
+	}
+	
+	X3*=sqrtf(L*(L+1.0f))*cg(L,M,1,0,L,M);
+	Y3*=cg(L,M,1,0,L,M);
+
+	return X3-Y3;
+}
+
+double complex JdotLambda(struct bigpsi_t *psi,struct configuration_t *config)
+{
+        double complex ret=0.0f;
+
+        for(int L=0;L<config->maxl;L++)
+                ret+=JdotLambda_L(L,psi,config);
+
+        return ret;
 }
 
 double complex rcr(int L,struct bigpsi_t *psi,struct configuration_t *config)
