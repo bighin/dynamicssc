@@ -780,46 +780,44 @@ double sigmamatrix(int i,int n,int nprime)
 		exit(0);
 	}
 
-#warning Are we using the same convention as in the PRX?
-
 	switch(i)
 	{
 		case 1:
 
 		if((n==-2)&&(nprime==-1))
-			return 2.0f;
-		
+			return sqrtf(2.0f)*2.0f;
+
 		if((n==-1)&&(nprime==0))
-			return sqrtf(6.0f);
+			return sqrtf(2.0f)*sqrtf(6.0f);
 
 		if((n==0)&&(nprime==1))
-			return sqrtf(6.0f);
+			return sqrtf(2.0f)*sqrtf(6.0f);
 
 		if((n==1)&&(nprime==2))
-			return 2.0f;
+			return sqrtf(2.0f)*2.0f;
 
 		break;
 
 		case 0:
 
 		if(n==nprime)
-			return -n;
+			return n;
 
 		break;
 
 		case -1:
 		
 		if((n==-1)&&(nprime==-2))
-			return 2.0f;
+			return -sqrtf(2.0f)*2.0f;
 		
 		if((n==0)&&(nprime==-1))
-			return sqrtf(6.0f);
+			return -sqrtf(2.0f)*sqrtf(6.0f);
 
 		if((n==1)&&(nprime==0))
-			return sqrtf(6.0f);
+			return -sqrtf(2.0f)*sqrtf(6.0f);
 
 		if((n==2)&&(nprime==1))
-			return 2.0f;
+			return -sqrtf(2.0f)*2.0f;
 
 		break;
 	}
@@ -856,12 +854,12 @@ double complex JdotLambda_L(int L,struct bigpsi_t *psi,struct configuration_t *c
 	if(L>=1)
 	{
 		for(int n=-2;n<=2;n++)
-			X3-=Dcross(psi,L,L,n,n,DINT_MODE_PLAIN,config)*pow(cg(L,n,1,0,L,n),2.0f)*n;
+			X3+=Dcross(psi,L,L,n,n,DINT_MODE_PLAIN,config)*pow(cg(L,n,1,0,L,n),2.0f)*n;
 	
 		for(int i=-1;i<=1;i++)
 			for(int n=-2;n<=2;n++)
 				if(abs(n+i)<=2)
-					Y3-=Dcross(psi,L,L,n,n+i,DINT_MODE_PLAIN,config)*cg(L,n,1,i,L,n+i)*sigmamatrix(i,n,n+i)*(n+i);
+					Y3+=Dcross(psi,L,L,n,n+i,DINT_MODE_PLAIN,config)*cg(L,n,1,i,L,n+i)*sigmamatrix(i,n,n+i)*(n+i);
 	}
 	
 	X3*=sqrtf(L*(L+1.0f))*cg(L,M,1,0,L,M);
