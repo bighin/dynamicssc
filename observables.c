@@ -772,11 +772,16 @@ double complex total_energy(struct bigpsi_t *psi,struct configuration_t *config)
 	return ret;
 }
 
-double sigmamatrix(int i,int n,int nprime)
+/*
+	The repreasenation we have here is in agreement with Misha's PRX
+	and allows us to recreate his Eq. (D4)
+*/
+
+double sigma_matrix(int i,int n,int nprime)
 {
 	if((abs(n)>2)||(abs(nprime)>2))
 	{
-		printf("Error in sigmamatrix(): wrong arguments.");
+		printf("Error in sigma_matrix(): wrong arguments.");
 		exit(0);
 	}
 
@@ -785,16 +790,16 @@ double sigmamatrix(int i,int n,int nprime)
 		case 1:
 
 		if((n==-2)&&(nprime==-1))
-			return sqrtf(2.0f)*2.0f;
+			return -sqrtf(2.0f)*2.0f;
 
 		if((n==-1)&&(nprime==0))
-			return sqrtf(2.0f)*sqrtf(6.0f);
+			return -sqrtf(2.0f)*sqrtf(6.0f);
 
 		if((n==0)&&(nprime==1))
-			return sqrtf(2.0f)*sqrtf(6.0f);
+			return -sqrtf(2.0f)*sqrtf(6.0f);
 
 		if((n==1)&&(nprime==2))
-			return sqrtf(2.0f)*2.0f;
+			return -sqrtf(2.0f)*2.0f;
 
 		break;
 
@@ -806,18 +811,18 @@ double sigmamatrix(int i,int n,int nprime)
 		break;
 
 		case -1:
-		
+
 		if((n==-1)&&(nprime==-2))
-			return -sqrtf(2.0f)*2.0f;
+			return sqrtf(2.0f)*2.0f;
 		
 		if((n==0)&&(nprime==-1))
-			return -sqrtf(2.0f)*sqrtf(6.0f);
+			return sqrtf(2.0f)*sqrtf(6.0f);
 
 		if((n==1)&&(nprime==0))
-			return -sqrtf(2.0f)*sqrtf(6.0f);
+			return sqrtf(2.0f)*sqrtf(6.0f);
 
 		if((n==2)&&(nprime==1))
-			return -sqrtf(2.0f)*2.0f;
+			return sqrtf(2.0f)*2.0f;
 
 		break;
 	}
@@ -833,7 +838,7 @@ void debug_sigmamatrices(void)
 		{
 			for(int nprime=-2;nprime<=2;nprime++)
 			{
-				printf("%f ",sigmamatrix(i,n,nprime));
+				printf("%f ",sigma_matrix(i,n,nprime));
 			}
 
 			printf("\n");
@@ -859,7 +864,7 @@ double complex JdotLambda_L(int L,struct bigpsi_t *psi,struct configuration_t *c
 		for(int i=-1;i<=1;i++)
 			for(int n=-2;n<=2;n++)
 				if(abs(n+i)<=2)
-					Y3+=Dcross(psi,L,L,n,n+i,DINT_MODE_PLAIN,config)*cg(L,n,1,i,L,n+i)*sigmamatrix(i,n,n+i)*(n+i);
+					Y3+=Dcross(psi,L,L,n,n+i,DINT_MODE_PLAIN,config)*cg(L,n,1,i,L,n+i)*sigma_matrix(i,n,n+i)*(n+i);
 	}
 	
 	X3*=sqrtf(L*(L+1.0f))*cg(L,M,1,0,L,M);
