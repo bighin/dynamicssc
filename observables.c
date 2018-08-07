@@ -774,10 +774,11 @@ double complex total_energy(struct bigpsi_t *psi,struct configuration_t *config)
 
 /*
 	The repreasenation we have here is in agreement with Misha's PRX
-	and allows us to recreate his Eq. (D4)
+	and allows us to recreate their Eq. (D4), see the attached notebook
+	SigmaAlt.nb
 */
 
-double sigma_matrix(int i,int n,int nprime)
+double old_sigma_matrix(int i,int n,int nprime)
 {
 	if((abs(n)>2)||(abs(nprime)>2))
 	{
@@ -830,6 +831,59 @@ double sigma_matrix(int i,int n,int nprime)
 	return 0.0f;
 }
 
+double sigma_matrix(int i,int n,int nprime)
+{
+	if((abs(n)>2)||(abs(nprime)>2))
+	{
+		printf("Error in sigma_matrix(): wrong arguments.");
+		exit(0);
+	}
+
+	switch(i)
+	{
+		case 1:
+
+		if((n==-2)&&(nprime==-1))
+			return 2.0f;
+
+		if((n==-1)&&(nprime==0))
+			return sqrtf(6.0f);
+
+		if((n==0)&&(nprime==1))
+			return sqrtf(6.0f);
+
+		if((n==1)&&(nprime==2))
+			return 2.0f;
+
+		break;
+
+		case 0:
+
+		if(n==nprime)
+			return -n;
+
+		break;
+
+		case -1:
+
+		if((n==-1)&&(nprime==-2))
+			return 2.0f;
+		
+		if((n==0)&&(nprime==-1))
+			return sqrtf(6.0f);
+
+		if((n==1)&&(nprime==0))
+			return sqrtf(6.0f);
+
+		if((n==2)&&(nprime==1))
+			return 2.0f;
+
+		break;
+	}
+	
+	return 0.0f;
+}
+
 void debug_sigmamatrices(void)
 {
 	for(int i=-1;i<=1;i++)
@@ -852,23 +906,128 @@ double complex JdotLambda_L(int L,struct bigpsi_t *psi,struct configuration_t *c
 {
 	double complex X3,Y3;
 	int M;
+	bool debugoutput,printout=false;
 	
 	X3=Y3=0.0f;
 	M=psi->params[L].M;
 
 	if(L>=1)
 	{
+		debugoutput=true;
+
 		for(int n=-2;n<=2;n++)
-			X3+=Dcross(psi,L,L,n,n,DINT_MODE_PLAIN,config)*pow(cg(L,n,1,0,L,n),2.0f)*n;
-	
+			if(fabs(Dcross(psi,L,L,n,n,DINT_MODE_PLAIN,config))>1e-8)
+				printout=true;
+		
+		/*
+			Calculation of X3: let's iterate over all n's
+		*/
+		
+		for(int n=-2;n<=2;n++)
+		{
+			double complex localres;
+			
+			/*
+				The next line calculates the integral
+			
+				\sum_k \alpha^{* L}_{k 2 n} \alpha^{L}_{k 2 n}
+			
+				and saves it into the variable 'localres'.
+			*/
+			
+			localres=Dcross(psi,L,L,n,n,DINT_MODE_PLAIN,config);
+			
+			/*
+				Here we multiply (notice the *= operator) the variable 'localres'
+				by a factor
+				
+				|C_{Ln 10}^{Ln}|^2
+			*/
+				
+			localres*=pow(cg(L,n,1,0,L,n),2.0f);
+			
+			/*
+				We multiply the variable 'localres' by n
+			*/
+			
+			localres*=n;
+		
+			/*
+				Finally we multiply the variable 'localres' by sqrt(L(L+1)) * C_{LM 10}^{LM}
+			*/
+		
+			localres*=sqrtf(L*(L+1.0f))*cg(L,M,1,0,L,M);
+		
+			/*
+				We save everything in X3...
+			*/
+		
+			X3+=localres;
+		
+			/*
+				...and we print the result if needed.
+			*/
+		
+			if((debugoutput==true)&&(printout==true))
+				printf("X3(L=%d,n=%d) = %f\n",L,n,creal(localres));
+		}
+
+		/*
+			Calculation of Y3: let's iterate over all i's and n's
+		*/
+
 		for(int i=-1;i<=1;i++)
+		{
 			for(int n=-2;n<=2;n++)
-				if(abs(n+i)<=2)
-					Y3+=Dcross(psi,L,L,n,n+i,DINT_MODE_PLAIN,config)*cg(L,n,1,i,L,n+i)*sigma_matrix(i,n,n+i)*(n+i);
-	}
+			{
+				if(abs(n-i)<=2)
+				{
+					double complex localres;
+			
+					/*
+						The next line calculates the integral
+			
+						\sum_k \alpha^{* L}_{k 2 n} \alpha^{L}_{k 2 (n-i)}
+			
+						and saves it into the variable 'localres'.
+					*/
 	
-	X3*=sqrtf(L*(L+1.0f))*cg(L,M,1,0,L,M);
-	Y3*=cg(L,M,1,0,L,M);
+					localres=Dcross(psi,L,L,n,n-i,DINT_MODE_PLAIN,config);
+					
+					/*
+						Then we multiply by (-1)^i * C_{Ln 1-i}^{L (n-1)}
+					*/
+
+					localres*=pow(-1.0f,i)*cg(L,n,1,-i,L,n-i);
+
+					/*
+						Then we multiply by (\sigma_{n (n-i)})_i * (n-i)
+					*/
+	
+					localres*=sigma_matrix(i,n,n-i)*(n-i);
+
+					/*
+						Finally we multiply the variable 'localres' by sqrt(L(L+1)) * C_{LM 10}^{LM}
+					*/
+
+					localres*=cg(L,M,1,0,L,M);
+
+					/*
+						We save everything in Y3...
+					*/
+		
+					Y3+=localres;
+		
+					/*
+						...and we print the result if needed.
+					*/				
+
+					if((debugoutput==true)&&(printout==true))
+						printf("Y3(L=%d,i=%d,n=%d) = %f\n",L,i,n,creal(localres));
+				}
+			}
+		}
+	}
 
 	return X3-Y3;
 }
