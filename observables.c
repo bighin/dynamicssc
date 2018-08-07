@@ -772,65 +772,6 @@ double complex total_energy(struct bigpsi_t *psi,struct configuration_t *config)
 	return ret;
 }
 
-/*
-	The repreasenation we have here is in agreement with Misha's PRX
-	and allows us to recreate their Eq. (D4), see the attached notebook
-	SigmaAlt.nb
-*/
-
-double old_sigma_matrix(int i,int n,int nprime)
-{
-	if((abs(n)>2)||(abs(nprime)>2))
-	{
-		printf("Error in sigma_matrix(): wrong arguments.");
-		exit(0);
-	}
-
-	switch(i)
-	{
-		case 1:
-
-		if((n==-2)&&(nprime==-1))
-			return -sqrtf(2.0f)*2.0f;
-
-		if((n==-1)&&(nprime==0))
-			return -sqrtf(2.0f)*sqrtf(6.0f);
-
-		if((n==0)&&(nprime==1))
-			return -sqrtf(2.0f)*sqrtf(6.0f);
-
-		if((n==1)&&(nprime==2))
-			return -sqrtf(2.0f)*2.0f;
-
-		break;
-
-		case 0:
-
-		if(n==nprime)
-			return n;
-
-		break;
-
-		case -1:
-
-		if((n==-1)&&(nprime==-2))
-			return sqrtf(2.0f)*2.0f;
-		
-		if((n==0)&&(nprime==-1))
-			return sqrtf(2.0f)*sqrtf(6.0f);
-
-		if((n==1)&&(nprime==0))
-			return sqrtf(2.0f)*sqrtf(6.0f);
-
-		if((n==2)&&(nprime==1))
-			return sqrtf(2.0f)*2.0f;
-
-		break;
-	}
-	
-	return 0.0f;
-}
-
 double sigma_matrix(int i,int n,int nprime)
 {
 	if((abs(n)>2)||(abs(nprime)>2))
@@ -922,54 +863,57 @@ double complex JdotLambda_L(int L,struct bigpsi_t *psi,struct configuration_t *c
 		/*
 			Calculation of X3: let's iterate over all n's
 		*/
-		
-		for(int n=-2;n<=2;n++)
+
+		for(int i=-1;i<=1;i++)
 		{
-			double complex localres;
+			for(int n=-2;n<=2;n++)
+			{
+				double complex localres;
 			
-			/*
-				The next line calculates the integral
+				/*
+					The next line calculates the integral
 			
-				\sum_k \alpha^{* L}_{k 2 n} \alpha^{L}_{k 2 n}
+					\sum_k \alpha^{* L}_{k 2 n} \alpha^{L}_{k 2 n}
 			
-				and saves it into the variable 'localres'.
-			*/
+					and saves it into the variable 'localres'.
+				*/
 			
-			localres=Dcross(psi,L,L,n,n,DINT_MODE_PLAIN,config);
+				localres=Dcross(psi,L,L,n,n,DINT_MODE_PLAIN,config);
 			
-			/*
-				Here we multiply (notice the *= operator) the variable 'localres'
-				by a factor
+				/*
+					Here we multiply (notice the *= operator) the variable 'localres'
+					by a factor
 				
-				|C_{Ln 10}^{Ln}|^2
-			*/
+						|C_{L(n+i) 1-i}^{Ln}|^2
+				*/
 				
-			localres*=pow(cg(L,n,1,0,L,n),2.0f);
+				localres*=pow(cg(L,n+i,1,-i,L,n),2.0f);
 			
-			/*
-				We multiply the variable 'localres' by n
-			*/
+				/*
+					We multiply the variable 'localres' by n
+				*/
 			
-			localres*=n;
+				localres*=n;
 		
-			/*
-				Finally we multiply the variable 'localres' by sqrt(L(L+1)) * C_{LM 10}^{LM}
-			*/
+				/*
+					Finally we multiply the variable 'localres' by sqrt(L(L+1)) * C_{LM 10}^{LM}
+				*/
 		
-			localres*=sqrtf(L*(L+1.0f))*cg(L,M,1,0,L,M);
+				localres*=sqrtf(L*(L+1.0f))*cg(L,M,1,0,L,M);
 		
-			/*
-				We save everything in X3...
-			*/
+				/*
+					We save everything in X3...
+				*/
 		
-			X3+=localres;
+				X3+=localres;
 		
-			/*
-				...and we print the result if needed.
-			*/
+				/*
+					...and we print the result if needed.
+				*/
 		
-			if((debugoutput==true)&&(printout==true))
-				printf("X3(L=%d,n=%d) = %f\n",L,n,creal(localres));
+				if((debugoutput==true)&&(printout==true))
+					printf("X3(L=%d,i=%d,n=%d) = %f\n",L,i,n,creal(localres));
+			}
 		}
 
 		/*
@@ -980,51 +924,51 @@ double complex JdotLambda_L(int L,struct bigpsi_t *psi,struct configuration_t *c
 		{
 			for(int n=-2;n<=2;n++)
 			{
-				if(abs(n-i)<=2)
-				{
-					double complex localres;
+				double complex localres;
+				
+				if(abs(n-i)>2)
+					continue;
 			
-					/*
-						The next line calculates the integral
+				/*
+					The next line calculates the integral
 			
-						\sum_k \alpha^{* L}_{k 2 n} \alpha^{L}_{k 2 (n-i)}
+					\sum_k \alpha^{* L}_{k 2 n} \alpha^{L}_{k 2 (n-i)}
 			
-						and saves it into the variable 'localres'.
-					*/
+					and saves it into the variable 'localres'.
+				*/
 	
-					localres=Dcross(psi,L,L,n,n-i,DINT_MODE_PLAIN,config);
+				localres=Dcross(psi,L,L,n,n-i,DINT_MODE_PLAIN,config);
 					
-					/*
-						Then we multiply by (-1)^i * C_{Ln 1-i}^{L (n-1)}
-					*/
+				/*
+					Then we multiply by (-1)^i * C_{Ln 1-i}^{L (n-1)}
+				*/
 
-					localres*=pow(-1.0f,i)*cg(L,n,1,-i,L,n-i);
+				localres*=pow(-1.0f,i)*cg(L,n,1,-i,L,n-i);
 
-					/*
-						Then we multiply by (\sigma_{n (n-i)})_i * (n-i)
-					*/
+				/*
+					Then we multiply by (\sigma_{n (n-i)})_i * (n-i)
+				*/
 	
-					localres*=sigma_matrix(i,n,n-i)*(n-i);
+				localres*=sigma_matrix(i,n,n-i)*(n-i);
 
-					/*
-						Finally we multiply the variable 'localres' by sqrt(L(L+1)) * C_{LM 10}^{LM}
-					*/
+				/*
+					Finally we multiply the variable 'localres' by sqrt(L(L+1)) * C_{LM 10}^{LM}
+				*/
 
-					localres*=cg(L,M,1,0,L,M);
+				localres*=cg(L,M,1,0,L,M);
 
-					/*
-						We save everything in Y3...
-					*/
+				/*
+					We save everything in Y3...
+				*/
 		
-					Y3+=localres;
+				Y3+=localres;
 		
-					/*
-						...and we print the result if needed.
-					*/				
+				/*
+					...and we print the result if needed.
+				*/				
 
-					if((debugoutput==true)&&(printout==true))
-						printf("Y3(L=%d,i=%d,n=%d) = %f\n",L,i,n,creal(localres));
-				}
+				if((debugoutput==true)&&(printout==true))
+					printf("Y3(L=%d,i=%d,n=%d) = %f\n",L,i,n,creal(localres));
 			}
 		}
 	}
