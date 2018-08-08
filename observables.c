@@ -948,8 +948,8 @@ double complex JdotLambda_L(int L,struct bigpsi_t *psi,struct configuration_t *c
 				/*
 					Then we multiply by (\sigma_{n (n-i)})_i * (n-i)
 				*/
-				
-				localres*=sigma_matrix(i,n+i,n)*(-1)*abs(n+i);
+
+				localres*=sigma_matrix(i,n+i,n)*(-1)*(n+i);
 
 				/*
 					Finally we multiply the variable 'localres' by sqrt(L(L+1)) * C_{LM 10}^{LM}
