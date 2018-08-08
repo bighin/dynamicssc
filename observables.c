@@ -785,16 +785,16 @@ double sigma_matrix(int i,int n,int nprime)
 		case 1:
 
 		if((n==-2)&&(nprime==-1))
-			return 2.0f;
+			return -sqrtf(2.0f);
 
 		if((n==-1)&&(nprime==0))
-			return sqrtf(6.0f);
+			return -sqrtf(3.0f);
 
 		if((n==0)&&(nprime==1))
-			return sqrtf(6.0f);
+			return -sqrtf(3.0f);
 
 		if((n==1)&&(nprime==2))
-			return 2.0f;
+			return -sqrtf(2.0f);
 
 		break;
 
@@ -808,16 +808,16 @@ double sigma_matrix(int i,int n,int nprime)
 		case -1:
 
 		if((n==-1)&&(nprime==-2))
-			return 2.0f;
+			return sqrtf(2.0f);
 		
 		if((n==0)&&(nprime==-1))
-			return sqrtf(6.0f);
+			return sqrtf(3.0f);
 
 		if((n==1)&&(nprime==0))
-			return sqrtf(6.0f);
+			return sqrtf(3.0f);
 
 		if((n==2)&&(nprime==1))
-			return 2.0f;
+			return sqrtf(2.0f);
 
 		break;
 	}
@@ -825,7 +825,7 @@ double sigma_matrix(int i,int n,int nprime)
 	return 0.0f;
 }
 
-void debug_sigmamatrices(void)
+void debug_sigma_matrices(void)
 {
 	for(int i=-1;i<=1;i++)
 	{
@@ -926,7 +926,7 @@ double complex JdotLambda_L(int L,struct bigpsi_t *psi,struct configuration_t *c
 			{
 				double complex localres;
 				
-				if(abs(n-i)>2)
+				if(abs(n+i)>2)
 					continue;
 			
 				/*
@@ -937,19 +937,19 @@ double complex JdotLambda_L(int L,struct bigpsi_t *psi,struct configuration_t *c
 					and saves it into the variable 'localres'.
 				*/
 	
-				localres=Dcross(psi,L,L,n,n-i,DINT_MODE_PLAIN,config);
+				localres=Dcross(psi,L,L,n,n+i,DINT_MODE_PLAIN,config);
 					
 				/*
 					Then we multiply by (-1)^i * C_{Ln 1-i}^{L (n-1)}
 				*/
 
-				localres*=pow(-1.0f,i)*cg(L,n,1,-i,L,n-i);
+				localres*=cg(L,n,1,i,L,n+i);
 
 				/*
 					Then we multiply by (\sigma_{n (n-i)})_i * (n-i)
 				*/
-	
-				localres*=sigma_matrix(i,n,n-i)*(n-i);
+				
+				localres*=sigma_matrix(i,n+i,n)*(-1)*abs(n+i);
 
 				/*
 					Finally we multiply the variable 'localres' by sqrt(L(L+1)) * C_{LM 10}^{LM}
