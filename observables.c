@@ -1020,9 +1020,7 @@ double complex fA_L(int L,int n,int nprimeprime,int mu,struct bigpsi_t *psi,stru
 
 			if(n==mu)
 			{
-				localres=conj(Dsingle(psi,L,L,n,DINT_MODE_SUPERPLAIN,config));
-
-				localres*=sqrtf(L*(L+1.0f))*pow(-1.0f,i+1);
+				localres=sqrtf(L*(L+1.0f))*pow(-1.0f,i+1);
 				localres*=cg(L,n+i,1,-i,L,n);
 				localres*=cg(L,M,1,0,L,M);
 				localres*=n;
@@ -1039,9 +1037,7 @@ double complex fA_L(int L,int n,int nprimeprime,int mu,struct bigpsi_t *psi,stru
 			//if(abs(n+i)>2)
 			//	continue;
 
-			localres=conj(Dsingle(psi,L,L,n,DINT_MODE_SUPERPLAIN,config));
-
-			localres*=cg(L,M,1,0,L,M);
+			localres=cg(L,M,1,0,L,M);
 			localres*=cg(L,n,1,i,L,nprimeprime);
 			localres*=-1.0f;
 			localres*=sigma_matrix(i,mu,n);
@@ -1057,6 +1053,7 @@ double complex fA_L(int L,int n,int nprimeprime,int mu,struct bigpsi_t *psi,stru
 double complex Delta_JdotLambda_L(int L,struct bigpsi_t *psi,struct configuration_t *config)
 {
 	double complex A[5][5][5];
+	double complex intalpha[5][5];
 	double complex ret=0.0f;
 
 	for(int n=-2;n<=2;n++)
@@ -1066,9 +1063,13 @@ double complex Delta_JdotLambda_L(int L,struct bigpsi_t *psi,struct configuratio
 
 	for(int n=-2;n<=2;n++)
 		for(int nprime=-2;nprime<=2;nprime++)
+			intalpha[2+n][2+nprime]=Dcross(psi,L,L,n,nprime,DINT_MODE_PLAIN,config);
+
+	for(int n=-2;n<=2;n++)
+		for(int nprime=-2;nprime<=2;nprime++)
 			for(int nprimeprime=-2;nprimeprime<=2;nprimeprime++)
 				for(int mu=-2;mu<=2;mu++)
-					ret+=A[2+n][2+nprimeprime][2+mu]*conj(A[2+nprime][2+nprimeprime][2+mu]);
+					ret+=intalpha[2+n][2+nprime]*A[2+n][2+nprimeprime][2+mu]*conj(A[2+nprime][2+nprimeprime][2+mu]);
 
 	return ret;
 }
