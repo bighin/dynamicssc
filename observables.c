@@ -225,6 +225,7 @@ int fDsingle(unsigned ndim,const double *x,void *fdata,unsigned fdim,double *fva
 	switch(container->mode)
 	{
 		case DINT_MODE_PLAIN:
+		case DINT_MODE_SUPERPLAIN:
 		break;
 
 		case DINT_MODE_OMEGAK:
@@ -267,6 +268,10 @@ int fDsingle(unsigned ndim,const double *x,void *fdata,unsigned fdim,double *fva
 	f(k) = V2(k)/W(k)		if mode == DINT_MODE_VK
 	f(k) = V2(k)			if mode == DINT_MODE_VK0
 	f(k) = omega(k)*V2(k)/W(k)	if mode == DINT_MODE_VK_OMEGAK
+
+	If mode == DINT_MODE_SUPERPLAIN then the integral calculated is
+
+	\sum_k \alpha^{L'}_{k 2 n}
 */
 
 double complex Dsingle(struct bigpsi_t *psi,int L,int Lprime,int n,int mode,struct configuration_t *config)
@@ -364,6 +369,9 @@ double complex Dsingle(struct bigpsi_t *psi,int L,int Lprime,int n,int mode,stru
 	if(x)	free(x);
 	if(y2re) free(y2re);
 	if(y2im) free(y2im);
+
+	if(mode==DINT_MODE_SUPERPLAIN)
+		return res[0]+I*res[1];
 
 	return conj(g)*(res[0]+I*res[1]);
 }
@@ -854,7 +862,11 @@ double complex JdotLambda_L(int L,struct bigpsi_t *psi,struct configuration_t *c
 
 	if(L>=1)
 	{
-		debugoutput=true;
+		/*
+			Enable the following option to have a verbose, debug output.
+		*/
+		
+		debugoutput=false;
 
 		for(int n=-2;n<=2;n++)
 			if(fabs(Dcross(psi,L,L,n,n,DINT_MODE_PLAIN,config))>1e-8)
@@ -866,6 +878,9 @@ double complex JdotLambda_L(int L,struct bigpsi_t *psi,struct configuration_t *c
 
 		for(int i=-1;i<=1;i++)
 		{
+			if(i!=0)
+				continue;
+			
 			for(int n=-2;n<=2;n++)
 			{
 				double complex localres;
@@ -982,6 +997,85 @@ double complex JdotLambda(struct bigpsi_t *psi,struct configuration_t *config)
 
         for(int L=0;L<config->maxl;L++)
                 ret+=JdotLambda_L(L,psi,config);
+
+        return ret;
+}
+
+double complex fA_L(int L,int n,int nprimeprime,int mu,struct bigpsi_t *psi,struct configuration_t *config)
+{
+	double complex X3,Y3;
+	int M;
+	
+	X3=Y3=0.0f;
+	M=psi->params[L].M;
+
+	if(L>=1)
+	{
+		for(int i=-1;i<=1;i++)
+		{
+			double complex localres;
+
+			//if(abs(n+i)>2)
+			//	continue;
+
+			localres=conj(Dsingle(psi,L,L,n,DINT_MODE_SUPERPLAIN,config));
+
+			localres*=sqrtf(L*(L+1.0f))*pow(-1.0f,i+1);
+			localres*=cg(L,n+i,1,-i,L,n);
+			localres*=cg(L,M,1,0,L,M);
+			localres*=n;
+			localres*=cg(L,n+i,1,i,L,nprimeprime);
+
+			X3+=localres;
+		}
+
+		for(int i=-1;i<=1;i++)
+		{
+			double complex localres;
+				
+			//if(abs(n+i)>2)
+			//	continue;
+
+			localres=conj(Dsingle(psi,L,L,n,DINT_MODE_SUPERPLAIN,config));
+
+			localres*=cg(L,M,1,0,L,M);
+			localres*=cg(L,n,1,i,L,nprimeprime);
+			localres*=-1.0f;
+			localres*=sigma_matrix(i,mu,n);
+			localres*=mu;
+
+			Y3+=localres;
+		}
+	}
+
+	return X3-Y3;
+}
+
+double complex Delta_JdotLambda_L(int L,struct bigpsi_t *psi,struct configuration_t *config)
+{
+	double complex A[5][5][5];
+	double complex ret=0.0f;
+
+	for(int n=-2;n<=2;n++)
+		for(int nprimeprime=-2;nprimeprime<=2;nprimeprime++)
+			for(int mu=-2;mu<=2;mu++)
+				A[2+n][2+nprimeprime][2+mu]=fA_L(L,n,nprimeprime,mu,psi,config);
+
+	for(int n=-2;n<=2;n++)
+		for(int nprime=-2;nprime<=2;nprime++)
+			for(int nprimeprime=-2;nprimeprime<=2;nprimeprime++)
+				for(int mu=-2;mu<=2;mu++)
+					ret+=A[2+n][2+nprimeprime][2+mu]*conj(A[2+nprime][2+nprimeprime][2+mu]);
+
+	return ret;
+}
+
+double complex Delta_JdotLambda(struct bigpsi_t *psi,struct configuration_t *config)
+{
+        double complex ret=0.0f;
+
+        for(int L=0;L<config->maxl;L++)
+                ret+=Delta_JdotLambda_L(L,psi,config);
 
         return ret;
 }
