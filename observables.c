@@ -708,6 +708,10 @@ double complex molecular_rotational_energy_L(int L,struct bigpsi_t *psi,struct c
 	return bosons_rotational_energy_L(L,psi,config)+A1C1+B3+conj(B3)+C3;
 }
 
+/*
+	<J^2>_{lab} = <(J'-\Lambda)^2>_{rot}
+*/
+
 double complex molecular_rotational_energy(struct bigpsi_t *psi,struct configuration_t *config)
 {
 	double complex ret=0.0f;
@@ -717,6 +721,10 @@ double complex molecular_rotational_energy(struct bigpsi_t *psi,struct configura
 	
 	return ret;
 }
+
+/*
+	<L^2>_{lab} = <L^2>_{rot}
+*/
 
 double complex total_rotational_energy(struct bigpsi_t *psi,struct configuration_t *config)
 {

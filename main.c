@@ -73,12 +73,12 @@ void print_header_alpha(FILE *out,int L,struct configuration_t *config)
 
 void print_header_norms(FILE *out)
 {
-	fprintf(out,"# <Time> <NormQP L=0> <NormPhonons L=0> ... <NormQP L=Lmax> <NormPhonons L=Lmax> <TotalNorm> <Re(AlignmentCosine)> <Im(AlignmentCosine)> <Re(Cos^2)> <Im(Cos^2)> <Re(S(t))> <Im(S(t))> <LaserIntensity> <BathIntensity> <MolecularRotationalEnergy> <BosonsRotationalEnergy> <TotalRotationalEnergy> <Hamiltonian> <JdotLambda> <Delta JdotLambda>\n");
+	fprintf(out,"# <Time> <NormQP L=0> <NormPhonons L=0> ... <NormQP L=Lmax> <NormPhonons L=Lmax> <TotalNorm> <Re(AlignmentCosine)> <Im(AlignmentCosine)> <Re(Cos^2)> <Im(Cos^2)> <Re(S(t))> <Im(S(t))> <LaserIntensity> <BathIntensity> <MolecularRotationalEnergy> <BosonsRotationalEnergy> <TotalRotationalEnergy> <Hamiltonian> <JdotLambda> <(Delta JdotLambda)^2>\n");
 }
 
 void print_header_summary(FILE *out)
 {
-	fprintf(out,"# <Time> <LaserIntensity> <BathIntensity> <Norm> <NormQP> <NormPhonons> <Re(AlignmentCosine)> <Im(AlignmentCosine)> <Re(S(t))> <Im(S(t))> <Completion%%> <LocalNormErr> <TimeDE> <TimeCos> <Torque> <RotationalEnergy> <MolecularRotationalEnergy> <BosonsRotationalEnergy> <TotalRotationalEnergy> <Hamiltonian> <JdotLambda> <Delta JdotLambda>\n");
+	fprintf(out,"# <Time> <LaserIntensity> <BathIntensity> <Norm> <NormQP> <NormPhonons> <Re(AlignmentCosine)> <Im(AlignmentCosine)> <Re(S(t))> <Im(S(t))> <Completion%%> <LocalNormErr> <TimeDE> <TimeCos> <Torque> <RotationalEnergy> <MolecularRotationalEnergy> <BosonsRotationalEnergy> <TotalRotationalEnergy> <Hamiltonian> <JdotLambda> <(Delta JdotLambda)^2>\n");
 }
 
 void dump_phonons(FILE *out,struct bigpsi_t *psi,int L,struct configuration_t *config)
