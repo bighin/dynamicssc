@@ -1013,18 +1013,21 @@ double complex fA_L(int L,int n,int nprimeprime,int mu,struct bigpsi_t *psi,stru
 	{
 		for(int i=-1;i<=1;i++)
 		{
-			double complex localres;
+			double complex localres=0.0f;
 
 			//if(abs(n+i)>2)
 			//	continue;
 
-			localres=conj(Dsingle(psi,L,L,n,DINT_MODE_SUPERPLAIN,config));
+			if(n==mu)
+			{
+				localres=conj(Dsingle(psi,L,L,n,DINT_MODE_SUPERPLAIN,config));
 
-			localres*=sqrtf(L*(L+1.0f))*pow(-1.0f,i+1);
-			localres*=cg(L,n+i,1,-i,L,n);
-			localres*=cg(L,M,1,0,L,M);
-			localres*=n;
-			localres*=cg(L,n+i,1,i,L,nprimeprime);
+				localres*=sqrtf(L*(L+1.0f))*pow(-1.0f,i+1);
+				localres*=cg(L,n+i,1,-i,L,n);
+				localres*=cg(L,M,1,0,L,M);
+				localres*=n;
+				localres*=cg(L,n+i,1,i,L,nprimeprime);
+			}
 
 			X3+=localres;
 		}
