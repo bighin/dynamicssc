@@ -43,6 +43,8 @@ double complex total_energy(struct bigpsi_t *psi,struct configuration_t *config)
 double complex JdotLambda(struct bigpsi_t *psi,struct configuration_t *config);
 double complex Delta_JdotLambda(struct bigpsi_t *psi,struct configuration_t *config);
 
+double complex Lambdaz2_rot(struct bigpsi_t *psi,struct configuration_t *config);
+
 double complex rcr(int L,struct bigpsi_t *psi,struct configuration_t *config);
 double complex overlapS(struct bigpsi_t *psi,double *y0,double t0,struct configuration_t *config);
 double torque(struct bigpsi_t *psi,int L,int M,struct configuration_t *config);

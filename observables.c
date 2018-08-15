@@ -1009,6 +1009,35 @@ double complex JdotLambda(struct bigpsi_t *psi,struct configuration_t *config)
         return ret;
 }
 
+double complex Lambdaz2_rot_L(int L,struct bigpsi_t *psi,struct configuration_t *config)
+{
+	int offsetL;
+	double complex ret=0.0f;
+	double norm2L;
+
+	offsetL=L*(2+10*config->gridpoints);
+	norm2L=pow(norm(psi->t,&psi->y[offsetL],&psi->params[L],config),2.0f);
+
+	for(int n=-2;n<=2;n++)
+		ret+=n*n*Dcross(psi,L,L,n,n,DINT_MODE_PLAIN,config);
+	
+	return norm2L*ret;
+}
+
+/*
+	\langle \Lambda_z^2 \rangle_{rot}
+*/
+
+double complex Lambdaz2_rot(struct bigpsi_t *psi,struct configuration_t *config)
+{
+        double complex ret=0.0f;
+
+        for(int L=0;L<config->maxl;L++)
+                ret+=Lambdaz2_rot_L(L,psi,config);
+
+        return ret;
+}
+
 double complex fA_L(int L,int n,int nprimeprime,int mu,struct bigpsi_t *psi,struct configuration_t *config)
 {
 	double complex X3,Y3;
@@ -1123,16 +1152,16 @@ double complex overlapS(struct bigpsi_t *psi,double *y0,double t0,struct configu
 
 double torque(struct bigpsi_t *psi,int L,int M,struct configuration_t *config)
 {
-	double complex gLM;
+	//double complex gLM;
 	double cg;
 	double complex integral;
-	int offsetL;
+	//int offsetL;
 
 	if(L==0)
 		return 0.0f;
 
-	offsetL=L*(2+10*config->gridpoints);
-	gLM=timephase(-L*(L+1.0f),psi->t,config)*(psi->y[offsetL+0]+I*psi->y[offsetL+1]);
+	//offsetL=L*(2+10*config->gridpoints);
+	//gLM=timephase(-L*(L+1.0f),psi->t,config)*(psi->y[offsetL+0]+I*psi->y[offsetL+1]);
 
 	cg=1.0f*M/sqrtf(L*L+L);
 	integral=conj(Dsingle(psi,L,L,1,DINT_MODE_VK0,config)+Dsingle(psi,L,L,-1,DINT_MODE_VK0,config));
