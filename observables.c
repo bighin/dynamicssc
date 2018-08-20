@@ -1121,6 +1121,56 @@ double complex Delta_JdotLambda(struct bigpsi_t *psi,struct configuration_t *con
         return ret;
 }
 
+double complex Jz_lab_L(int L,int M,struct bigpsi_t *psi,struct configuration_t *config)
+{
+	double complex A,B;
+	
+	A=B=0.0f;
+
+	for(int i=-1;i<=1;i++)
+	{
+		for(int n=-2;n<=2;n++)
+		{
+			double cf=cg(L,M,1,0,L,M)*cg(L,0,1,-i,L,n)*sigma_matrix(i,n,0);
+			
+			if(fabs(cf)<1e-8)
+				continue;
+
+			A+=cf*Dsingle(psi,L,L,n,DINT_MODE_VK,config);
+		}
+	}
+
+	for(int i=-1;i<=1;i++)
+	{
+		for(int n=-2;n<=2;n++)
+		{
+			for(int nprime=-2;nprime<=2;nprime++)
+			{
+				double cf=cg(L,M,1,0,L,M)*cg(L,0,1,-i,L,n)*sigma_matrix(i,n,nprime);
+			
+				if(fabs(cf)<1e-8)
+					continue;
+				
+				B-=cf*Dcross(psi,L,L,n,nprime,DINT_MODE_PLAIN,config);
+			}
+		}
+	}
+
+
+	return A+conj(A)+B;
+}
+
+double complex Jz_lab(struct bigpsi_t *psi,struct configuration_t *config)
+{
+        double complex ret=0.0f;
+	int M=psi->params[0].M;
+
+        for(int L=0;L<config->maxl;L++)
+                ret+=Jz_lab_L(L,M,psi,config);
+
+        return M+ret;
+}
+
 double complex rcr(int L,struct bigpsi_t *psi,struct configuration_t *config)
 {
 	return molecular_rotational_energy_L(L,psi,config)/(L*(L+1));
