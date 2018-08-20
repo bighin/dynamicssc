@@ -11,7 +11,7 @@
 	Spline interpolation, given a grid of points, essentially a nice wrapper
 	over the code contained in Numerical Recipes (NR).
 
-	Note that the code in NR is __not__ thread safe, the static keyword has to
+	Note that the code in NR is __not__ thread safe, the 'static' keyword has to
 	be removed in the splint() function.
 */
 

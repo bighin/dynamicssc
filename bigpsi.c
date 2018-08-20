@@ -426,7 +426,7 @@ void bigpsi_normalize(struct bigpsi_t *psi,double *previousnorm)
 		due to better numerical accuracy.
 	
 		However, if the laser is on, or if we don't have a normalization snapshot,
-		then we have 
+		then we have to normalize the wavefunction as a whole.
 	*/
 
 	if((psi->have_normalization_snapshot==true)&&(laser_is_on(config,psi->t)==false))

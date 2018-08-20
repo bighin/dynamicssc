@@ -1021,7 +1021,7 @@ double complex Lambdaz2_rot_L(int L,struct bigpsi_t *psi,struct configuration_t 
 	for(int n=-2;n<=2;n++)
 		ret+=n*n*Dcross(psi,L,L,n,n,DINT_MODE_PLAIN,config);
 	
-	return norm2L*ret;
+	return ret;
 }
 
 /*
