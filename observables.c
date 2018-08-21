@@ -1146,7 +1146,7 @@ double complex Jz_lab_L(int L,int M,struct bigpsi_t *psi,struct configuration_t 
 		{
 			for(int nprime=-2;nprime<=2;nprime++)
 			{
-				double cf=cg(L,M,1,0,L,M)*cg(L,0,1,-i,L,n)*sigma_matrix(i,n,nprime);
+				double cf=cg(L,M,1,0,L,M)*cg(L,nprime,1,-i,L,n)*sigma_matrix(i,n,nprime);
 			
 				if(fabs(cf)<1e-8)
 					continue;
