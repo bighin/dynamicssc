@@ -468,3 +468,19 @@ double complex costhetasquared(struct bigpsi_t *psi,struct configuration_t *conf
 
 	return total;
 }
+
+double complex costhetasquaredLLprime(struct bigpsi_t *psi,int L,int Lprime,struct configuration_t *config)
+{
+	int M,lambda;
+	double complex total=0.0f;
+
+	M=psi->params[0].M;
+
+	for(lambda=0;lambda<=2;lambda+=2)
+		total+=fcosthetasquared(psi,L,Lprime,M,lambda,config);
+
+	if(L!=Lprime)
+		total*=2.0f;
+
+	return total;
+}
