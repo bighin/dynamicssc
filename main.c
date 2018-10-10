@@ -76,7 +76,7 @@ void print_header_norms(FILE *out)
 	fprintf(out,"# <Time> <NormQP L=0> <NormPhonons L=0> ... <NormQP L=Lmax> <NormPhonons L=Lmax> <TotalNorm> <Re(AlignmentCosine)> <Im(AlignmentCosine)> <Re(Cos^2)> <Im(Cos^2)> <Re(S(t))> <Im(S(t))> <LaserIntensity> <BathIntensity> <MolecularRotationalEnergy> <BosonsRotationalEnergy> <TotalRotationalEnergy> <Hamiltonian> <JdotLambda> <(Delta JdotLambda)^2> <Lambda_z^2>_rot <J_z>_lab\n");
 }
 
-#define MAX_L_FOR_COSINE_OUTPUT	(6)
+#define MAX_L_FOR_COSINE_OUTPUT	(7)
 
 void print_header_cosines(FILE *out)
 {
