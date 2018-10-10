@@ -422,6 +422,7 @@ int do_ini_file(char *inifile)
 	struct configuration_t config;
 
 	load_config_defaults(&config);
+	config.inipath=strdup(inifile);
 	load_molecules_files("molecules.ini");
 
 	if(ini_parse(inifile,configuration_handler,&config)<0)

@@ -6,6 +6,7 @@
 struct configuration_t
 {
 	char *prefix;
+	char *inipath;
 	bool writephonons;
 	bool cos2d;
 	bool savefinalconf;

@@ -75,7 +75,23 @@ int configuration_handler(void *user,const char *section,const char *name,const 
 
 	if(MATCH("output","prefix"))
 	{
-		pconfig->prefix=strdup(value);
+		if(strcmp(value,"auto")==0)
+		{
+			if(!strstr(pconfig->inipath,".ini"))
+			{
+				printf("Error: using automatic prefix, but the configuration file path does not contain '.ini'\n");
+				exit(0);
+			}
+
+			pconfig->prefix=find_and_replace(pconfig->inipath,".ini","");
+		}
+		else
+		{
+			pconfig->prefix=strdup(value);
+		}
+
+		printf("Prefix is: <%s>\n",pconfig->prefix);
+		exit(0);
 	}
 	if(MATCH("output","writephonons"))
 	{

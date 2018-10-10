@@ -24,4 +24,6 @@ FILE *fopen_mkdir(const char *name,const char *mode);
 
 double arccot(double x);
 
+char *find_and_replace(const char *src, const char *from, const char *to);
+
 #endif //__AUX_H__
