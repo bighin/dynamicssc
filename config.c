@@ -89,9 +89,6 @@ int configuration_handler(void *user,const char *section,const char *name,const 
 		{
 			pconfig->prefix=strdup(value);
 		}
-
-		printf("Prefix is: <%s>\n",pconfig->prefix);
-		exit(0);
 	}
 	if(MATCH("output","writephonons"))
 	{
