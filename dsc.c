@@ -755,15 +755,17 @@ int sc_time_evolution_t0(double t,const double y[],double dydt[],void *p)
 
 double fbe(struct configuration_t *config,double x)
 {
-	double temperature,beta;
-	
+	double temperature,beta,kelvins;
+
+	kelvins=config->temperature;
+
 	if(config->moleculetype==MOLECULE_I2)
 	{
 		/*
 			Inverse temperature of the bath, in units of B, for I2
 		*/
 
-		temperature=0.38/0.0536459;
+		temperature=kelvins/0.0536459;
 		beta=1.0f/temperature;
 	}
 	else if(config->moleculetype==MOLECULE_CS2)
@@ -772,16 +774,16 @@ double fbe(struct configuration_t *config,double x)
 			Inverse temperature of the bath, in units of B, for CS2
 		*/
 
-		temperature=0.38/0.156839;
+		temperature=kelvins/0.156839;
 		beta=1.0f/temperature;
 	}
 	else if(config->moleculetype==MOLECULE_OCS)
 	{
 		/*
-			Inverse temperature of the bath, in units of B, for CS2
+			Inverse temperature of the bath, in units of B, for OCS
 		*/
 
-		temperature=0.38/0.291866;
+		temperature=kelvins/0.291866;
 		beta=1.0f/temperature;
 	}
 	else

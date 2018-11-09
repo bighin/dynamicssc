@@ -451,7 +451,7 @@ int do_ini_file(char *inifile)
 	printf("\tEnd time: %f\n",config.endtime);
 	printf("\tTimestep: %f\n",config.timestep);
 	printf("\tFree evolution: %s\n",(config.freeevolution==true)?("true"):("false"));
-	printf("\tBosons at finite temperature: %s\n",(config.bosonsfinitetemperature==true)?("true"):("false"));
+	printf("\tBosons at finite temperature: %s (T=%f K)\n",(config.bosonsfinitetemperature==true)?("true"):("false"),config.temperature);
 
 	if(config.freeevolution==true)
 	{

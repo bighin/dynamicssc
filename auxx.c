@@ -166,6 +166,8 @@ double arccot(double x)
  *   text pointed to by 'to'.
  */
 
+#warning Properly format this!
+
 char *find_and_replace(const char *src, const char *from, const char *to)
 {
    /*

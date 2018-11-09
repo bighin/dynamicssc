@@ -18,6 +18,7 @@ struct configuration_t
 	double timestep;
 	bool freeevolution;
 	bool bosonsfinitetemperature;
+	double temperature;
 
 	bool dispersion_is_experimental;
 	double soundspeed;
