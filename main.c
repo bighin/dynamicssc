@@ -76,14 +76,12 @@ void print_header_norms(FILE *out)
 	fprintf(out,"# <Time> <NormQP L=0> <NormPhonons L=0> ... <NormQP L=Lmax> <NormPhonons L=Lmax> <TotalNorm> <Re(AlignmentCosine)> <Im(AlignmentCosine)> <Re(Cos^2)> <Im(Cos^2)> <Re(S(t))> <Im(S(t))> <LaserIntensity> <BathIntensity> <MolecularRotationalEnergy> <BosonsRotationalEnergy> <TotalRotationalEnergy> <Hamiltonian> <JdotLambda> <(Delta JdotLambda)^2> <Lambda_z^2>_rot <J_z>_lab\n");
 }
 
-#define MAX_L_FOR_COSINE_OUTPUT	(9)
-
-void print_header_cosines(FILE *out)
+void print_header_cosines(FILE *out,struct configuration_t *config)
 {
 	fprintf(out,"# Breakdown of alignment cosine in terms of L,L' overlaps\n");
 	fprintf(out,"# ");
 
-	for(int j=0;j<MAX_L_FOR_COSINE_OUTPUT;j++)
+	for(int j=0;j<config->maxl;j++)
 		for(int k=0;k<=j;k++)
 			fprintf(out,"(L=%d,L=%d) ",j,k);
 
@@ -193,7 +191,7 @@ int do_single(struct configuration_t *config)
 	}
 
 	print_header_norms(norms);
-	print_header_cosines(outcosines);
+	print_header_cosines(outcosines,config);
 	print_header_summary(stdout);
 
 	timedivs=(config->endtime-config->starttime)/config->timestep;
@@ -352,7 +350,7 @@ int do_single(struct configuration_t *config)
 			...then we take care of the 'cosines' file...
 		*/
 
-		for(int j=0;j<MAX_L_FOR_COSINE_OUTPUT;j++)
+		for(int j=0;j<config->maxl;j++)
 			for(int k=0;k<=j;k++)
 				fprintf(outcosines,"%f ",creal(costhetasquaredLLprime(psi,j,k,config)));
 

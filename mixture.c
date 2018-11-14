@@ -142,7 +142,7 @@ void do_mixture(struct configuration_t *config)
 		Statistical mixture for CS2, see EnsableAveragesCS2.nb and BW.nb for better precision.
 	*/
 
-#warning Use also the free weights (calculate without rotational constant renormalization)
+#warning It would be nice to have an option to use the free weights (calculated without rotational constant renormalization)
 
 #define USE_RENORMALIZED_WEIGHTS
 #ifdef USE_RENORMALIZED_WEIGHTS

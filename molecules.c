@@ -4,7 +4,7 @@
 #include "molecules.h"
 #include "inih/ini.h"
 
-#warning USEME!
+#warning This code is currently unused, it would be nice using it.
 
 int find_molecule_id(struct molecule_db_t *moldb,const char *section)
 {

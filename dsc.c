@@ -1153,7 +1153,7 @@ int sc_time_evolution_finite_t(double t,const double y[],double dydt[],void *p)
 	dgdt+=-I*sqrt(6*L*(L+1))*(localAplus+localAminus);
 	dgdt+=I*localB;
 
-#warning ERROR HERE MAYBE! G PHASE AND ALPHA PHASE
+#warning Check the next line! (g phase and alpha phase)
 	dgdt+=-I*12.0f*localC;
 
 	dydt[0]=creal(dgdt);
@@ -1203,8 +1203,8 @@ int sc_time_evolution_finite_t(double t,const double y[],double dydt[],void *p)
 		{
 			dxi20dt+=I*g*V2(k,localdensity,config)/W(k,config)*(omegak(k,config)+6.0-W(k,config))*timephase(omegak(k,config)+6.0f,t,config)*fscale(k,L,config);
 
-#warning ERROR HERE! OR AT LEAST CHECK! G PHASE AND ALPHA PHASE
-			dxi20dt+=-12.0f*I*g*V2(k,localdensity,config)/W(k,config)*fbek*timephase(omegak(k,config)+6.0f,t,config)*fscale(k,L,config);
+#warning Check the next line (g phase and alpha phase)
+		        dxi20dt+=-12.0f*I*g*V2(k,localdensity,config)/W(k,config)*fbek*timephase(omegak(k,config)+6.0f,t,config)*fscale(k,L,config);
 		}
 
 		dxi21dt=I*sqrt(6*L*(L+1))*timephase(-2.0f,t,config)*xi20*(1.0f+fbek)+I*2.0f*sqrt(L*(L+1)-2)*timephase(6.0f,t,config)*xi22*(1.0f+fbek);

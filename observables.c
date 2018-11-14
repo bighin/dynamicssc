@@ -1011,12 +1011,12 @@ double complex JdotLambda(struct bigpsi_t *psi,struct configuration_t *config)
 
 double complex Lambdaz2_rot_L(int L,struct bigpsi_t *psi,struct configuration_t *config)
 {
-	int offsetL;
+	//int offsetL;
 	double complex ret=0.0f;
-	double norm2L;
+	//double norm2L;
 
-	offsetL=L*(2+10*config->gridpoints);
-	norm2L=pow(norm(psi->t,&psi->y[offsetL],&psi->params[L],config),2.0f);
+	//offsetL=L*(2+10*config->gridpoints);
+	//norm2L=pow(norm(psi->t,&psi->y[offsetL],&psi->params[L],config),2.0f);
 
 	for(int n=-2;n<=2;n++)
 		ret+=n*n*Dcross(psi,L,L,n,n,DINT_MODE_PLAIN,config);
