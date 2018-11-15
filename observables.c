@@ -1193,8 +1193,10 @@ double complex overlapS(struct bigpsi_t *psi,double *y0,double t0,struct configu
 
 		ret+=conj(gs)*gt;
 
-		for(int n=-2;n<=2;n++)
-			ret+=Ecross(psi,L,L,n,y0,t0,config);
+#warning Only the molecular part of the overlap is here
+
+		//for(int n=-2;n<=2;n++)
+		//	ret+=Ecross(psi,L,L,n,y0,t0,config);
 	}
 
 	return ret;

@@ -312,7 +312,7 @@ double norm_qp(double t,const double y[],struct params_t *params,struct configur
 	double complex g=y[0]+I*y[1];
 
 	/*
-		Here we should multiply g by a fase, but since we are just interested
+		Here we should multiply g by a phase, but since we are just interested
 		in the modulus, this is not needed...
 	*/
 	
