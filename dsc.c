@@ -708,6 +708,15 @@ int sc_time_evolution_t0(double t,const double y[],double dydt[],void *p)
 		dxi2m2dt=I*2.0f*sqrt(L*(L+1)-2)*timephase(-6.0f,t,config)*xi2m1;
 		dxi2m1dt=I*sqrt(6*L*(L+1))*timephase(-2.0f,t,config)*xi20+I*2.0f*sqrt(L*(L+1)-2)*timephase(6.0f,t,config)*xi2m2;
 
+                if(config->centrifugal==true)
+                {
+			dxi2m2dt+=I*config->centrifugalD*pow(L*(L+1),2.0f)*xi2m2;
+			dxi2m1dt+=I*config->centrifugalD*pow(L*(L+1),2.0f)*xi2m1;
+			dxi20dt+=I*config->centrifugalD*pow(L*(L+1),2.0f)*xi20;
+			dxi21dt+=I*config->centrifugalD*pow(L*(L+1),2.0f)*xi21;
+			dxi22dt+=I*config->centrifugalD*pow(L*(L+1),2.0f)*xi22;
+		}
+
  		if(c!=0)
 		{
 			double complex invphase2m1;
@@ -1192,6 +1201,15 @@ int sc_time_evolution_finite_t(double t,const double y[],double dydt[],void *p)
 
 		dxi2m2dt=I*2.0f*sqrt(L*(L+1)-2)*timephase(-6.0f,t,config)*xi2m1*(1.0f+fbek);
 		dxi2m1dt=I*sqrt(6*L*(L+1))*timephase(-2.0f,t,config)*xi20*(1.0f+fbek)+I*2.0f*sqrt(L*(L+1)-2)*timephase(6.0f,t,config)*xi2m2*(1.0f+fbek);
+
+                if(config->centrifugal==true)
+                {
+			dxi2m2dt+=I*config->centrifugalD*pow(L*(L+1),2.0f)*xi2m2;
+			dxi2m1dt+=I*config->centrifugalD*pow(L*(L+1),2.0f)*xi2m1;
+			dxi20dt+=I*config->centrifugalD*pow(L*(L+1),2.0f)*xi20;
+			dxi21dt+=I*config->centrifugalD*pow(L*(L+1),2.0f)*xi21;
+			dxi22dt+=I*config->centrifugalD*pow(L*(L+1),2.0f)*xi22;
+		}
 
  		if(c!=0)
 		{
