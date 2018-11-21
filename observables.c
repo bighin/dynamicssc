@@ -241,6 +241,7 @@ int fDsingle(unsigned ndim,const double *x,void *fdata,unsigned fdim,double *fva
 		break;
 
 		case DINT_MODE_VK0:
+		case DINT_MODE_SUPERPLAIN_VK0:
 		f*=V2(k,container->localdensity,config);
 		break;
 
@@ -272,6 +273,10 @@ int fDsingle(unsigned ndim,const double *x,void *fdata,unsigned fdim,double *fva
 	If mode == DINT_MODE_SUPERPLAIN then the integral calculated is
 
 	\sum_k \alpha^{L'}_{k 2 n}
+
+	If mode == DINT_MODE_SUPERPLAIN_VK0 then the integral calculated is
+
+	\sum_k \alpha^{L'}_{k 2 n} V2(k)
 */
 
 double complex Dsingle(struct bigpsi_t *psi,int L,int Lprime,int n,int mode,struct configuration_t *config)
@@ -370,7 +375,7 @@ double complex Dsingle(struct bigpsi_t *psi,int L,int Lprime,int n,int mode,stru
 	if(y2re) free(y2re);
 	if(y2im) free(y2im);
 
-	if(mode==DINT_MODE_SUPERPLAIN)
+	if((mode==DINT_MODE_SUPERPLAIN)||(mode==DINT_MODE_SUPERPLAIN_VK0))
 		return res[0]+I*res[1];
 
 	return conj(g)*(res[0]+I*res[1]);
