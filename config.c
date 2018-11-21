@@ -33,6 +33,8 @@ void load_config_defaults(struct configuration_t *config)
 	config->fscale=true;
 
 	config->moleculetype=MOLECULE_I2;
+        config->centrifugal=false;
+        config->centrifugalD=0.0f;
 
 	config->mixture=false;
 	config->nrl=1;
@@ -186,6 +188,11 @@ int configuration_handler(void *user,const char *section,const char *name,const 
 		else
 			fprintf(stderr,"Warning: invalid molecule type '%s'\n",value);
 	}
+	else if(MATCH("molecule","centrifugalD"))
+	{
+		pconfig->centrifugal=true;
+		pconfig->centrifugalD=atof(value);
+        }
 	else if(MATCH("initialconditions","type"))
 	{
 		if(!strcmp(value,"singlestate"))

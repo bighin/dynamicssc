@@ -31,6 +31,8 @@ struct configuration_t
 #define MOLECULE_OCS	(22)
 
 	short moleculetype;
+        bool centrifugal;
+        double centrifugalD;
 
 	bool mixture;
 	int nrl;

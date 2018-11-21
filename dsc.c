@@ -662,6 +662,9 @@ int sc_time_evolution_t0(double t,const double y[],double dydt[],void *p)
 
 	dgdt=0.0f;
 
+        if(config->centrifugal==true)
+                dgdt+=I*config->centrifugalD*pow(L*(L+1),2.0f)*g;
+
 	if(config->freeevolution==true)
 	{
 		dydt[0]=creal(dgdt);
@@ -1131,6 +1134,9 @@ int sc_time_evolution_finite_t(double t,const double y[],double dydt[],void *p)
 	g=y[0]+I*y[1];
 
 	dgdt=0.0f;
+
+        if(config->centrifugal==true)
+                dgdt+=I*config->centrifugalD*pow(L*(L+1),2.0f)*g;
 
 	if(config->freeevolution==true)
 	{

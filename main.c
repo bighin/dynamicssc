@@ -484,6 +484,13 @@ int do_ini_file(char *inifile)
 		break;
 	}
 
+        printf("\tCentrifugal distortion: %s",(config.centrifugal==true)?("true"):("false"));
+
+        if(config.centrifugal==true)
+                printf(" (D=%f)",config.centrifugalD);
+
+        printf("\n");
+
 	printf("\nInitial conditions:\n");
 
 	if(config.mixture==false)
