@@ -40,6 +40,12 @@ struct params_t
 	double t;
 	
 	struct configuration_t *config;
+
+	/*
+		A pointer to the 'parent' bigpsi structure.
+	*/
+
+	void *parent;
 };
 
 struct container_t

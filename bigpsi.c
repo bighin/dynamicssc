@@ -176,7 +176,7 @@ struct bigpsi_t *bigpsi_init(struct configuration_t *config,int mode,int L,int M
 	
 	if(!(psi=malloc(sizeof(struct bigpsi_t))))
 		return NULL;
-	
+
 	psi->nrpsis=config->maxl;
 	psi->y=malloc((2+10*config->gridpoints)*psi->nrpsis*sizeof(double));
 	psi->params=malloc(psi->nrpsis*sizeof(struct params_t));
@@ -227,6 +227,7 @@ struct bigpsi_t *bigpsi_init(struct configuration_t *config,int mode,int L,int M
 			psi->params[d].M=config->startm;
 		
 		psi->params[d].config=config;
+		psi->params[d].parent=psi;
 	}
 
 	psi->dim=psi->nrpsis*(2+10*config->gridpoints);
