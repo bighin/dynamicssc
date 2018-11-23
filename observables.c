@@ -75,8 +75,8 @@ double complex Dcross(struct bigpsi_t *psi,int L,int Lprime,int n,int nprime,int
 	extern double relError;
 	extern size_t maxEval;
 
-	int offsetL=L*(2+10*config->gridpoints);
-	int offsetLprime=Lprime*(2+10*config->gridpoints);
+	int offsetL=L*(10+10*config->gridpoints);
+	int offsetLprime=Lprime*(10+10*config->gridpoints);
 
 	x=malloc(sizeof(double)*config->gridpoints);
 	y1re=malloc(sizeof(double)*config->gridpoints);
@@ -162,11 +162,11 @@ double complex Dcross(struct bigpsi_t *psi,int L,int Lprime,int n,int nprime,int
 			exit(0);
 		}
 
-                y1re[c]=creal(phase1*(psi->y[offsetL+2+10*c+noffset]+I*psi->y[offsetL+2+10*c+noffset+1]));
-                y1im[c]=cimag(phase1*(psi->y[offsetL+2+10*c+noffset]+I*psi->y[offsetL+2+10*c+noffset+1]));
+                y1re[c]=creal(phase1*(psi->y[offsetL+10+10*c+noffset]+I*psi->y[offsetL+10+10*c+noffset+1]));
+                y1im[c]=cimag(phase1*(psi->y[offsetL+10+10*c+noffset]+I*psi->y[offsetL+10+10*c+noffset+1]));
 
-                y2re[c]=creal(phase2*(psi->y[offsetLprime+2+10*c+nprimeoffset]+I*psi->y[offsetLprime+2+10*c+nprimeoffset+1]));
-                y2im[c]=cimag(phase2*(psi->y[offsetLprime+2+10*c+nprimeoffset]+I*psi->y[offsetLprime+2+10*c+nprimeoffset+1]));
+                y2re[c]=creal(phase2*(psi->y[offsetLprime+10+10*c+nprimeoffset]+I*psi->y[offsetLprime+10+10*c+nprimeoffset+1]));
+                y2im[c]=cimag(phase2*(psi->y[offsetLprime+10+10*c+nprimeoffset]+I*psi->y[offsetLprime+10+10*c+nprimeoffset+1]));
 	}
 
         container.intre1=init_interpolation(x,y1re,config->gridpoints);
@@ -291,8 +291,8 @@ double complex Dsingle(struct bigpsi_t *psi,int L,int Lprime,int n,int mode,stru
 	extern double relError;
 	extern size_t maxEval;
 
-	int offsetL=L*(2+10*config->gridpoints);
-	int offsetLprime=Lprime*(2+10*config->gridpoints);
+	int offsetL=L*(10+10*config->gridpoints);
+	int offsetLprime=Lprime*(10+10*config->gridpoints);
 
 	x=malloc(sizeof(double)*config->gridpoints);
 	y2re=malloc(sizeof(double)*config->gridpoints);
@@ -344,8 +344,8 @@ double complex Dsingle(struct bigpsi_t *psi,int L,int Lprime,int n,int mode,stru
 			exit(0);
 		}
 
-                y2re[c]=creal(phase2*(psi->y[offsetLprime+2+10*c+noffset]+I*psi->y[offsetLprime+2+10*c+noffset+1]));
-                y2im[c]=cimag(phase2*(psi->y[offsetLprime+2+10*c+noffset]+I*psi->y[offsetLprime+2+10*c+noffset+1]));
+                y2re[c]=creal(phase2*(psi->y[offsetLprime+10+10*c+noffset]+I*psi->y[offsetLprime+10+10*c+noffset+1]));
+                y2im[c]=cimag(phase2*(psi->y[offsetLprime+10+10*c+noffset]+I*psi->y[offsetLprime+10+10*c+noffset+1]));
 	}
 
         container.intre2=init_interpolation(x,y2re,config->gridpoints);
@@ -401,8 +401,8 @@ double complex Ecross(struct bigpsi_t *psi,int L,int Lprime,int n,double *y0,dou
 	extern double relError;
 	extern size_t maxEval;
 
-	int offsetL=L*(2+10*config->gridpoints);
-	int offsetLprime=Lprime*(2+10*config->gridpoints);
+	int offsetL=L*(10+10*config->gridpoints);
+	int offsetLprime=Lprime*(10+10*config->gridpoints);
 
 	x=malloc(sizeof(double)*config->gridpoints);
 	y1re=malloc(sizeof(double)*config->gridpoints);
@@ -459,11 +459,11 @@ double complex Ecross(struct bigpsi_t *psi,int L,int Lprime,int n,double *y0,dou
 			exit(0);
 		}
 
-                y1re[c]=creal(phase1*(y0[offsetL+2+10*c+noffset]+I*y0[offsetL+2+10*c+noffset+1]));
-                y1im[c]=cimag(phase1*(y0[offsetL+2+10*c+noffset]+I*y0[offsetL+2+10*c+noffset+1]));
+                y1re[c]=creal(phase1*(y0[offsetL+10+10*c+noffset]+I*y0[offsetL+10+10*c+noffset+1]));
+                y1im[c]=cimag(phase1*(y0[offsetL+10+10*c+noffset]+I*y0[offsetL+10+10*c+noffset+1]));
 
-		y2re[c]=creal(phase2*(psi->y[offsetLprime+2+10*c+noffset]+I*psi->y[offsetLprime+2+10*c+noffset+1]));
-                y2im[c]=cimag(phase2*(psi->y[offsetLprime+2+10*c+noffset]+I*psi->y[offsetLprime+2+10*c+noffset+1]));
+		y2re[c]=creal(phase2*(psi->y[offsetLprime+10+10*c+noffset]+I*psi->y[offsetLprime+10+10*c+noffset+1]));
+                y2im[c]=cimag(phase2*(psi->y[offsetLprime+10+10*c+noffset]+I*psi->y[offsetLprime+10+10*c+noffset+1]));
 	}
 
         container.intre1=init_interpolation(x,y1re,config->gridpoints);
@@ -633,7 +633,7 @@ double complex D2(double t,struct configuration_t *config)
 
 double complex bosons_rotational_energy_L(int L,struct bigpsi_t *psi,struct configuration_t *config)
 {
-	int offsetL=L*(2+10*config->gridpoints);
+	int offsetL=L*(10+10*config->gridpoints);
 
 	double complex gL;
 	double norm2L;
@@ -689,7 +689,7 @@ double complex bosons_rotational_energy(struct bigpsi_t *psi,struct configuratio
 
 double complex molecular_rotational_energy_L(int L,struct bigpsi_t *psi,struct configuration_t *config)
 {
-	int offsetL=L*(2+10*config->gridpoints);
+	int offsetL=L*(10+10*config->gridpoints);
 
 	double norm2L;
 	double complex A1C1,B3,C3;
@@ -740,7 +740,7 @@ double complex total_rotational_energy(struct bigpsi_t *psi,struct configuration
 		int offsetL;
 		double norm2L;
 
-		offsetL=L*(2+10*config->gridpoints);
+		offsetL=L*(10+10*config->gridpoints);
 		norm2L=pow(norm(psi->t,&psi->y[offsetL],&psi->params[L],config),2.0f);
 
 		ret+=norm2L*L*(L+1);
@@ -755,7 +755,7 @@ double complex total_energy_L(int L,struct bigpsi_t *psi,struct configuration_t 
 	double complex gL;
 	double complex A4,A5,B4,B5,C4,C5;
 	
-	offsetL=L*(2+10*config->gridpoints);
+	offsetL=L*(10+10*config->gridpoints);
 	gL=(psi->y[offsetL+0]+I*psi->y[offsetL+1])*timephase(-L*(L+1),psi->t,config);
 
 	A4=A5=B4=B5=C4=C5=0.0f;
@@ -1020,7 +1020,7 @@ double complex Lambdaz2_rot_L(int L,struct bigpsi_t *psi,struct configuration_t 
 	double complex ret=0.0f;
 	//double norm2L;
 
-	//offsetL=L*(2+10*config->gridpoints);
+	//offsetL=L*(10+10*config->gridpoints);
 	//norm2L=pow(norm(psi->t,&psi->y[offsetL],&psi->params[L],config),2.0f);
 
 	for(int n=-2;n<=2;n++)
@@ -1188,7 +1188,7 @@ double complex overlapS(struct bigpsi_t *psi,double *y0,double t0,struct configu
 	for(int L=0;L<config->maxl;L++)
 	{
 		double complex gs,gt,phase1,phase2;
-		int offsetL=L*(2+10*config->gridpoints);
+		int offsetL=L*(10+10*config->gridpoints);
 
 		phase1=timephase(-L*(L+1.0f),t0,config);
 		phase2=timephase(-L*(L+1.0f),psi->t,config);
@@ -1217,7 +1217,7 @@ double torque(struct bigpsi_t *psi,int L,int M,struct configuration_t *config)
 	if(L==0)
 		return 0.0f;
 
-	//offsetL=L*(2+10*config->gridpoints);
+	//offsetL=L*(10+10*config->gridpoints);
 	//gLM=timephase(-L*(L+1.0f),psi->t,config)*(psi->y[offsetL+0]+I*psi->y[offsetL+1]);
 
 	cg=1.0f*M/sqrtf(L*L+L);

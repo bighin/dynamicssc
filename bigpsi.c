@@ -34,7 +34,7 @@ int big_sc_time_evolution(double t,const double y[],double dydt[],void *data)
 
 	double complex C;
 
-	for(int c=0;c<(2+10*config->gridpoints)*bigpsi->nrpsis;c++)
+	for(int c=0;c<(10+10*config->gridpoints)*bigpsi->nrpsis;c++)
 		dydt[c]=0.0f;
 
 	/*
@@ -43,7 +43,7 @@ int big_sc_time_evolution(double t,const double y[],double dydt[],void *data)
 
 	for(int c=0;c<bigpsi->nrpsis;c++)
 	{
-		int offset=c*(2+10*config->gridpoints);
+		int offset=c*(10+10*config->gridpoints);
 
 		sc_time_evolution(t,&y[offset],&dydt[offset],&params[c]);
 	}
@@ -62,7 +62,7 @@ int big_sc_time_evolution(double t,const double y[],double dydt[],void *data)
 
 	for(int d=0;d<bigpsi->nrpsis;d++)
 	{
-		int offset=d*(2+10*config->gridpoints);
+		int offset=d*(10+10*config->gridpoints);
 		double complex gLM,dgLMdt;
 		int L=GETL(d);
 
@@ -71,7 +71,7 @@ int big_sc_time_evolution(double t,const double y[],double dydt[],void *data)
 		dgLMdt=0.0f;
 		for(int c=d-2;c<=d+2;c++)
 		{
-			int local_offset=c*(2+10*config->gridpoints);
+			int local_offset=c*(10+10*config->gridpoints);
 			double complex gLprimeM;
 			int Lprime;
 
@@ -108,7 +108,7 @@ int big_sc_time_evolution(double t,const double y[],double dydt[],void *data)
 			dxiLM2m2dt=dxiLM2m1dt=dxiLM20dt=dxiLM21dt=dxiLM22dt=0.0f;
 			for(int c=d-2;c<=d+2;c++)
 			{
-				int local_offset=c*(2+10*config->gridpoints);
+				int local_offset=c*(10+10*config->gridpoints);
 
 				double complex xiLprimeM2m2,xiLprimeM2m1,xiLprimeM20,xiLprimeM21,xiLprimeM22;
 				double complex phasediff;
@@ -123,11 +123,11 @@ int big_sc_time_evolution(double t,const double y[],double dydt[],void *data)
 
 				phasediff=timephase((L*(L+1.0f)-Lprime*(Lprime+1.0f)),t,config);
 
-				xiLprimeM2m2=y[local_offset+2+10*i]+I*y[local_offset+2+10*i+1];
-				xiLprimeM2m1=y[local_offset+2+10*i+2]+I*y[local_offset+2+10*i+3];
-				xiLprimeM20=y[local_offset+2+10*i+4]+I*y[local_offset+2+10*i+5];
-				xiLprimeM21=y[local_offset+2+10*i+6]+I*y[local_offset+2+10*i+7];
-				xiLprimeM22=y[local_offset+2+10*i+8]+I*y[local_offset+2+10*i+9];
+				xiLprimeM2m2=y[local_offset+10+10*i]+I*y[local_offset+10+10*i+1];
+				xiLprimeM2m1=y[local_offset+10+10*i+2]+I*y[local_offset+10+10*i+3];
+				xiLprimeM20=y[local_offset+10+10*i+4]+I*y[local_offset+10+10*i+5];
+				xiLprimeM21=y[local_offset+10+10*i+6]+I*y[local_offset+10+10*i+7];
+				xiLprimeM22=y[local_offset+10+10*i+8]+I*y[local_offset+10+10*i+9];
 
 				scalefactor=fscale(k,L,config)/fscale(k,Lprime,config);
 
@@ -138,11 +138,11 @@ int big_sc_time_evolution(double t,const double y[],double dydt[],void *data)
 				dxiLM22dt+=I*phasediff*C*Q(L,Lprime,GETM(),2)*xiLprimeM22*scalefactor;
 			}
 
-			xiLM2m2=y[offset+2+10*i]+I*y[offset+2+10*i+1];
-			xiLM2m1=y[offset+2+10*i+2]+I*y[offset+2+10*i+3];
-			xiLM20=y[offset+2+10*i+4]+I*y[offset+2+10*i+5];
-			xiLM21=y[offset+2+10*i+6]+I*y[offset+2+10*i+7];
-			xiLM22=y[offset+2+10*i+8]+I*y[offset+2+10*i+9];
+			xiLM2m2=y[offset+10+10*i]+I*y[offset+10+10*i+1];
+			xiLM2m1=y[offset+10+10*i+2]+I*y[offset+10+10*i+3];
+			xiLM20=y[offset+10+10*i+4]+I*y[offset+10+10*i+5];
+			xiLM21=y[offset+10+10*i+6]+I*y[offset+10+10*i+7];
+			xiLM22=y[offset+10+10*i+8]+I*y[offset+10+10*i+9];
 
 			dxiLM2m2dt+=I*(C/2.0f)*xiLM2m2;
 			dxiLM2m1dt+=I*(C/2.0f)*xiLM2m1;
@@ -150,20 +150,20 @@ int big_sc_time_evolution(double t,const double y[],double dydt[],void *data)
 			dxiLM21dt+=I*(C/2.0f)*xiLM21;
 			dxiLM22dt+=I*(C/2.0f)*xiLM22;
 
-			dydt[offset+2+10*i]+=creal(dxiLM2m2dt);
-			dydt[offset+2+10*i+1]+=cimag(dxiLM2m2dt);
+			dydt[offset+10+10*i]+=creal(dxiLM2m2dt);
+			dydt[offset+10+10*i+1]+=cimag(dxiLM2m2dt);
 
-			dydt[offset+2+10*i+2]+=creal(dxiLM2m1dt);
-			dydt[offset+2+10*i+3]+=cimag(dxiLM2m1dt);
+			dydt[offset+10+10*i+2]+=creal(dxiLM2m1dt);
+			dydt[offset+10+10*i+3]+=cimag(dxiLM2m1dt);
 
-			dydt[offset+2+10*i+4]+=creal(dxiLM20dt);
-			dydt[offset+2+10*i+5]+=cimag(dxiLM20dt);
+			dydt[offset+10+10*i+4]+=creal(dxiLM20dt);
+			dydt[offset+10+10*i+5]+=cimag(dxiLM20dt);
 
-			dydt[offset+2+10*i+6]+=creal(dxiLM21dt);
-			dydt[offset+2+10*i+7]+=cimag(dxiLM21dt);
+			dydt[offset+10+10*i+6]+=creal(dxiLM21dt);
+			dydt[offset+10+10*i+7]+=cimag(dxiLM21dt);
 
-			dydt[offset+2+10*i+8]+=creal(dxiLM22dt);
-			dydt[offset+2+10*i+9]+=cimag(dxiLM22dt);
+			dydt[offset+10+10*i+8]+=creal(dxiLM22dt);
+			dydt[offset+10+10*i+9]+=cimag(dxiLM22dt);
 		}
 	}
 
@@ -178,16 +178,33 @@ struct bigpsi_t *bigpsi_init(struct configuration_t *config,int mode,int L,int M
 		return NULL;
 
 	psi->nrpsis=config->maxl;
-	psi->y=malloc((2+10*config->gridpoints)*psi->nrpsis*sizeof(double));
+	psi->y=malloc((10+10*config->gridpoints)*psi->nrpsis*sizeof(double));
 	psi->params=malloc(psi->nrpsis*sizeof(struct params_t));
 	psi->config=config;
 	psi->t=config->starttime;
 
 	for(int d=0;d<psi->nrpsis;d++)
 	{
-		int offset=d*(2+10*config->gridpoints);
+		int offset=d*(10+10*config->gridpoints);
+
+		/*
+			For the 'standard' evolution we save the real and the imaginary part of g
+			in psi->y[offset+0] and psi->y[offset+1], respectively.
+
+			For the 'coherent state' evolution we have five g_n, with n=-2,...,2 which
+			whose real and imaginary parts are saved in
+		
+			g_{-2} : psi->y[offset+0] and psi->y[offset+1]
+			g_{-1} : psi->y[offset+2] and psi->y[offset+3]
+			...
+			g_{2} : psi->y[offset+8] and psi->y[offset+9]
+		*/
 
 		psi->y[offset+0]=psi->y[offset+1]=0.0f;
+		psi->y[offset+2]=psi->y[offset+3]=0.0f;
+		psi->y[offset+4]=psi->y[offset+5]=0.0f;
+		psi->y[offset+6]=psi->y[offset+7]=0.0f;
+		psi->y[offset+8]=psi->y[offset+9]=0.0f;
 
 		if(mode==BIGPSI_INIT_FROM_CONFIG)
 		{
@@ -204,16 +221,16 @@ struct bigpsi_t *bigpsi_init(struct configuration_t *config,int mode,int L,int M
 
 		for(int c=0;c<config->gridpoints;c++)
 		{
-			psi->y[offset+2+10*c]=0.0f;
-			psi->y[offset+2+10*c+1]=0.0f;
-			psi->y[offset+2+10*c+2]=0.0f;
-			psi->y[offset+2+10*c+3]=0.0f;
-			psi->y[offset+2+10*c+4]=0.0f;
-			psi->y[offset+2+10*c+5]=0.0f;
-			psi->y[offset+2+10*c+6]=0.0f;
-			psi->y[offset+2+10*c+7]=0.0f;
-			psi->y[offset+2+10*c+8]=0.0f;
-			psi->y[offset+2+10*c+9]=0.0f;
+			psi->y[offset+10+10*c]=0.0f;
+			psi->y[offset+10+10*c+1]=0.0f;
+			psi->y[offset+10+10*c+2]=0.0f;
+			psi->y[offset+10+10*c+3]=0.0f;
+			psi->y[offset+10+10*c+4]=0.0f;
+			psi->y[offset+10+10*c+5]=0.0f;
+			psi->y[offset+10+10*c+6]=0.0f;
+			psi->y[offset+10+10*c+7]=0.0f;
+			psi->y[offset+10+10*c+8]=0.0f;
+			psi->y[offset+10+10*c+9]=0.0f;
 		}
 	}
 
@@ -230,11 +247,11 @@ struct bigpsi_t *bigpsi_init(struct configuration_t *config,int mode,int L,int M
 		psi->params[d].parent=psi;
 	}
 
-	psi->dim=psi->nrpsis*(2+10*config->gridpoints);
+	psi->dim=psi->nrpsis*(10+10*config->gridpoints);
 
 	psi->sys.function=big_sc_time_evolution;
 	psi->sys.jacobian=NULL;
-	psi->sys.dimension=psi->nrpsis*(2+10*config->gridpoints);
+	psi->sys.dimension=psi->nrpsis*(10+10*config->gridpoints);
 	psi->sys.params=psi;
 
 	psi->driver=gsl_odeiv2_driver_alloc_y_new(&psi->sys,gsl_odeiv2_step_rkf45,config->hstart,config->epsabs,config->epsrel);
@@ -268,7 +285,7 @@ void bigpsi_serialize(struct bigpsi_t *psi,FILE *out)
 {
 	struct configuration_t *config=psi->config;
 
-	int c,ydim=(2+10*config->gridpoints)*psi->nrpsis;
+	int c,ydim=(10+10*config->gridpoints)*psi->nrpsis;
 
 	fwrite(config,sizeof(struct configuration_t),1,out);
 
@@ -297,7 +314,7 @@ struct bigpsi_t *bigpsi_deserialize(FILE *in,struct configuration_t *config)
 	if(fread(config,sizeof(struct configuration_t),1,in)!=1)
 		return NULL;
 
-	ydim=(2+10*config->gridpoints)*config->maxl;
+	ydim=(10+10*config->gridpoints)*config->maxl;
 	psi=bigpsi_init(config,BIGPSI_INIT_FROM_CONFIG,0,0);
 
 	if(fread(&psi->nrpsis,sizeof(int),1,in)!=1)
@@ -357,7 +374,7 @@ double get_aos(struct bigpsi_t *psi)
 
 	for(d=0;d<psi->nrpsis;d++)
 	{
-		int offset=d*(2+10*config->gridpoints);
+		int offset=d*(10+10*config->gridpoints);
 		int L=psi->params[d].L;
 
 		num+=L*pow(norm_qp(psi->t,&psi->y[offset],&psi->params[d],config),2.0f);
@@ -376,7 +393,7 @@ double total_norm(struct bigpsi_t *psi)
 
 	for(d=0;d<psi->nrpsis;d++)
 	{
-		int offset=d*(2+10*config->gridpoints);
+		int offset=d*(10+10*config->gridpoints);
 
 		ret+=pow(norm(psi->t,&psi->y[offset],&psi->params[d],config),2.0f);
 	}
@@ -393,7 +410,7 @@ double total_norm_qp(struct bigpsi_t *psi)
 
 	for(d=0;d<psi->nrpsis;d++)
 	{
-		int offset=d*(2+10*config->gridpoints);
+		int offset=d*(10+10*config->gridpoints);
 
 		ret+=pow(norm_qp(psi->t,&psi->y[offset],&psi->params[d],config),2.0f);
 	}
@@ -410,7 +427,7 @@ double total_norm_phonons(struct bigpsi_t *psi)
 
 	for(d=0;d<psi->nrpsis;d++)
 	{
-		int offset=d*(2+10*config->gridpoints);
+		int offset=d*(10+10*config->gridpoints);
 
 		ret+=pow(norm_phonons(psi->t,&psi->y[offset],&psi->params[d],config),2.0f);
 	}
@@ -436,7 +453,7 @@ void bigpsi_normalize(struct bigpsi_t *psi,double *previousnorm)
 
 		for(int c=0;c<psi->nrpsis;c++)
 		{
-			int offset=c*(2+10*config->gridpoints);
+			int offset=c*(10+10*config->gridpoints);
 			double ratio;
 			
 			if(fabs(psi->normalization_snapshot[c])<=1e-10)
@@ -444,7 +461,7 @@ void bigpsi_normalize(struct bigpsi_t *psi,double *previousnorm)
 			
 			ratio=psi->normalization_snapshot[c]/norm(psi->t,&(psi->y[offset]),&psi->params[c],config);
 			
-			for(int d=0;d<(2+10*config->gridpoints);d++)
+			for(int d=0;d<(10+10*config->gridpoints);d++)
 				psi->y[offset+d]*=ratio;
 		}
 
@@ -455,7 +472,7 @@ void bigpsi_normalize(struct bigpsi_t *psi,double *previousnorm)
 	{
 		double lnorm=total_norm(psi);
 
-		for(int c=0;c<(2+10*config->gridpoints)*psi->nrpsis;c++)
+		for(int c=0;c<(10+10*config->gridpoints)*psi->nrpsis;c++)
 			psi->y[c]/=lnorm;
 
 		if(previousnorm!=NULL)
@@ -467,7 +484,7 @@ void bigpsi_normalize(struct bigpsi_t *psi,double *previousnorm)
 
 		for(int c=0;c<psi->nrpsis;c++)
 		{
-			int offset=c*(2+10*config->gridpoints);
+			int offset=c*(10+10*config->gridpoints);
 
 			psi->normalization_snapshot[c]=norm(psi->t,&(psi->y[offset]),&psi->params[c],config);
 		}

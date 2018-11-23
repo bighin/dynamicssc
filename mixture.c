@@ -69,8 +69,8 @@ int do_run(int L,int M,struct info_t *info,bool silent,struct configuration_t *c
 		if(silent==false)
 		{
 
-#define REPSI_OFFSET(L)	(L*(2+10*config->gridpoints))
-#define IMPSI_OFFSET(L)	(1+L*(2+10*config->gridpoints))
+#define REPSI_OFFSET(L)	(L*(10+10*config->gridpoints))
+#define IMPSI_OFFSET(L)	(1+L*(10+10*config->gridpoints))
 
 			double reL,imL;
 		
@@ -108,14 +108,14 @@ int do_run(int L,int M,struct info_t *info,bool silent,struct configuration_t *c
 
 		for(int d=0;d<=3;d++)
 		{
-			int offset=d*(2+10*config->gridpoints);
+			int offset=d*(10+10*config->gridpoints);
 		
 			fprintf(details,"%f ",norm_qp(ti,&(psi->y[offset]),&(psi->params[d]),config));
 		}
 
 		for(int d=0;d<config->maxl;d++)
 		{
-			int offset=d*(2+10*config->gridpoints);
+			int offset=d*(10+10*config->gridpoints);
 		
 			fprintf(details,"%f ",norm_qp(ti,&(psi->y[offset]),&(psi->params[d]),config));
 		}

@@ -40,7 +40,12 @@ void print_header_g(FILE *out,int L,struct configuration_t *config)
 	fprintf(out,"# Maximum L: %i\n",config->maxl);
 	fprintf(out,"# M: %i\n",config->startm);
 	fprintf(out,"#\n");
+
+#error Check for coherent state evolution
+
 	fprintf(out,"# t Re(g) Im(g) Norm\n");
+
+	fprintf(out,"# t Re(g_{-2}) Im(g_{-2}) Re(g_{-1}) Im(g_{-1}) ... Re(g_{2}) Im(g_{2}) Norm\n");
 }
 
 void print_header_alpha(FILE *out,int L,struct configuration_t *config)
@@ -95,7 +100,7 @@ void print_header_summary(FILE *out)
 
 void dump_phonons(FILE *out,struct bigpsi_t *psi,int L,struct configuration_t *config)
 {
-	int offset=L*(2+10*config->gridpoints);
+	int offset=L*(10+10*config->gridpoints);
 	double *y=&psi->y[offset];
 
 	for(int d=0;d<config->gridpoints;d++)
@@ -113,11 +118,11 @@ void dump_phonons(FILE *out,struct bigpsi_t *psi,int L,struct configuration_t *c
 		phase21=timephase(-(L*(L+1.0f)+omegak(k,config)+4.0f),ti,config);
 		phase22=timephase(-(L*(L+1.0f)+omegak(k,config)-2.0f),ti,config);
 
-		alpha2m2=phase2m2*(y[2+10*d]+I*y[2+10*d+1]);
-		alpha2m1=phase2m1*(y[2+10*d+2]+I*y[2+10*d+3]);
-		alpha20=phase20*(y[2+10*d+4]+I*y[2+10*d+5]);
-		alpha21=phase21*(y[2+10*d+6]+I*y[2+10*d+7]);
-		alpha22=phase22*(y[2+10*d+8]+I*y[2+10*d+9]);
+		alpha2m2=phase2m2*(y[10+10*d]+I*y[10+10*d+1]);
+		alpha2m1=phase2m1*(y[10+10*d+2]+I*y[10+10*d+3]);
+		alpha20=phase20*(y[10+10*d+4]+I*y[10+10*d+5]);
+		alpha21=phase21*(y[10+10*d+6]+I*y[10+10*d+7]);
+		alpha22=phase22*(y[10+10*d+8]+I*y[10+10*d+9]);
 
 		fprintf(out,"%f %f %f %f %f %f %f %f %f %f %f %f\n",ti,k,creal(alpha2m2),cimag(alpha2m2),creal(alpha2m1),cimag(alpha2m1),creal(alpha20),cimag(alpha20),creal(alpha21),cimag(alpha21),creal(alpha22),cimag(alpha22));
 	}
@@ -216,7 +221,7 @@ int do_single(struct configuration_t *config)
 		{
 			if(config->overlapt0<ti)
 			{
-				int size=(2+10*config->gridpoints)*psi->nrpsis*sizeof(double);
+				int size=(10+10*config->gridpoints)*psi->nrpsis*sizeof(double);
 				
 				y0=malloc(size);
 				memcpy(y0,psi->y,size);
@@ -277,7 +282,7 @@ int do_single(struct configuration_t *config)
 		for(int n=0;n<config->maxl;n++)
 		{
 			int L=psi->params[n].L;
-			int offset=n*(2+10*config->gridpoints);
+			int offset=n*(10+10*config->gridpoints);
 			
 			double *y=&psi->y[offset];
 
@@ -305,11 +310,11 @@ int do_single(struct configuration_t *config)
 					phase21=timephase(-(L*(L+1.0f)+omegak(k,config)+4.0f),ti,config);
 					phase22=timephase(-(L*(L+1.0f)+omegak(k,config)-2.0f),ti,config);
 
-					alpha2m2=phase2m2*(y[2+10*d]+I*y[2+10*d+1])*scalefactor;
-					alpha2m1=phase2m1*(y[2+10*d+2]+I*y[2+10*d+3])*scalefactor;
-					alpha20=phase20*(y[2+10*d+4]+I*y[2+10*d+5])*scalefactor;
-					alpha21=phase21*(y[2+10*d+6]+I*y[2+10*d+7])*scalefactor;
-					alpha22=phase22*(y[2+10*d+8]+I*y[2+10*d+9])*scalefactor;
+					alpha2m2=phase2m2*(y[10+10*d]+I*y[10+10*d+1])*scalefactor;
+					alpha2m1=phase2m1*(y[10+10*d+2]+I*y[10+10*d+3])*scalefactor;
+					alpha20=phase20*(y[10+10*d+4]+I*y[10+10*d+5])*scalefactor;
+					alpha21=phase21*(y[10+10*d+6]+I*y[10+10*d+7])*scalefactor;
+					alpha22=phase22*(y[10+10*d+8]+I*y[10+10*d+9])*scalefactor;
 
 					fprintf(outalphas[n],"%f %f %f %f %f %f %f %f %f %f %f %f\n",ti,k,creal(alpha2m2),cimag(alpha2m2),creal(alpha2m1),cimag(alpha2m1),creal(alpha20),cimag(alpha20),creal(alpha21),cimag(alpha21),creal(alpha22),cimag(alpha22));
 				}
@@ -338,7 +343,7 @@ int do_single(struct configuration_t *config)
 
 		for(int d=0;d<psi->nrpsis;d++)
 		{
-			int offset=d*(2+10*config->gridpoints);
+			int offset=d*(10+10*config->gridpoints);
 
 			fprintf(norms,"%f %f ",norm_qp(ti,&psi->y[offset],&psi->params[d],config),norm_phonons(ti,&psi->y[offset],&psi->params[d],config));
 		}
@@ -459,7 +464,7 @@ int do_ini_file(char *inifile)
 			In case of a free evolution we just need a minimal number of points in the grid.
 			TODO: Would 0 work?
 		*/
-		
+
 		config.gridpoints=5;
 	}
 

@@ -349,16 +349,16 @@ double norm_phonons(double t,const double y[],struct params_t *params,struct con
                 double k=c*gridstep;
 
                 x[c]=k;
-                yre2m2[c]=y[2+10*c];
-                yim2m2[c]=y[2+10*c+1];
-                yre2m1[c]=y[2+10*c+2];
-                yim2m1[c]=y[2+10*c+3];
-                yre20[c]=y[2+10*c+4];
-                yim20[c]=y[2+10*c+5];
-                yre21[c]=y[2+10*c+6];
-                yim21[c]=y[2+10*c+7];
-                yre22[c]=y[2+10*c+8];
-                yim22[c]=y[2+10*c+9];
+                yre2m2[c]=y[10+10*c];
+                yim2m2[c]=y[10+10*c+1];
+                yre2m1[c]=y[10+10*c+2];
+                yim2m1[c]=y[10+10*c+3];
+                yre20[c]=y[10+10*c+4];
+                yim20[c]=y[10+10*c+5];
+                yre21[c]=y[10+10*c+6];
+                yim21[c]=y[10+10*c+7];
+                yre22[c]=y[10+10*c+8];
+                yim22[c]=y[10+10*c+9];
 	}
 
 	container.intrexi2m2=init_interpolation(x,yre2m2,config->gridpoints);
@@ -420,7 +420,7 @@ double W(double k,struct configuration_t *config)
 
 	fprintf(stderr,"Fatal error: wrong wtype in configuration");
 	exit(0);
-	
+
 	return 0.0f;
 }
 
@@ -473,8 +473,8 @@ double complex Aplus(double t,const double y[],struct params_t *params,double lo
                 double k=c*gridstep;
 
                 x[c]=k;
-                yre[c]=y[2+10*c+6];
-                yim[c]=y[2+10*c+7];
+                yre[c]=y[10+10*c+6];
+                yim[c]=y[10+10*c+7];
 	}
 
         container.intrexi21=init_interpolation(x,yre,config->gridpoints);
@@ -547,8 +547,8 @@ double complex Aminus(double t,const double y[],struct params_t *params,double l
                 double k=c*gridstep;
 
                 x[c]=k;
-                yre[c]=y[2+10*c+2];
-                yim[c]=y[2+10*c+3];
+                yre[c]=y[10+10*c+2];
+                yim[c]=y[10+10*c+3];
 	}
 
         container.intrexi2m1=init_interpolation(x,yre,config->gridpoints);
@@ -621,8 +621,8 @@ double complex B(double t,const double y[],struct params_t *params,double locald
                 double k=c*gridstep;
 
                 x[c]=k;
-                yre[c]=y[2+10*c+4];
-                yim[c]=y[2+10*c+5];
+                yre[c]=y[10+10*c+4];
+                yim[c]=y[10+10*c+5];
 	}
 
         container.intrexi20=init_interpolation(x,yre,config->gridpoints);
@@ -699,11 +699,11 @@ int sc_time_evolution_t0(double t,const double y[],double dydt[],void *p)
 		double complex xi2m2,xi2m1,xi20,xi21,xi22;
 		double complex dxi2m2dt,dxi2m1dt,dxi20dt,dxi21dt,dxi22dt;
 
-		xi2m2=y[2+10*c]+I*y[2+10*c+1];
-		xi2m1=y[2+10*c+2]+I*y[2+10*c+3];
-		xi20=y[2+10*c+4]+I*y[2+10*c+5];
-		xi21=y[2+10*c+6]+I*y[2+10*c+7];
-		xi22=y[2+10*c+8]+I*y[2+10*c+9];
+		xi2m2=y[10+10*c]+I*y[10+10*c+1];
+		xi2m1=y[10+10*c+2]+I*y[10+10*c+3];
+		xi20=y[10+10*c+4]+I*y[10+10*c+5];
+		xi21=y[10+10*c+6]+I*y[10+10*c+7];
+		xi22=y[10+10*c+8]+I*y[10+10*c+9];
 
 		dxi2m2dt=I*2.0f*sqrt(L*(L+1)-2)*timephase(-6.0f,t,config)*xi2m1;
 		dxi2m1dt=I*sqrt(6*L*(L+1))*timephase(-2.0f,t,config)*xi20+I*2.0f*sqrt(L*(L+1)-2)*timephase(6.0f,t,config)*xi2m2;
@@ -746,16 +746,16 @@ int sc_time_evolution_t0(double t,const double y[],double dydt[],void *p)
 
 		dxi22dt=I*2.0f*sqrt(L*(L+1)-2)*timephase(-6.0f,t,config)*xi21;
 
-		dydt[2+10*c]=creal(dxi2m2dt);
-		dydt[2+10*c+1]=cimag(dxi2m2dt);
-		dydt[2+10*c+2]=creal(dxi2m1dt);
-		dydt[2+10*c+3]=cimag(dxi2m1dt);
-		dydt[2+10*c+4]=creal(dxi20dt);
-		dydt[2+10*c+5]=cimag(dxi20dt);
-		dydt[2+10*c+6]=creal(dxi21dt);
-		dydt[2+10*c+7]=cimag(dxi21dt);
-		dydt[2+10*c+8]=creal(dxi22dt);
-		dydt[2+10*c+9]=cimag(dxi22dt);
+		dydt[10+10*c]=creal(dxi2m2dt);
+		dydt[10+10*c+1]=cimag(dxi2m2dt);
+		dydt[10+10*c+2]=creal(dxi2m1dt);
+		dydt[10+10*c+3]=cimag(dxi2m1dt);
+		dydt[10+10*c+4]=creal(dxi20dt);
+		dydt[10+10*c+5]=cimag(dxi20dt);
+		dydt[10+10*c+6]=creal(dxi21dt);
+		dydt[10+10*c+7]=cimag(dxi21dt);
+		dydt[10+10*c+8]=creal(dxi22dt);
+		dydt[10+10*c+9]=cimag(dxi22dt);
 	}
 
 	return GSL_SUCCESS;
@@ -874,8 +874,8 @@ double complex Aplus_thermal(double t,const double y[],struct params_t *params,d
                 double k=c*gridstep;
 
                 x[c]=k;
-                yre[c]=y[2+10*c+6];
-                yim[c]=y[2+10*c+7];
+                yre[c]=y[10+10*c+6];
+                yim[c]=y[10+10*c+7];
 	}
 
         container.intrexi21=init_interpolation(x,yre,config->gridpoints);
@@ -950,8 +950,8 @@ double complex Aminus_thermal(double t,const double y[],struct params_t *params,
                 double k=c*gridstep;
 
                 x[c]=k;
-                yre[c]=y[2+10*c+2];
-                yim[c]=y[2+10*c+3];
+                yre[c]=y[10+10*c+2];
+                yim[c]=y[10+10*c+3];
 	}
 
         container.intrexi2m1=init_interpolation(x,yre,config->gridpoints);
@@ -1026,8 +1026,8 @@ double complex B_thermal(double t,const double y[],struct params_t *params,doubl
                 double k=c*gridstep;
 
                 x[c]=k;
-                yre[c]=y[2+10*c+4];
-                yim[c]=y[2+10*c+5];
+                yre[c]=y[10+10*c+4];
+                yim[c]=y[10+10*c+5];
 	}
 
         container.intrexi20=init_interpolation(x,yre,config->gridpoints);
@@ -1103,8 +1103,8 @@ double complex C_thermal(double t,const double y[],struct params_t *params,doubl
                 double k=c*gridstep;
 
                 x[c]=k;
-                yre[c]=y[2+10*c+4];
-                yim[c]=y[2+10*c+5];
+                yre[c]=y[10+10*c+4];
+                yim[c]=y[10+10*c+5];
 	}
 
         container.intrexi20=init_interpolation(x,yre,config->gridpoints);
@@ -1193,11 +1193,11 @@ int sc_time_evolution_finite_t(double t,const double y[],double dydt[],void *p)
 
 		double fbek=(c==0)?(0.0f):(fbe(config,omegak(k,config)));
 
-		xi2m2=y[2+10*c]+I*y[2+10*c+1];
-		xi2m1=y[2+10*c+2]+I*y[2+10*c+3];
-		xi20=y[2+10*c+4]+I*y[2+10*c+5];
-		xi21=y[2+10*c+6]+I*y[2+10*c+7];
-		xi22=y[2+10*c+8]+I*y[2+10*c+9];
+		xi2m2=y[10+10*c]+I*y[10+10*c+1];
+		xi2m1=y[10+10*c+2]+I*y[10+10*c+3];
+		xi20=y[10+10*c+4]+I*y[10+10*c+5];
+		xi21=y[10+10*c+6]+I*y[10+10*c+7];
+		xi22=y[10+10*c+8]+I*y[10+10*c+9];
 
 		dxi2m2dt=I*2.0f*sqrt(L*(L+1)-2)*timephase(-6.0f,t,config)*xi2m1*(1.0f+fbek);
 		dxi2m1dt=I*sqrt(6*L*(L+1))*timephase(-2.0f,t,config)*xi20*(1.0f+fbek)+I*2.0f*sqrt(L*(L+1)-2)*timephase(6.0f,t,config)*xi2m2*(1.0f+fbek);
@@ -1261,16 +1261,16 @@ int sc_time_evolution_finite_t(double t,const double y[],double dydt[],void *p)
 		dxi21dt+=-I*(omegak(k,config)+4.0f)*fbek*xi21;
 		dxi22dt+=-I*(omegak(k,config)-2.0f)*fbek*xi22;
 
-		dydt[2+10*c]=creal(dxi2m2dt);
-		dydt[2+10*c+1]=cimag(dxi2m2dt);
-		dydt[2+10*c+2]=creal(dxi2m1dt);
-		dydt[2+10*c+3]=cimag(dxi2m1dt);
-		dydt[2+10*c+4]=creal(dxi20dt);
-		dydt[2+10*c+5]=cimag(dxi20dt);
-		dydt[2+10*c+6]=creal(dxi21dt);
-		dydt[2+10*c+7]=cimag(dxi21dt);
-		dydt[2+10*c+8]=creal(dxi22dt);
-		dydt[2+10*c+9]=cimag(dxi22dt);
+		dydt[10+10*c]=creal(dxi2m2dt);
+		dydt[10+10*c+1]=cimag(dxi2m2dt);
+		dydt[10+10*c+2]=creal(dxi2m1dt);
+		dydt[10+10*c+3]=cimag(dxi2m1dt);
+		dydt[10+10*c+4]=creal(dxi20dt);
+		dydt[10+10*c+5]=cimag(dxi20dt);
+		dydt[10+10*c+6]=creal(dxi21dt);
+		dydt[10+10*c+7]=cimag(dxi21dt);
+		dydt[10+10*c+8]=creal(dxi22dt);
+		dydt[10+10*c+9]=cimag(dxi22dt);
 	}
 
 	return GSL_SUCCESS;

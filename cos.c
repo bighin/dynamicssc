@@ -55,8 +55,8 @@ double complex Across(struct bigpsi_t *psi,int L,int Lprime,int n,struct configu
 	extern double relError;
 	extern size_t maxEval;
 
-	int offsetL=L*(2+10*config->gridpoints);
-	int offsetLprime=Lprime*(2+10*config->gridpoints);
+	int offsetL=L*(10+10*config->gridpoints);
+	int offsetLprime=Lprime*(10+10*config->gridpoints);
 
 	x=malloc(sizeof(double)*config->gridpoints);
 	y1re=malloc(sizeof(double)*config->gridpoints);
@@ -113,11 +113,11 @@ double complex Across(struct bigpsi_t *psi,int L,int Lprime,int n,struct configu
 			exit(0);
 		}
 
-                y1re[c]=creal(phase1*(psi->y[offsetL+2+10*c+noffset]+I*psi->y[offsetL+2+10*c+noffset+1]));
-                y1im[c]=cimag(phase1*(psi->y[offsetL+2+10*c+noffset]+I*psi->y[offsetL+2+10*c+noffset+1]));
+                y1re[c]=creal(phase1*(psi->y[offsetL+10+10*c+noffset]+I*psi->y[offsetL+10+10*c+noffset+1]));
+                y1im[c]=cimag(phase1*(psi->y[offsetL+10+10*c+noffset]+I*psi->y[offsetL+10+10*c+noffset+1]));
 
-                y2re[c]=creal(phase2*(psi->y[offsetLprime+2+10*c+noffset]+I*psi->y[offsetLprime+2+10*c+noffset+1]));
-                y2im[c]=cimag(phase2*(psi->y[offsetLprime+2+10*c+noffset]+I*psi->y[offsetLprime+2+10*c+noffset+1]));
+                y2re[c]=creal(phase2*(psi->y[offsetLprime+10+10*c+noffset]+I*psi->y[offsetLprime+10+10*c+noffset+1]));
+                y2im[c]=cimag(phase2*(psi->y[offsetLprime+10+10*c+noffset]+I*psi->y[offsetLprime+10+10*c+noffset+1]));
 	}
 
         container.intre1=init_interpolation(x,y1re,config->gridpoints);
@@ -253,8 +253,8 @@ double complex old_fcostheta2d(struct bigpsi_t *psi,int L,int Lprime,int M,int l
 	double complex gL,gLprime,res;
 	int n;
 
-	int offsetL=L*(2+10*config->gridpoints);
-	int offsetLprime=Lprime*(2+10*config->gridpoints);
+	int offsetL=L*(10+10*config->gridpoints);
+	int offsetLprime=Lprime*(10+10*config->gridpoints);
 
 	gL=(psi->y[offsetL+0]+I*psi->y[offsetL+1])*timephase(-L*(L+1),psi->t,config);
 	gLprime=(psi->y[offsetLprime+0]+I*psi->y[offsetLprime+1])*timephase(-Lprime*(Lprime+1),psi->t,config);
@@ -312,8 +312,8 @@ double complex fcostheta2d(struct bigpsi_t *psi,int L,int Lprime,int M,int lambd
 	double complex gL,gLprime,tmp,res=0.0f;
 	int n;
 
-	int offsetL=L*(2+10*config->gridpoints);
-	int offsetLprime=Lprime*(2+10*config->gridpoints);
+	int offsetL=L*(10+10*config->gridpoints);
+	int offsetLprime=Lprime*(10+10*config->gridpoints);
 
 	gL=(psi->y[offsetL+0]+I*psi->y[offsetL+1])*timephase(-L*(L+1),psi->t,config);
 	gLprime=(psi->y[offsetLprime+0]+I*psi->y[offsetLprime+1])*timephase(-Lprime*(Lprime+1),psi->t,config);
@@ -407,8 +407,8 @@ double complex fcosthetasquared(struct bigpsi_t *psi,int L,int Lprime,int M,int 
 	double complex gL,gLprime,res;
 	int n;
 
-	int offsetL=L*(2+10*config->gridpoints);
-	int offsetLprime=Lprime*(2+10*config->gridpoints);
+	int offsetL=L*(10+10*config->gridpoints);
+	int offsetLprime=Lprime*(10+10*config->gridpoints);
 
 	if(lambda==0)
 		f=(1.0f/3.0f)*sqrt(4.0f*M_PI);
