@@ -275,16 +275,37 @@ void do_mixture(struct configuration_t *config)
                 case MOLECULE_I2:
 		nr_states=NR_I2_STATES;
 		weights=i2weights;
+
+		if(config->maxl<=6)
+		{
+			fprintf(stderr,"Fatal error: when using a statistical mixture, maxl should be high enough to accommodate all states! Please increase maxl\n");
+			exit(0);
+		}
+
 		break;
 
                 case MOLECULE_CS2:
 		nr_states=NR_CS2_STATES;
 		weights=cs2weights;
-                break;
+
+		if(config->maxl<=4)
+		{
+			fprintf(stderr,"Fatal error: when using a statistical mixture, maxl should be high enough to accommodate all states! Please increase maxl\n");
+			exit(0);
+		}
+
+		break;
 
                 case MOLECULE_OCS:
 		nr_states=NR_OCS_STATES;
 		weights=ocsweights;
+
+		if(config->maxl<=3)
+		{
+			fprintf(stderr,"Fatal error: when using a statistical mixture, maxl should be high enough to accommodate all states! Please increase maxl\n");
+			exit(0);
+		}
+
                 break;
 
                 default:

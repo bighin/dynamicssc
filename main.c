@@ -41,11 +41,11 @@ void print_header_g(FILE *out,int L,struct configuration_t *config)
 	fprintf(out,"# M: %i\n",config->startm);
 	fprintf(out,"#\n");
 
-#error Check for coherent state evolution
+#warning Check for coherent state evolution
 
 	fprintf(out,"# t Re(g) Im(g) Norm\n");
 
-	fprintf(out,"# t Re(g_{-2}) Im(g_{-2}) Re(g_{-1}) Im(g_{-1}) ... Re(g_{2}) Im(g_{2}) Norm\n");
+	//fprintf(out,"# t Re(g_{-2}) Im(g_{-2}) Re(g_{-1}) Im(g_{-1}) ... Re(g_{2}) Im(g_{2}) Norm\n");
 }
 
 void print_header_alpha(FILE *out,int L,struct configuration_t *config)
