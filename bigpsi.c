@@ -584,8 +584,6 @@ void bigpsi_normalize(struct bigpsi_t *psi,double *previousnorm)
 	{
 		double lnorm=total_norm(psi);
 
-		printf("YYY: %f\n",lnorm);
-
 		for(int c=0;c<(10+10*config->gridpoints)*psi->nrpsis;c++)
 			psi->y[c]/=lnorm;
 
