@@ -6,6 +6,7 @@
 #include "dsc.h"
 #include "laser.h"
 #include "bigpsi.h"
+#include "coh.h"
 
 double Q(int L,int Lprime,int M,int N)
 {
@@ -222,7 +223,7 @@ int big_sc_time_evolution(double t,const double y[],double dydt[],void *data)
 	}
 
 	/*
-		and then the level mixing due to the electric field!
+		...and then the level mixing due to the electric field!
 	*/
 
 	switch(config->evolution)
@@ -297,9 +298,11 @@ struct bigpsi_t *bigpsi_init(struct configuration_t *config,int mode,int L,int M
 				case EVOLUTION_1PHONON:
 				case EVOLUTION_1PHONONFT:
 				shift=0;
+				break;
 
 				case EVOLUTION_COHERENT:
 				shift=4;
+				break;
 			}
 
 			for(int c=0;c<config->nrl;c++)
@@ -317,9 +320,11 @@ struct bigpsi_t *bigpsi_init(struct configuration_t *config,int mode,int L,int M
 				case EVOLUTION_1PHONON:
 				case EVOLUTION_1PHONONFT:
 				shift=0;
+				break;
 
 				case EVOLUTION_COHERENT:
 				shift=4;
+				break;
 			}
 
 			if(d==L)
@@ -578,6 +583,8 @@ void bigpsi_normalize(struct bigpsi_t *psi,double *previousnorm)
 	else
 	{
 		double lnorm=total_norm(psi);
+
+		printf("YYY: %f\n",lnorm);
 
 		for(int c=0;c<(10+10*config->gridpoints)*psi->nrpsis;c++)
 			psi->y[c]/=lnorm;

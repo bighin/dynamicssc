@@ -293,7 +293,25 @@ int do_single(struct configuration_t *config)
 			
 			double *y=&psi->y[offset];
 
-			fprintf(outgs[n],"%f %f %f %f\n",ti,y[0],y[1],norm_qp(ti,y,&psi->params[n],config));
+			fprintf(outgs[n],"%f ",ti);
+
+			switch(config->evolution)
+			{
+				case EVOLUTION_FREE:
+				case EVOLUTION_1PHONON:
+				case EVOLUTION_1PHONONFT:
+				fprintf(outgs[n],"%f %f ",y[0],y[1]);
+				break;
+
+				case EVOLUTION_COHERENT:
+
+				for(int j=0;j<=9;j++)
+					fprintf(outgs[n],"%f ",y[j]);
+
+				break;
+			}
+
+			fprintf(outgs[n],"%f\n",norm_qp(ti,y,&psi->params[n],config));
 
 			if(config->writephonons==true)
 			{
@@ -542,7 +560,7 @@ int do_ini_file(char *inifile)
 
 		if(config.nrl<=0)
 		{
-			printf("Error: If not working with a mixture, please specify at least on L.");
+			printf("Error: If not working with a mixture, please specify at least one L.");
 			exit(0);
 		}
 
