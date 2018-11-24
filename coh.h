@@ -14,7 +14,11 @@ double complex Lambdazero(struct bigpsi_t *psi,int L,struct configuration_t *con
 
 double complex Vbeta(struct bigpsi_t *psi,int L,struct configuration_t *config);
 
-int sc_time_evolution_coh(double t,const double y[],double dydt[],void *p);
-int big_sc_time_evolution_coh(double t,const double y[],double dydt[],void *data);
+int sc_time_evolution_coherent(double t,const double y[],double dydt[],void *p);
+int laser_time_evolution_coherent(double t,const double y[],double dydt[],void *data);
+
+double norm_coherent(double t,const double y[],struct params_t *params,struct configuration_t *config);
+double norm_qp_coherent(double t,const double y[],struct params_t *params,struct configuration_t *config);
+double norm_phonons_coherent(double t,const double y[],struct params_t *params,struct configuration_t *config);
 
 #endif //__COH_H__

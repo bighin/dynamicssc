@@ -47,6 +47,9 @@ struct bigpsi_t
 	double *normalization_snapshot;
 };
 
+double Q(int L,int Lprime,int M,int N);
+bool laser_is_on(struct configuration_t *config,double t);
+
 int big_sc_time_evolution(double t,const double y[],double dydt[],void *data);
 
 #define BIGPSI_INIT_FROM_CONFIG	(31)

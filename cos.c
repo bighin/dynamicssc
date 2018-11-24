@@ -262,7 +262,7 @@ double complex old_fcostheta2d(struct bigpsi_t *psi,int L,int Lprime,int M,int l
 	res=conj(gL)*gLprime*sqrtf((2.0f*L+1.0f)/(2.0f*Lprime+1.0f))*sqrtf((2.0f*lambda+1.0f)/(4*M_PI));
 	res*=cg(L,M,lambda,0,Lprime,M)*cg(L,0,lambda,0,Lprime,0);
 
-	if((config->freeevolution)||(config->altcos))
+	if((config->evolution==EVOLUTION_FREE)||(config->altcos))
 		return f*res;
 
 	for(n=-2;n<=2;n++)
@@ -329,7 +329,7 @@ double complex fcostheta2d(struct bigpsi_t *psi,int L,int Lprime,int M,int lambd
 	tmp*=cg(Lprime,M,lambda,0,L,M)*cg(Lprime,0,lambda,0,L,0);
 	res+=tmp;
 
-	if((config->freeevolution)||(config->altcos))
+	if((config->evolution==EVOLUTION_FREE)||(config->altcos))
 		return f*res;
 
 	for(n=-2;n<=2;n++)
@@ -422,7 +422,7 @@ double complex fcosthetasquared(struct bigpsi_t *psi,int L,int Lprime,int M,int 
 	res=conj(gL)*gLprime*sqrtf((2.0f*L+1.0f)/(2.0f*Lprime+1.0f))*sqrtf((2.0f*lambda+1.0f)/(4*M_PI));
 	res*=cg(L,M,lambda,0,Lprime,M)*cg(L,0,lambda,0,Lprime,0);
 
-	if((config->freeevolution==true)||(config->altcos==true))
+	if((config->evolution==EVOLUTION_FREE)||(config->altcos==true))
 		return f*res;
 
 	for(n=-2;n<=2;n++)

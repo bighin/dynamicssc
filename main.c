@@ -41,11 +41,18 @@ void print_header_g(FILE *out,int L,struct configuration_t *config)
 	fprintf(out,"# M: %i\n",config->startm);
 	fprintf(out,"#\n");
 
-#warning Check for coherent state evolution
+	switch(config->evolution)
+	{
+		case EVOLUTION_FREE:
+		case EVOLUTION_1PHONON:
+		case EVOLUTION_1PHONONFT:
+		fprintf(out,"# t Re(g) Im(g) Norm\n");
+		break;
 
-	fprintf(out,"# t Re(g) Im(g) Norm\n");
-
-	//fprintf(out,"# t Re(g_{-2}) Im(g_{-2}) Re(g_{-1}) Im(g_{-1}) ... Re(g_{2}) Im(g_{2}) Norm\n");
+		case EVOLUTION_COHERENT:
+		fprintf(out,"# t Re(g_{-2}) Im(g_{-2}) Re(g_{-1}) Im(g_{-1}) ... Re(g_{2}) Im(g_{2}) Norm\n");
+		break;
+	}
 }
 
 void print_header_alpha(FILE *out,int L,struct configuration_t *config)
@@ -455,10 +462,32 @@ int do_ini_file(char *inifile)
 	printf("\tStart time: %f\n",config.starttime);
 	printf("\tEnd time: %f\n",config.endtime);
 	printf("\tTimestep: %f\n",config.timestep);
-	printf("\tFree evolution: %s\n",(config.freeevolution==true)?("true"):("false"));
-	printf("\tBosons at finite temperature: %s (T=%f K)\n",(config.bosonsfinitetemperature==true)?("true"):("false"),config.temperature);
+	printf("\tEvolution type: ");
 
-	if(config.freeevolution==true)
+	switch(config.evolution)
+	{
+		case EVOLUTION_FREE:
+		printf("free\n");
+		break;
+
+		case EVOLUTION_1PHONON:
+		printf("1-phonon Ansatz (T=0)\n");
+		break;
+
+		case EVOLUTION_1PHONONFT:
+		printf("1-phonon Ansatz (T=%f)\n",config.temperature);
+		break;
+
+		case EVOLUTION_COHERENT:
+		printf("coherent state\n");
+		break;
+	
+		default:
+		fprintf(stderr,"Unkown evolution type!\n");
+		exit(0);
+	}
+
+	if(config.evolution==EVOLUTION_FREE)
 	{
 		/*
 			In case of a free evolution we just need a minimal number of points in the grid.
@@ -524,7 +553,7 @@ int do_ini_file(char *inifile)
 		printf("\tUsing a statistical mixture.\n");		
 	}
 
-	if(config.freeevolution==false)
+	if(config.evolution!=EVOLUTION_FREE)
 	{
 		printf("\nGrid:\n");
 		printf("\tk-cutoff: %f\n",config.cutoff);

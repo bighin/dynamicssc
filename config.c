@@ -22,8 +22,7 @@ void load_config_defaults(struct configuration_t *config)
 	config->starttime=-5.0f;
 	config->endtime=5.0f;
 	config->timestep=0.01f;
-	config->freeevolution=false;
-	config->bosonsfinitetemperature=false;
+	config->evolution=EVOLUTION_FREE;
 	config->temperature=0.38;
 
 	config->dispersion_is_experimental=true;
@@ -139,17 +138,39 @@ int configuration_handler(void *user,const char *section,const char *name,const 
 	}
 	else if(MATCH("general","freeevolution"))
 	{
-		if(!strcasecmp(value,"true"))
-			pconfig->freeevolution=true;
+		fprintf(stderr,"Error: you are using the old option 'freeevolution', please use the new one\n");
+		fprintf(stderr,"'evolution' which can take the values: 'free', '1phonon', '1phononft' or 'coherent'.\n");
+		exit(0);
+	}
+	else if(MATCH("general","evolution"))
+	{
+		if(!strcasecmp(value,"free"))
+		{
+			pconfig->evolution=EVOLUTION_FREE;
+		}
+		else if(!strcasecmp(value,"1phononft"))
+		{
+			pconfig->evolution=EVOLUTION_1PHONONFT;
+		}
+		else if(!strcasecmp(value,"1phonon"))
+		{
+			pconfig->evolution=EVOLUTION_1PHONON;
+		}
+		else if(!strcasecmp(value,"coherent"))
+		{
+			pconfig->evolution=EVOLUTION_COHERENT;
+		}
 		else
-			pconfig->freeevolution=false;
+		{
+			fprintf(stderr,"Error: unknown evolution type (%s)\n",value);
+			exit(0);
+		}
 	}
 	else if(MATCH("general","bosonsfinitetemperature"))
 	{
-		if(!strcasecmp(value,"true"))
-			pconfig->bosonsfinitetemperature=true;
-		else
-			pconfig->bosonsfinitetemperature=false;
+		fprintf(stderr,"Error: you are using the old option 'bosonsfinitetemperature', please use the new one\n");
+		fprintf(stderr,"'evolution' which can take the values: 'free', '1phonon', '1phononft' or 'coherent'.\n");
+		exit(0);
 	}
 	else if(MATCH("general","temperature"))
 	{

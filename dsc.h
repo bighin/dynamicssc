@@ -14,7 +14,6 @@
 #define M_PI	(3.14159265358979323846f)
 #endif
 
-
 double wigner3j(int l1,int l2,int l3,int m1,int m2,int m3);
 double cg(int j1,int m1,int j2,int m2,int j,int m);
 

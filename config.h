@@ -16,8 +16,13 @@ struct configuration_t
 	double starttime;
 	double endtime;
 	double timestep;
-	bool freeevolution;
-	bool bosonsfinitetemperature;
+
+#define EVOLUTION_FREE		(39)
+#define EVOLUTION_1PHONON	(40)
+#define EVOLUTION_1PHONONFT	(41)
+#define EVOLUTION_COHERENT	(42)
+
+	int evolution;
 	double temperature;
 
 	bool dispersion_is_experimental;

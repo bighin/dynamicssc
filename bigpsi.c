@@ -26,31 +26,13 @@ bool laser_is_on(struct configuration_t *config,double t)
 	return false;
 }
 
-int big_sc_time_evolution(double t,const double y[],double dydt[],void *data)
+int laser_time_evolution_1phonon(double t,const double y[],double dydt[],void *data)
 {
 	struct bigpsi_t *bigpsi=data;
 	struct params_t *params=bigpsi->params;
 	struct configuration_t *config=params->config;
 
 	double complex C;
-
-	for(int c=0;c<(10+10*config->gridpoints)*bigpsi->nrpsis;c++)
-		dydt[c]=0.0f;
-
-	/*
-		We apply the strong coupling evolution to each different L state...
-	*/
-
-	for(int c=0;c<bigpsi->nrpsis;c++)
-	{
-		int offset=c*(10+10*config->gridpoints);
-
-		sc_time_evolution(t,&y[offset],&dydt[offset],&params[c]);
-	}
-
-	/*
-		and then the level mixing due to the electric field!
-	*/
 
 	if(laser_is_on(config,t)==false)
 		return GSL_SUCCESS;
@@ -170,6 +152,105 @@ int big_sc_time_evolution(double t,const double y[],double dydt[],void *data)
 	return GSL_SUCCESS;
 }
 
+int laser_time_evolution_free(double t,const double y[],double dydt[],void *data)
+{
+	struct bigpsi_t *bigpsi=data;
+	struct params_t *params=bigpsi->params;
+	struct configuration_t *config=params->config;
+
+	double complex C;
+
+	if(laser_is_on(config,t)==false)
+		return GSL_SUCCESS;
+
+	C=(2.0f/3.0f)*get_laser_intensity(config->fluence,config->duration,t,config);
+
+#define GETL(x) (params[x].L)
+#define GETM() 	(params[0].M)
+
+	for(int d=0;d<bigpsi->nrpsis;d++)
+	{
+		int offset=d*(10+10*config->gridpoints);
+		double complex gLM,dgLMdt;
+		int L=GETL(d);
+
+		gLM=(y[offset+0]+I*y[offset+1]);
+
+		dgLMdt=0.0f;
+		for(int c=d-2;c<=d+2;c++)
+		{
+			int local_offset=c*(10+10*config->gridpoints);
+			double complex gLprimeM;
+			int Lprime;
+
+			if((c<0)||(c>=bigpsi->nrpsis))
+				continue;
+
+			Lprime=GETL(c);
+			gLprimeM=y[local_offset+0]+I*y[local_offset+1];
+
+			dgLMdt+=I*C*Q(GETL(d),GETL(c),GETM(),0)*gLprimeM*timephase((L*(L+1.0f)-Lprime*(Lprime+1.0f)),t,config);
+		}
+
+		dgLMdt+=I*(C/2.0f)*gLM;
+
+		dydt[offset+0]+=creal(dgLMdt);
+		dydt[offset+1]+=cimag(dgLMdt);
+	}
+
+	return GSL_SUCCESS;
+}
+
+int big_sc_time_evolution(double t,const double y[],double dydt[],void *data)
+{
+	struct bigpsi_t *bigpsi=data;
+	struct params_t *params=bigpsi->params;
+	struct configuration_t *config=params->config;
+
+	for(int c=0;c<(10+10*config->gridpoints)*bigpsi->nrpsis;c++)
+		dydt[c]=0.0f;
+
+	/*
+		We apply the strong coupling evolution to each different L state...
+	*/
+
+	for(int c=0;c<bigpsi->nrpsis;c++)
+	{
+		int offset=c*(10+10*config->gridpoints);
+
+		sc_time_evolution(t,&y[offset],&dydt[offset],&params[c]);
+	}
+
+	/*
+		and then the level mixing due to the electric field!
+	*/
+
+	switch(config->evolution)
+	{
+		case EVOLUTION_FREE:
+		return laser_time_evolution_free(t,y,dydt,data);
+
+		case EVOLUTION_1PHONON:
+		return laser_time_evolution_1phonon(t,y,dydt,data);
+
+		case EVOLUTION_1PHONONFT:
+		return laser_time_evolution_1phonon(t,y,dydt,data);
+
+		case EVOLUTION_COHERENT:
+		return laser_time_evolution_coherent(t,y,dydt,data);
+	
+		default:
+		fprintf(stderr,"Unkown evolution type!\n");
+		exit(0);
+	}
+
+	/*
+		Never reached
+	*/
+
+	return GSL_FAILURE;
+}
+
 struct bigpsi_t *bigpsi_init(struct configuration_t *config,int mode,int L,int M)
 {
 	struct bigpsi_t *psi;
@@ -208,15 +289,41 @@ struct bigpsi_t *bigpsi_init(struct configuration_t *config,int mode,int L,int M
 
 		if(mode==BIGPSI_INIT_FROM_CONFIG)
 		{
+			int shift=0;
+
+			switch(config->evolution)
+			{
+				case EVOLUTION_FREE:
+				case EVOLUTION_1PHONON:
+				case EVOLUTION_1PHONONFT:
+				shift=0;
+
+				case EVOLUTION_COHERENT:
+				shift=4;
+			}
+
 			for(int c=0;c<config->nrl;c++)
 				if(d==config->startl[c])
-					psi->y[offset+0]=1.0f/sqrt(config->nrl);
+					psi->y[offset+shift]=1.0f/sqrt(config->nrl);
 		}
 
 		if(mode==BIGPSI_INIT_FROM_VALUES)
 		{
+			int shift=0;
+
+			switch(config->evolution)
+			{
+				case EVOLUTION_FREE:
+				case EVOLUTION_1PHONON:
+				case EVOLUTION_1PHONONFT:
+				shift=0;
+
+				case EVOLUTION_COHERENT:
+				shift=4;
+			}
+
 			if(d==L)
-				psi->y[offset+0]=1.0f;
+				psi->y[offset+shift]=1.0f;
 		}
 
 		for(int c=0;c<config->gridpoints;c++)

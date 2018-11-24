@@ -14,6 +14,7 @@
 #include "auxx.h"
 #include "config.h"
 #include "dsc.h"
+#include "coh.h"
 
 /*
         Tuning parameters for numerical integration.
@@ -307,27 +308,12 @@ int fnorm(unsigned ndim,const double *x,void *fdata,unsigned fdim,double *fval)
 	return 0;
 }
 
-double norm_qp(double t,const double y[],struct params_t *params,struct configuration_t *config)
-{
-	double complex g=y[0]+I*y[1];
-
-	/*
-		Here we should multiply g by a phase, but since we are just interested
-		in the modulus, this is not needed...
-	*/
-	
-	return sqrt(conj(g)*g);
-}
-
-double norm_phonons(double t,const double y[],struct params_t *params,struct configuration_t *config)
+double norm_phonons_1phonon(double t,const double y[],struct params_t *params,struct configuration_t *config)
 {
 	double *x,*yre2m2,*yim2m2,*yre2m1,*yim2m1,*yre20,*yim20,*yre21,*yim21,*yre22,*yim22;
 	double xmin,xmax,err;
 
 	struct container_t container;
-
-	if(config->freeevolution)
-		return 0.0f;
 
 	x=malloc(sizeof(double)*config->gridpoints);
 	yre2m2=malloc(sizeof(double)*config->gridpoints);
@@ -405,9 +391,107 @@ double norm_phonons(double t,const double y[],struct params_t *params,struct con
 	return sqrt(res);
 }
 
+double norm_phonons_free(double t,const double y[],struct params_t *params,struct configuration_t *config)
+{
+	return 0.0f;
+}
+
+double norm_phonons(double t,const double y[],struct params_t *params,struct configuration_t *config)
+{
+	switch(config->evolution)
+	{
+		case EVOLUTION_FREE:
+		return norm_phonons_free(t,y,params,config);
+
+		case EVOLUTION_1PHONON:
+		case EVOLUTION_1PHONONFT:
+		return norm_phonons_1phonon(t,y,params,config);
+
+		case EVOLUTION_COHERENT:
+		return norm_phonons_coherent(t,y,params,config);
+	}
+
+	fprintf(stderr,"Unkown evolution type!\n");
+	exit(0);
+
+	/*
+		Never reached.
+	*/
+
+	return 0.0f;
+}
+
+double norm_qp_free(double t,const double y[],struct params_t *params,struct configuration_t *config)
+{
+	double complex g=y[0]+I*y[1];
+
+	/*
+		Here we should multiply g by a phase, but since we are just interested
+		in the modulus, this is not needed...
+	*/
+	
+	return sqrt(conj(g)*g);
+}
+
+double norm_qp_1phonon(double t,const double y[],struct params_t *params,struct configuration_t *config)
+{
+	double complex g=y[0]+I*y[1];
+
+	/*
+		Here we should multiply g by a phase, but since we are just interested
+		in the modulus, this is not needed...
+	*/
+	
+	return sqrt(conj(g)*g);
+}
+
+double norm_qp(double t,const double y[],struct params_t *params,struct configuration_t *config)
+{
+	switch(config->evolution)
+	{
+		case EVOLUTION_FREE:
+		return norm_qp_free(t,y,params,config);
+
+		case EVOLUTION_1PHONON:
+		case EVOLUTION_1PHONONFT:
+		return norm_qp_1phonon(t,y,params,config);
+
+		case EVOLUTION_COHERENT:
+		return norm_qp_coherent(t,y,params,config);
+	}
+
+	fprintf(stderr,"Unkown evolution type!\n");
+	exit(0);
+
+	/*
+		Never reached.
+	*/
+
+	return 0.0f;
+}
+
 double norm(double t,const double y[],struct params_t *params,struct configuration_t *config)
 {
-	return sqrt(pow(norm_qp(t,y,params,config),2.0f)+pow(norm_phonons(t,y,params,config),2.0f));
+	switch(config->evolution)
+	{
+		case EVOLUTION_FREE:
+		case EVOLUTION_1PHONON:
+		case EVOLUTION_1PHONONFT:
+		return sqrt(pow(norm_qp(t,y,params,config),2.0f)+
+		            pow(norm_phonons(t,y,params,config),2.0f));
+
+		case EVOLUTION_COHERENT:
+		return norm_coherent(t,y,params,config);
+	}
+
+	fprintf(stderr,"Unkown evolution type!\n");
+	exit(0);
+
+	/*
+		Never reached.
+	*/
+
+	return 0.0f;
 }
 
 double W(double k,struct configuration_t *config)
@@ -646,7 +730,7 @@ double complex B(double t,const double y[],struct params_t *params,double locald
 	return res[0]+I*res[1];
 }
 
-int sc_time_evolution_t0(double t,const double y[],double dydt[],void *p)
+int sc_time_evolution_1phonon(double t,const double y[],double dydt[],void *p)
 {
 	struct params_t *params=(struct params_t *)(p);
 	struct configuration_t *config=params->config;
@@ -659,19 +743,10 @@ int sc_time_evolution_t0(double t,const double y[],double dydt[],void *p)
 	L=params->L;
 
 	g=y[0]+I*y[1];
-
 	dgdt=0.0f;
 
         if(config->centrifugal==true)
                 dgdt+=I*config->centrifugalD*pow(L*(L+1),2.0f)*g;
-
-	if(config->freeevolution==true)
-	{
-		dydt[0]=creal(dgdt);
-		dydt[1]=cimag(dgdt);
-
-		return GSL_SUCCESS;
-	}
 
 	if(config->ramp==true)
 		localdensity=config->density*adiabatic_ramp(t,config);
@@ -757,6 +832,26 @@ int sc_time_evolution_t0(double t,const double y[],double dydt[],void *p)
 		dydt[10+10*c+8]=creal(dxi22dt);
 		dydt[10+10*c+9]=cimag(dxi22dt);
 	}
+
+	return GSL_SUCCESS;
+}
+
+int sc_time_evolution_free(double t,const double y[],double dydt[],void *p)
+{
+	struct params_t *params=(struct params_t *)(p);
+	struct configuration_t *config=params->config;
+
+	double complex g,dgdt;
+	int L=params->L;
+
+	g=y[0]+I*y[1];
+	dgdt=0.0f;
+
+        if(config->centrifugal==true)
+                dgdt+=I*config->centrifugalD*pow(L*(L+1),2.0f)*g;
+
+	dydt[0]=creal(dgdt);
+	dydt[1]=cimag(dgdt);
 
 	return GSL_SUCCESS;
 }
@@ -1128,7 +1223,7 @@ double complex C_thermal(double t,const double y[],struct params_t *params,doubl
 	return res[0]+I*res[1];
 }
 
-int sc_time_evolution_finite_t(double t,const double y[],double dydt[],void *p)
+int sc_time_evolution_1phononft(double t,const double y[],double dydt[],void *p)
 {
 	struct params_t *params=(struct params_t *)(p);
 	struct configuration_t *config=params->config;
@@ -1146,14 +1241,6 @@ int sc_time_evolution_finite_t(double t,const double y[],double dydt[],void *p)
 
         if(config->centrifugal==true)
                 dgdt+=I*config->centrifugalD*pow(L*(L+1),2.0f)*g;
-
-	if(config->freeevolution==true)
-	{
-		dydt[0]=creal(dgdt);
-		dydt[1]=cimag(dgdt);
-
-		return GSL_SUCCESS;
-	}
 
 	if(config->ramp==true)
 		localdensity=config->density*adiabatic_ramp(t,config);
@@ -1281,8 +1368,28 @@ int sc_time_evolution(double t,const double y[],double dydt[],void *p)
 	struct params_t *params=(struct params_t *)(p);
 	struct configuration_t *config=params->config;
 
-	if(config->bosonsfinitetemperature==true)
-		return sc_time_evolution_finite_t(t,y,dydt,p);
+	switch(config->evolution)
+	{
+		case EVOLUTION_FREE:
+		return sc_time_evolution_free(t,y,dydt,p);
 
-	return sc_time_evolution_t0(t,y,dydt,p);
+		case EVOLUTION_1PHONON:
+		return sc_time_evolution_1phonon(t,y,dydt,p);
+
+		case EVOLUTION_1PHONONFT:
+		return sc_time_evolution_1phononft(t,y,dydt,p);
+
+		case EVOLUTION_COHERENT:
+		return sc_time_evolution_coherent(t,y,dydt,p);
+	
+		default:
+		fprintf(stderr,"Unkown evolution type!\n");
+		exit(0);
+	}
+
+	/*
+		Never reached
+	*/
+
+	return GSL_FAILURE;
 }
