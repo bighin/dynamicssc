@@ -95,9 +95,7 @@ int do_run(int L,int M,struct info_t *info,bool silent,struct configuration_t *c
 		{
 			double reL,imL;
 
-#warning All other loops have < rather than <=. Which one is correct?
-
-			for(int L=0;L<=config->maxl;L++)
+			for(int L=0;L<config->maxl;L++)
 			{
 				reL=psi->y[REPSI_OFFSET(L)];
 				imL=psi->y[IMPSI_OFFSET(L)];
