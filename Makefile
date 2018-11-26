@@ -1,7 +1,8 @@
 TARGET = dsc
 LIBS = -lgsl -lncurses -lm -lblas
 CC = gcc
-CFLAGS = -O2 -Wall -std=gnu11 -I/opt/local/include/ -fopenmp
+#CFLAGS = -O2 -Wall -std=gnu11 -I/opt/local/include/ -fopenmp
+CFLAGS = -g -Wall -std=gnu11 -I/opt/local/include
 LDFLAGS = -L/opt/local/lib/
 COMMIT=$(shell git log -1 --pretty='%h')
 

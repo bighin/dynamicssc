@@ -535,6 +535,9 @@ int laser_time_evolution_coherent(double t,const double y[],double dydt[],void *
 
 	double complex C;
 
+	if(laser_is_on(config,t)==false)
+		return GSL_SUCCESS;
+
 	C=(2.0f/3.0f)*get_laser_intensity(config->fluence,config->duration,t,config);
 
 #define GETL(x) (params[x].L)
@@ -871,8 +874,8 @@ double complex overlapS_coherent(struct bigpsi_t *psi,double *y0,double t0,struc
 		{
 			double complex gns,gnt;
 
-			gns=y0[offsetL+2*(n+2)]+I*y0[offsetL+2*(n+2)+1];
-			gnt=psi->y[offsetL+2*(n+2)]+I*psi->y[offsetL+2*(n+2)+1];
+			gns=(y0[offsetL+2*(n+2)]+I*y0[offsetL+2*(n+2)+1])*timephase(-L*(L+1.0f),t0,config);
+			gnt=(psi->y[offsetL+2*(n+2)]+I*psi->y[offsetL+2*(n+2)+1])*timephase(-L*(L+1.0f),psi->t,config);
 		
 			localres+=conj(gns)*gnt;
 		}
