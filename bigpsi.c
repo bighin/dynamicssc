@@ -6,7 +6,7 @@
 #include "dsc.h"
 #include "laser.h"
 #include "bigpsi.h"
-#include "coh.h"
+#include "coherent.h"
 
 double Q(int L,int Lprime,int M,int N)
 {

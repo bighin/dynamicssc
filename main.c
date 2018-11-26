@@ -119,11 +119,39 @@ void dump_phonons(FILE *out,struct bigpsi_t *psi,int L,struct configuration_t *c
 		double complex phase2m2,phase2m1,phase20,phase21,phase22;
 		double complex alpha2m2,alpha2m1,alpha20,alpha21,alpha22;
 
-		phase2m2=timephase(-(L*(L+1.0f)+omegak(k,config)-2.0f),ti,config);
-		phase2m1=timephase(-(L*(L+1.0f)+omegak(k,config)+4.0f),ti,config);
-		phase20=timephase(-(L*(L+1.0f)+omegak(k,config)+6.0f),ti,config);
-		phase21=timephase(-(L*(L+1.0f)+omegak(k,config)+4.0f),ti,config);
-		phase22=timephase(-(L*(L+1.0f)+omegak(k,config)-2.0f),ti,config);
+		switch(config->evolution)
+		{
+			case EVOLUTION_FREE:
+			case EVOLUTION_1PHONON:
+			case EVOLUTION_1PHONONFT:
+
+			phase2m2=timephase(-(L*(L+1.0f)+omegak(k,config)-2.0f),ti,config);
+			phase2m1=timephase(-(L*(L+1.0f)+omegak(k,config)+4.0f),ti,config);
+			phase20=timephase(-(L*(L+1.0f)+omegak(k,config)+6.0f),ti,config);
+			phase21=timephase(-(L*(L+1.0f)+omegak(k,config)+4.0f),ti,config);
+			phase22=timephase(-(L*(L+1.0f)+omegak(k,config)-2.0f),ti,config);
+
+			break;
+
+			case EVOLUTION_COHERENT:
+
+			phase2m2=timephase(-(omegak(k,config)+6.0f),ti,config);
+			phase2m1=timephase(-(omegak(k,config)+6.0f),ti,config);
+			phase20=timephase(-(omegak(k,config)+6.0f),ti,config);
+			phase21=timephase(-(omegak(k,config)+6.0f),ti,config);
+			phase22=timephase(-(omegak(k,config)+6.0f),ti,config);
+
+			break;
+
+			/*
+				To silence silly gcc warnings...
+			*/
+
+			default:
+			phase2m2=phase2m1=phase20=phase21=phase22=0.0f;
+			break;
+
+		}
 
 		alpha2m2=phase2m2*(y[10+10*d]+I*y[10+10*d+1]);
 		alpha2m1=phase2m1*(y[10+10*d+2]+I*y[10+10*d+3]);
@@ -329,11 +357,36 @@ int do_single(struct configuration_t *config)
 					//if((d%5)!=0)
 					//	continue;
 
-					phase2m2=timephase(-(L*(L+1.0f)+omegak(k,config)-2.0f),ti,config);
-					phase2m1=timephase(-(L*(L+1.0f)+omegak(k,config)+4.0f),ti,config);
-					phase20=timephase(-(L*(L+1.0f)+omegak(k,config)+6.0f),ti,config);
-					phase21=timephase(-(L*(L+1.0f)+omegak(k,config)+4.0f),ti,config);
-					phase22=timephase(-(L*(L+1.0f)+omegak(k,config)-2.0f),ti,config);
+					switch(config->evolution)
+					{
+						case EVOLUTION_FREE:
+						case EVOLUTION_1PHONON:
+						case EVOLUTION_1PHONONFT:
+
+						phase2m2=timephase(-(L*(L+1.0f)+omegak(k,config)-2.0f),ti,config);
+						phase2m1=timephase(-(L*(L+1.0f)+omegak(k,config)+4.0f),ti,config);
+						phase20=timephase(-(L*(L+1.0f)+omegak(k,config)+6.0f),ti,config);
+						phase21=timephase(-(L*(L+1.0f)+omegak(k,config)+4.0f),ti,config);
+						phase22=timephase(-(L*(L+1.0f)+omegak(k,config)-2.0f),ti,config);
+
+						break;
+
+						case EVOLUTION_COHERENT:
+
+						phase2m2=timephase(-(omegak(k,config)+6.0f),ti,config);
+						phase2m1=timephase(-(omegak(k,config)+6.0f),ti,config);
+						phase20=timephase(-(omegak(k,config)+6.0f),ti,config);
+						phase21=timephase(-(omegak(k,config)+6.0f),ti,config);
+						phase22=timephase(-(omegak(k,config)+6.0f),ti,config);
+
+						break;
+
+						default:
+						phase2m2=phase2m1=phase20=phase21=phase22=0.0f; // To silence warnings
+						fprintf(stderr,"Unkown evolution type!\n");
+						exit(0);
+
+					}
 
 					alpha2m2=phase2m2*(y[10+10*d]+I*y[10+10*d+1])*scalefactor;
 					alpha2m1=phase2m1*(y[10+10*d+2]+I*y[10+10*d+3])*scalefactor;

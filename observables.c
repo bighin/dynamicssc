@@ -8,6 +8,7 @@
 #include "bigpsi.h"
 #include "config.h"
 #include "observables.h"
+#include "coherent.h"
 
 int fDcross(unsigned ndim,const double *x,void *fdata,unsigned fdim,double *fval)
 {
@@ -1181,7 +1182,28 @@ double complex rcr(int L,struct bigpsi_t *psi,struct configuration_t *config)
 	return molecular_rotational_energy_L(L,psi,config)/(L*(L+1));
 }
 
-double complex overlapS(struct bigpsi_t *psi,double *y0,double t0,struct configuration_t *config)
+double complex overlapS_free(struct bigpsi_t *psi,double *y0,double t0,struct configuration_t *config)
+{
+	double complex ret=0.0f;
+
+	for(int L=0;L<config->maxl;L++)
+	{
+		double complex gs,gt,phase1,phase2;
+		int offsetL=L*(10+10*config->gridpoints);
+
+		phase1=timephase(-L*(L+1.0f),t0,config);
+		phase2=timephase(-L*(L+1.0f),psi->t,config);
+
+		gs=phase1*(y0[offsetL+0]+I*y0[offsetL+1]);
+		gt=phase2*(psi->y[offsetL+0]+I*psi->y[offsetL+1]);
+
+		ret+=conj(gs)*gt;
+	}
+
+	return ret;
+}
+
+double complex overlapS_1phonon(struct bigpsi_t *psi,double *y0,double t0,struct configuration_t *config)
 {
 	double complex ret=0.0f;
 
@@ -1205,6 +1227,32 @@ double complex overlapS(struct bigpsi_t *psi,double *y0,double t0,struct configu
 	}
 
 	return ret;
+}
+
+double complex overlapS(struct bigpsi_t *psi,double *y0,double t0,struct configuration_t *config)
+{
+	switch(config->evolution)
+	{
+		case EVOLUTION_FREE:
+		return overlapS_free(psi,y0,t0,config);
+
+		case EVOLUTION_1PHONON:
+		case EVOLUTION_1PHONONFT:
+		return overlapS_1phonon(psi,y0,t0,config);
+
+		case EVOLUTION_COHERENT:
+		return overlapS_coherent(psi,y0,t0,config);
+	
+		default:
+		fprintf(stderr,"Unkown evolution type!\n");
+		exit(0);
+	}
+
+	/*
+		Never reached.
+	*/
+
+	return 1.0f;
 }
 
 double torque(struct bigpsi_t *psi,int L,int M,struct configuration_t *config)

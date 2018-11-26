@@ -14,7 +14,7 @@
 #include "auxx.h"
 #include "config.h"
 #include "dsc.h"
-#include "coh.h"
+#include "coherent.h"
 
 /*
         Tuning parameters for numerical integration.
@@ -267,7 +267,7 @@ double complex fscale(double k,int L,struct configuration_t *config)
 {
 	double epsilon=0.001f;
 	double en=L*(L+1);
-	
+
 	if(config->fscale==true)
 		return Pk(0.9*en+I*epsilon,L,k,config)/(1.0f+k*k)+I*epsilon;
 

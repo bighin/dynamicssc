@@ -95,6 +95,8 @@ int do_run(int L,int M,struct info_t *info,bool silent,struct configuration_t *c
 		{
 			double reL,imL;
 
+#warning All other loops have < rather than <=. Which one is correct?
+
 			for(int L=0;L<=config->maxl;L++)
 			{
 				reL=psi->y[REPSI_OFFSET(L)];
@@ -141,8 +143,6 @@ void do_mixture(struct configuration_t *config)
 	/*
 		Statistical mixture for CS2, see EnsableAveragesCS2.nb and BW.nb for better precision.
 	*/
-
-#warning It would be nice to have an option to use the free weights (calculated without rotational constant renormalization)
 
 #define USE_RENORMALIZED_WEIGHTS
 #ifdef USE_RENORMALIZED_WEIGHTS

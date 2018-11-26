@@ -6,6 +6,7 @@
 #include "config.h"
 #include "dsc.h"
 #include "bigpsi.h"
+#include "coherent.h"
 
 struct across_container_t
 {
@@ -247,7 +248,7 @@ double flambda(int lambda)
 	return ftable[lambda];
 }
 
-double complex old_fcostheta2d(struct bigpsi_t *psi,int L,int Lprime,int M,int lambda,struct configuration_t *config)
+double complex old_fcostheta2d_1phonon(struct bigpsi_t *psi,int L,int Lprime,int M,int lambda,struct configuration_t *config)
 {
 	double f=flambda(lambda);
 	double complex gL,gLprime,res;
@@ -285,28 +286,7 @@ double complex old_fcostheta2d(struct bigpsi_t *psi,int L,int Lprime,int M,int l
 	return f*res;
 }
 
-double complex old_costheta2d(struct bigpsi_t *psi,struct configuration_t *config)
-{
-	int L,Lprime,M,lambda;
-	double complex total=0.0f;
-
-	M=psi->params[0].M;
-
-	for(L=0;L<config->maxl;L++)
-	{
-		for(Lprime=0;Lprime<config->maxl;Lprime++)
-		{
-			for(lambda=0;lambda<config->maxl;lambda+=2)
-			{
-				total+=old_fcostheta2d(psi,L,Lprime,M,lambda,config);
-			}
-		}
-	}
-
-	return total;
-}
-
-double complex fcostheta2d(struct bigpsi_t *psi,int L,int Lprime,int M,int lambda,struct configuration_t *config)
+double complex fcostheta2d_1phonon(struct bigpsi_t *psi,int L,int Lprime,int M,int lambda,struct configuration_t *config)
 {
 	double f=flambda(lambda);
 	double complex gL,gLprime,tmp,res=0.0f;
@@ -372,7 +352,7 @@ double complex fcostheta2d(struct bigpsi_t *psi,int L,int Lprime,int M,int lambd
 	return f*res;
 }
 
-double complex costheta2d(struct bigpsi_t *psi,struct configuration_t *config)
+double complex costheta2d_1phonon(struct bigpsi_t *psi,struct configuration_t *config)
 {
 	int L,Lprime,M,lambda;
 	double complex total=0.0f;
@@ -385,13 +365,13 @@ double complex costheta2d(struct bigpsi_t *psi,struct configuration_t *config)
 		{
 			for(lambda=0;lambda<config->maxl;lambda+=2)
 			{
-				total+=fcostheta2d(psi,L,Lprime,M,lambda,config);
+				total+=fcostheta2d_1phonon(psi,L,Lprime,M,lambda,config);
 			}
 		}
 
 		for(lambda=0;lambda<config->maxl;lambda++)
 		{
-			total+=old_fcostheta2d(psi,L,L,M,lambda,config);
+			total+=old_fcostheta2d_1phonon(psi,L,L,M,lambda,config);
 		}
 	}
 
@@ -401,7 +381,30 @@ double complex costheta2d(struct bigpsi_t *psi,struct configuration_t *config)
 	return total;
 }
 
-double complex fcosthetasquared(struct bigpsi_t *psi,int L,int Lprime,int M,int lambda,struct configuration_t *config)
+double complex costheta2d(struct bigpsi_t *psi,struct configuration_t *config)
+{
+	switch(config->evolution)
+	{
+		case EVOLUTION_FREE:
+		case EVOLUTION_1PHONON:
+		case EVOLUTION_1PHONONFT:
+		return costheta2d_1phonon(psi,config);
+
+		case EVOLUTION_COHERENT:
+		return costheta2d_coherent(psi,config);
+	}
+
+	fprintf(stderr,"Unkown evolution type!\n");
+	exit(0);
+
+	/*
+		Never reached.
+	*/
+
+	return 0.0f;
+}
+
+double complex fcosthetasquared_1phonon(struct bigpsi_t *psi,int L,int Lprime,int M,int lambda,struct configuration_t *config)
 {
 	double f;
 	double complex gL,gLprime,res;
@@ -445,7 +448,7 @@ double complex fcosthetasquared(struct bigpsi_t *psi,int L,int Lprime,int M,int 
 	return f*res;
 }
 
-double complex costhetasquared(struct bigpsi_t *psi,struct configuration_t *config)
+double complex costhetasquared_1phonon(struct bigpsi_t *psi,struct configuration_t *config)
 {
 	int L,Lprime,M,lambda;
 	double complex total=0.0f;
@@ -458,7 +461,7 @@ double complex costhetasquared(struct bigpsi_t *psi,struct configuration_t *conf
 		{
 			for(lambda=0;lambda<=2;lambda+=2)
 			{
-				total+=fcosthetasquared(psi,L,Lprime,M,lambda,config);
+				total+=fcosthetasquared_1phonon(psi,L,Lprime,M,lambda,config);
 			}
 		}
 	}
@@ -469,6 +472,29 @@ double complex costhetasquared(struct bigpsi_t *psi,struct configuration_t *conf
 	return total;
 }
 
+double complex costhetasquared(struct bigpsi_t *psi,struct configuration_t *config)
+{
+	switch(config->evolution)
+	{
+		case EVOLUTION_FREE:
+		case EVOLUTION_1PHONON:
+		case EVOLUTION_1PHONONFT:
+		return costhetasquared_1phonon(psi,config);
+
+		case EVOLUTION_COHERENT:
+		return costhetasquared_coherent(psi,config);
+	}
+
+	fprintf(stderr,"Unkown evolution type!\n");
+	exit(0);
+
+	/*
+		Never reached.
+	*/
+
+	return 0.0f;
+}
+
 double complex costhetasquaredLLprime(struct bigpsi_t *psi,int L,int Lprime,struct configuration_t *config)
 {
 	int M,lambda;
@@ -477,7 +503,20 @@ double complex costhetasquaredLLprime(struct bigpsi_t *psi,int L,int Lprime,stru
 	M=psi->params[0].M;
 
 	for(lambda=0;lambda<=2;lambda+=2)
-		total+=fcosthetasquared(psi,L,Lprime,M,lambda,config);
+	{
+		switch(config->evolution)
+		{
+			case EVOLUTION_FREE:
+			case EVOLUTION_1PHONON:
+			case EVOLUTION_1PHONONFT:
+			total+=fcosthetasquared_1phonon(psi,L,Lprime,M,lambda,config);
+			break;
+
+			case EVOLUTION_COHERENT:
+			total+=fcosthetasquared_coherent(psi,L,Lprime,M,lambda,config);
+			break;
+		}
+	}
 
 	if(L!=Lprime)
 		total*=2.0f;

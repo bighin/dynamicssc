@@ -3,6 +3,10 @@
 
 #include <stdbool.h>
 
+#ifndef GITCOMMIT
+#define GITCOMMIT "unknown"
+#endif
+
 struct configuration_t
 {
 	char *prefix;
