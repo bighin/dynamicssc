@@ -421,7 +421,7 @@ int sc_time_evolution_coherent(double t,const double y[],double dydt[],void *p)
 	lambdaminus=Lambdaminus(psi,L,config);
 	lambdazero=Lambdazero(psi,L,config);
 
-	if((config->ramp==true)||(config->centrifugal))
+	if((config->ramp==true)||(config->centrifugal==true))
 	{
 		printf("Some features (adiabatic ramp, centrifugal distortion) are not supported at the moment when using coherent state evolution.\n");
 		exit(0);
@@ -673,9 +673,6 @@ double norm_phonons_coherent(double t,const double y[],struct params_t *params,s
 
 	return norm_coherent(t,y,params,config)*total;
 }
-
-#warning We should compare the free (u2=0) cases, for free, coherent and 1phonon, verifying they give the same result.
-#warning Also with a good regression test, for cosine and the .cosines file.
 
 double complex fcosthetasquared_coherent(struct bigpsi_t *psi,int L,int Lprime,int M,int lambda,struct configuration_t *config)
 {
