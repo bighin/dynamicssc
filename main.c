@@ -318,7 +318,7 @@ int do_single(struct configuration_t *config)
 		{
 			int L=psi->params[n].L;
 			int offset=n*(10+10*config->gridpoints);
-			
+
 			double *y=&psi->y[offset];
 
 			fprintf(outgs[n],"%f ",ti);
@@ -333,8 +333,14 @@ int do_single(struct configuration_t *config)
 
 				case EVOLUTION_COHERENT:
 
-				for(int j=0;j<=9;j++)
-					fprintf(outgs[n],"%f ",y[j]);
+#warning Here we add back the phase, which is fine, but we should always do the same!
+
+				for(int j=0;j<=4;j++)
+				{
+					double complex z=(y[2*j]+y[2*j+1])*timephase(-n*(n+1.0f),psi->t,config);
+
+					fprintf(outgs[n],"%f %f ",creal(z),cimag(z));
+				}
 
 				break;
 			}
