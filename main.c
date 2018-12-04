@@ -328,12 +328,15 @@ int do_single(struct configuration_t *config)
 				case EVOLUTION_FREE:
 				case EVOLUTION_1PHONON:
 				case EVOLUTION_1PHONONFT:
-				fprintf(outgs[n],"%f %f ",y[0],y[1]);
+
+				{
+					double complex z=(y[0]+I*y[1])*timephase(-n*(n+1.0f),psi->t,config);
+					fprintf(outgs[n],"%f %f ",creal(z),cimag(z));
+				}
+
 				break;
 
 				case EVOLUTION_COHERENT:
-
-#warning Here we add back the phase, which is fine, but we should always do the same!
 
 				for(int j=0;j<=4;j++)
 				{
@@ -358,10 +361,6 @@ int do_single(struct configuration_t *config)
 					double complex alpha2m2,alpha2m1,alpha20,alpha21,alpha22;
 
 					k=d*gridstep;
-					scalefactor=1.0f/fscale(k,L,config);
-
-					//if((d%5)!=0)
-					//	continue;
 
 					switch(config->evolution)
 					{
@@ -369,6 +368,7 @@ int do_single(struct configuration_t *config)
 						case EVOLUTION_1PHONON:
 						case EVOLUTION_1PHONONFT:
 
+						scalefactor=1.0f/fscale(k,L,config);
 						phase2m2=timephase(-(L*(L+1.0f)+omegak(k,config)-2.0f),ti,config);
 						phase2m1=timephase(-(L*(L+1.0f)+omegak(k,config)+4.0f),ti,config);
 						phase20=timephase(-(L*(L+1.0f)+omegak(k,config)+6.0f),ti,config);
@@ -379,6 +379,7 @@ int do_single(struct configuration_t *config)
 
 						case EVOLUTION_COHERENT:
 
+						scalefactor=1.0f;
 						phase2m2=timephase(-(omegak(k,config)+6.0f),ti,config);
 						phase2m1=timephase(-(omegak(k,config)+6.0f),ti,config);
 						phase20=timephase(-(omegak(k,config)+6.0f),ti,config);
@@ -388,6 +389,7 @@ int do_single(struct configuration_t *config)
 						break;
 
 						default:
+						scalefactor=1.0f;
 						phase2m2=phase2m1=phase20=phase21=phase22=0.0f; // To silence warnings
 						fprintf(stderr,"Unkown evolution type!\n");
 						exit(0);

@@ -13,8 +13,6 @@
 #include "observables.h"
 #include "laser.h"
 
-#warning Make sure that fscale is not set when using coherent state evolution
-
 int fDcross_coherent(unsigned ndim,const double *x,void *fdata,unsigned fdim,double *fval)
 {
         /* The context from which we read the global variables */
@@ -117,7 +115,7 @@ double complex Dcross_coherent(struct bigpsi_t *psi,int L,int Lprime,int n,int n
         container.intim1=init_interpolation(x,y1im,config->gridpoints);
         container.intre2=init_interpolation(x,y2re,config->gridpoints);
         container.intim2=init_interpolation(x,y2im,config->gridpoints);
-	
+
 	container.L=L;
 	container.Lprime=Lprime;
 	container.mode=mode;
@@ -363,7 +361,7 @@ double complex Lambdaplus(struct bigpsi_t *psi,int L,struct configuration_t *con
 	double complex ret=0.0f;
 	int plus=1;
 
-#warning Check the conventions of sigma
+#warning Check the conventions for sigma
 
 	for(int mu=-2;mu<=2;mu++)
 		for(int nu=-2;nu<=2;nu++)
@@ -408,7 +406,7 @@ int sc_time_evolution_coherent(double t,const double y[],double dydt[],void *p)
 
 	struct bigpsi_t *psi=(struct bigpsi_t *)(params->parent);
 
-	double complex lambdaplus,lambdaminus,lambdazero;
+	double complex lambdaplus,lambdaminus,lambdazero,lambdasquared;
 	double complex gplus,gminus,gzero;
 
 	int L=params->L;
@@ -421,6 +419,10 @@ int sc_time_evolution_coherent(double t,const double y[],double dydt[],void *p)
 	lambdaminus=Lambdaminus(psi,L,config);
 	lambdazero=Lambdazero(psi,L,config);
 
+	lambdasquared=conj(lambdaplus)*lambdaplus+
+		      conj(lambdaminus)*lambdaminus+
+		      conj(lambdazero)*lambdazero;
+
 	if((config->ramp==true)||(config->centrifugal==true))
 	{
 		printf("Some features (adiabatic ramp, centrifugal distortion) are not supported at the moment when using coherent state evolution.\n");
@@ -430,20 +432,13 @@ int sc_time_evolution_coherent(double t,const double y[],double dydt[],void *p)
 	for(int n=-2;n<=2;n++)
 	{
 		double complex gn,dgndt;
-		double complex lambdasquared;
 		int nplus,nminus;
 
 		gn=y[2*(n+2)]+I*y[2*(n+2)+1];
 		dgndt=0.0f;
 
-		lambdasquared=conj(lambdaplus)*lambdaplus+
-			      conj(lambdaminus)*lambdaminus+
-			      conj(lambdazero)*lambdazero;
-
 		dgndt+=-I*gn*Vbeta(psi,L,config);
 		dgndt+=I*gn*lambdasquared;
-
-#warning Factor of 2 here?
 
 		dgndt+=-2.0f*I*gzero*lambdazero;
 		dgndt+=-2.0f*I*gplus*lambdaminus;
@@ -475,6 +470,8 @@ int sc_time_evolution_coherent(double t,const double y[],double dydt[],void *p)
 
 	if(L<=0)
 		return GSL_SUCCESS;
+
+#warning The situation when the laser is on is much more complicated, one should derive the equations more carefully.
 
 	for(int c=0;c<config->gridpoints;c++)
 	{

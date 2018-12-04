@@ -78,10 +78,14 @@ int do_run(int L,int M,struct info_t *info,bool silent,struct configuration_t *c
 
 			for(int L=0;L<=2;L++)
 			{
+				double complex z;
+
 				reL=psi->y[REPSI_OFFSET(L)];
 				imL=psi->y[IMPSI_OFFSET(L)];
 
-				printf("%f %f ",reL,imL);
+				z=(reL+I*imL)*timephase(-L*(L+1.0f),psi->t,config);
+
+				printf("%f %f ",creal(z),cimag(z));
 			}
 
 			printf("%f %f %f %f %f %f",creal(info[c].cos2d),cimag(info[c].cos2d),creal(info[c].cossquared),cimag(info[c].cossquared),info[c].totalnorm,info[c].totalnorm_qp);
@@ -94,13 +98,16 @@ int do_run(int L,int M,struct info_t *info,bool silent,struct configuration_t *c
 
 		{
 			double reL,imL;
+			double complex z;
 
 			for(int L=0;L<config->maxl;L++)
 			{
 				reL=psi->y[REPSI_OFFSET(L)];
 				imL=psi->y[IMPSI_OFFSET(L)];
 
-				fprintf(details,"%f %f ",reL,imL);
+				z=(reL+I*imL)*timephase(-L*(L+1.0f),psi->t,config);
+
+				fprintf(details,"%f %f ",creal(z),cimag(z));
 			}			
 		}
 
