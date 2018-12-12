@@ -361,8 +361,6 @@ double complex Lambdaplus(struct bigpsi_t *psi,int L,struct configuration_t *con
 	double complex ret=0.0f;
 	int plus=1;
 
-#warning Check the conventions for sigma
-
 	for(int mu=-2;mu<=2;mu++)
 		for(int nu=-2;nu<=2;nu++)
 			ret+=sigma_matrix(plus,mu,nu)*Dcross_coherent(psi,L,L,mu,nu,DINT_MODE_PLAIN,config);
@@ -398,6 +396,8 @@ double complex Vbeta(struct bigpsi_t *psi,int L,struct configuration_t *config)
 {
 	return creal(Dsingle_coherent(psi,L,L,0,DINT_MODE_SUPERPLAIN_VK0,config));
 }
+
+#warning The coherent state evolution needs to be checked carefully. It may be OK in the free case, but the laser coupling is not complete.
 
 int sc_time_evolution_coherent(double t,const double y[],double dydt[],void *p)
 {
@@ -470,8 +470,6 @@ int sc_time_evolution_coherent(double t,const double y[],double dydt[],void *p)
 
 	if(L<=0)
 		return GSL_SUCCESS;
-
-#warning The situation when the laser is on is much more complicated, one should derive the equations more carefully.
 
 	for(int c=0;c<config->gridpoints;c++)
 	{
