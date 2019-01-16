@@ -273,7 +273,7 @@ struct bigpsi_t *bigpsi_init(struct configuration_t *config,int mode,int L,int M
 			For the 'standard' evolution we save the real and the imaginary part of g
 			in psi->y[offset+0] and psi->y[offset+1], respectively.
 
-			For the 'coherent state' evolution we have five g_n, with n=-2,...,2 which
+			For the 'coherent state' evolution we have five g_n, with n=-2,...,2
 			whose real and imaginary parts are saved in
 		
 			g_{-2} : psi->y[offset+0] and psi->y[offset+1]

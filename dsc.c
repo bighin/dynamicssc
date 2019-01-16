@@ -17,7 +17,7 @@
 #include "coherent.h"
 
 #define MIN(x,y)		(((x)<(y))?(x):(y))
-#define	CENTRIFUGAL_L_CUTOFF	(12)
+#define	CENTRIFUGAL_L_CUTOFF	(20)
 
 /*
         Tuning parameters for numerical integration.

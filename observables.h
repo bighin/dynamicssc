@@ -4,6 +4,10 @@
 #include <stdio.h>
 #include <math.h>
 
+#include <gsl/gsl_complex.h>
+#include <gsl/gsl_complex_math.h>
+#include <gsl/gsl_matrix_complex_double.h>
+
 #include "bigpsi.h"
 #include "config.h"
 
@@ -51,5 +55,8 @@ double complex Jz_lab(struct bigpsi_t *psi,struct configuration_t *config);
 double complex rcr(int L,struct bigpsi_t *psi,struct configuration_t *config);
 double complex overlapS(struct bigpsi_t *psi,double *y0,double t0,struct configuration_t *config);
 double torque(struct bigpsi_t *psi,int L,int M,struct configuration_t *config);
+
+gsl_matrix_complex *reduced_density_matrix(struct bigpsi_t *psi,struct configuration_t *config);
+void print_reduced_density_matrix(FILE *out,struct bigpsi_t *psi,struct configuration_t *config);
 
 #endif //__OBSERVABLES_H__

@@ -1278,3 +1278,96 @@ double torque(struct bigpsi_t *psi,int L,int M,struct configuration_t *config)
 	//return 2.0f*sqrtf(6.0f)*cg*cimag(integral)/(conj(gLM)*gLM);
 	return 2.0f*sqrtf(6.0f)*cg*cimag(integral);
 }
+
+int reduced_density_matrix_index(int L,int n,struct configuration_t *config)
+{
+	return config->maxl*(n+2)+L;
+}
+
+double complex reduced_density_matrix_entry(struct bigpsi_t *psi,int L,int n,int Lprime,int nprime,struct configuration_t *config)
+{
+	double complex entry=0.0f;
+	
+	if(n==nprime)
+	{
+		if(n==0)
+		{
+			double complex gL,gLprime;
+			int offsetL,offsetLprime;
+
+			offsetL=L*(10+10*config->gridpoints);
+			offsetLprime=Lprime*(10+10*config->gridpoints);
+
+			gL=(psi->y[offsetL+0]+I*psi->y[offsetL+1])*timephase(-L*(L+1),psi->t,config);
+			gLprime=(psi->y[offsetLprime+0]+I*psi->y[offsetLprime+1])*timephase(-Lprime*(Lprime+1),psi->t,config);
+
+			entry+=conj(gLprime)*gL;
+		}
+
+		entry+=Dcross(psi,Lprime,L,n,n,DINT_MODE_PLAIN,config);
+	}
+
+	return entry;
+}
+
+gsl_matrix_complex *reduced_density_matrix(struct bigpsi_t *psi,struct configuration_t *config)
+{
+	int matrix_dimension=config->maxl*5;
+
+	gsl_matrix_complex *rdm=gsl_matrix_complex_alloc(matrix_dimension,matrix_dimension);
+	gsl_matrix_complex_set_zero(rdm);
+
+	for(int L=0;L<config->maxl;L++)
+	{
+		for(int n=-2;n<=2;n++)
+		{
+			for(int Lprime=0;Lprime<config->maxl;Lprime++)
+			{
+				for(int nprime=-2;nprime<=2;nprime++)
+				{
+					double complex entry;
+					int i,j;
+
+					i=reduced_density_matrix_index(L,n,config);
+					j=reduced_density_matrix_index(Lprime,nprime,config);
+
+					entry=reduced_density_matrix_entry(psi,L,n,Lprime,nprime,config);
+
+					gsl_matrix_complex_set(rdm,i,j,gsl_complex_rect(creal(entry),cimag(entry)));
+				}
+			}
+		}
+	}
+
+	return rdm;
+}
+
+void print_reduced_density_matrix(FILE *out,struct bigpsi_t *psi,struct configuration_t *config)
+{
+	gsl_matrix_complex *rdm;
+	int matrix_dimension;
+
+	double complex trace=0.0f;
+
+	rdm=reduced_density_matrix(psi,config);
+	matrix_dimension=config->maxl*5;
+
+	fprintf(out,"%f %d ",psi->t,config->maxl);
+
+	for(int i=0;i<matrix_dimension;i++)
+	{
+		for(int j=0;j<matrix_dimension;j++)
+		{
+			gsl_complex entry=gsl_matrix_complex_get(rdm,i,j);
+
+			fprintf(out,"%f %f ",GSL_REAL(entry),GSL_IMAG(entry));
+		
+			if(i==j)
+				trace+=GSL_REAL(entry)+I*GSL_IMAG(entry);
+		}
+	}
+
+	fprintf(out,"\n");
+
+	gsl_matrix_complex_free(rdm);
+}
