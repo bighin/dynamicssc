@@ -27,7 +27,7 @@ int do_run(int L,int M,struct info_t *info,bool silent,struct configuration_t *c
 		fprintf(stderr,"Couldn't open %s for writing.\n",fname);
 
 	fprintf(details,"# Running simulation with L=%d, M=%d, as part of a statistical mixture.\n",L,M);
-	fprintf(details,"# <Time> <Intensity> <BathIntensity> <Re(L=0)> <Im(L=0)> ... <Re(L=Lmax)> <Im(L=Lmax)> <Re(cos3d)> <Im(cos3d)> <Re(cos2d)> <Im(cos2d)> <AOS> <TotalNorm> <TotalNormQP> <NormQP (L=0)> <NormQP (L=Lmax)>\n");
+	fprintf(details,"# <Time> <Intensity> <BathIntensity> <Re(L=0)> <Im(L=0)> ... <Re(L=Lmax)> <Im(L=Lmax)> <Re(cos3d)> <Im(cos3d)> <Re(cos2d)> <Im(cos2d)> <AOS> <TotalNorm> <TotalNormQP> <NormQP (L=0)> ... <NormQP (L=Lmax)> <NormTotal (L=0)> ... <NormTotal (L=Lmax)>\n");
 
 	psi=bigpsi_init(config,BIGPSI_INIT_FROM_VALUES,L,M);
 
@@ -125,6 +125,13 @@ int do_run(int L,int M,struct info_t *info,bool silent,struct configuration_t *c
 			int offset=d*(10+10*config->gridpoints);
 		
 			fprintf(details,"%f ",norm_qp(ti,&(psi->y[offset]),&(psi->params[d]),config));
+		}
+
+		for(int d=0;d<config->maxl;d++)
+		{
+			int offset=d*(10+10*config->gridpoints);
+		
+			fprintf(details,"%f ",norm(ti,&(psi->y[offset]),&(psi->params[d]),config));
 		}
 
 		fprintf(details,"\n");
