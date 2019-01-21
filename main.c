@@ -600,7 +600,7 @@ int do_ini_file(char *inifile)
         printf("\tCentrifugal distortion: %s",(config.centrifugal==true)?("true"):("false"));
 
         if(config.centrifugal==true)
-                printf(" (D=%f)",config.centrifugalD);
+                printf(" (D=%f, Lcutoff=%d)",config.centrifugalD,config.centrifugalLcutoff);
 
         printf("\n");
 

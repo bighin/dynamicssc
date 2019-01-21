@@ -42,6 +42,7 @@ struct configuration_t
 	short moleculetype;
         bool centrifugal;
         double centrifugalD;
+	int centrifugalLcutoff;
 
 	bool mixture;
 	int nrl;

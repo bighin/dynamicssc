@@ -17,7 +17,6 @@
 #include "coherent.h"
 
 #define MIN(x,y)		(((x)<(y))?(x):(y))
-#define	CENTRIFUGAL_L_CUTOFF	(20)
 
 /*
         Tuning parameters for numerical integration.
@@ -749,7 +748,7 @@ int sc_time_evolution_1phonon(double t,const double y[],double dydt[],void *p)
 	dgdt=0.0f;
 
         if(config->centrifugal==true)
-                dgdt+=I*config->centrifugalD*pow(MIN(L,CENTRIFUGAL_L_CUTOFF)*(MIN(L,CENTRIFUGAL_L_CUTOFF)+1),2.0f)*g;
+                dgdt+=I*config->centrifugalD*pow(MIN(L,config->centrifugalLcutoff)*(MIN(L,config->centrifugalLcutoff)+1),2.0f)*g;
 
 	if(config->ramp==true)
 		localdensity=config->density*adiabatic_ramp(t,config);
@@ -817,11 +816,11 @@ int sc_time_evolution_1phonon(double t,const double y[],double dydt[],void *p)
 
                 if(config->centrifugal==true)
                 {
-			dxi2m2dt+=I*config->centrifugalD*pow(MIN(L,CENTRIFUGAL_L_CUTOFF)*(MIN(L,CENTRIFUGAL_L_CUTOFF)+1),2.0f)*xi2m2;
-			dxi2m1dt+=I*config->centrifugalD*pow(MIN(L,CENTRIFUGAL_L_CUTOFF)*(MIN(L,CENTRIFUGAL_L_CUTOFF)+1),2.0f)*xi2m1;
-			dxi20dt+=I*config->centrifugalD*pow(MIN(L,CENTRIFUGAL_L_CUTOFF)*(MIN(L,CENTRIFUGAL_L_CUTOFF)+1),2.0f)*xi20;
-			dxi21dt+=I*config->centrifugalD*pow(MIN(L,CENTRIFUGAL_L_CUTOFF)*(MIN(L,CENTRIFUGAL_L_CUTOFF)+1),2.0f)*xi21;
-			dxi22dt+=I*config->centrifugalD*pow(MIN(L,CENTRIFUGAL_L_CUTOFF)*(MIN(L,CENTRIFUGAL_L_CUTOFF)+1),2.0f)*xi22;
+			dxi2m2dt+=I*config->centrifugalD*pow(MIN(L,config->centrifugalLcutoff)*(MIN(L,config->centrifugalLcutoff)+1),2.0f)*xi2m2;
+			dxi2m1dt+=I*config->centrifugalD*pow(MIN(L,config->centrifugalLcutoff)*(MIN(L,config->centrifugalLcutoff)+1),2.0f)*xi2m1;
+			dxi20dt+=I*config->centrifugalD*pow(MIN(L,config->centrifugalLcutoff)*(MIN(L,config->centrifugalLcutoff)+1),2.0f)*xi20;
+			dxi21dt+=I*config->centrifugalD*pow(MIN(L,config->centrifugalLcutoff)*(MIN(L,config->centrifugalLcutoff)+1),2.0f)*xi21;
+			dxi22dt+=I*config->centrifugalD*pow(MIN(L,config->centrifugalLcutoff)*(MIN(L,config->centrifugalLcutoff)+1),2.0f)*xi22;
 		}
 
 		dydt[10+10*c]=creal(dxi2m2dt);
@@ -851,7 +850,7 @@ int sc_time_evolution_free(double t,const double y[],double dydt[],void *p)
 	dgdt=0.0f;
 
         if(config->centrifugal==true)
-                dgdt+=I*config->centrifugalD*pow(MIN(L,CENTRIFUGAL_L_CUTOFF)*(MIN(L,CENTRIFUGAL_L_CUTOFF)+1),2.0f)*g;
+                dgdt+=I*config->centrifugalD*pow(MIN(L,config->centrifugalLcutoff)*(MIN(L,config->centrifugalLcutoff)+1),2.0f)*g;
 
 	dydt[0]=creal(dgdt);
 	dydt[1]=cimag(dgdt);
@@ -1243,7 +1242,7 @@ int sc_time_evolution_1phononft(double t,const double y[],double dydt[],void *p)
 	dgdt=0.0f;
 
         if(config->centrifugal==true)
-                dgdt+=I*config->centrifugalD*pow(MIN(L,CENTRIFUGAL_L_CUTOFF)*(MIN(L,CENTRIFUGAL_L_CUTOFF)+1),2.0f)*g;
+                dgdt+=I*config->centrifugalD*pow(MIN(L,config->centrifugalLcutoff)*(MIN(L,config->centrifugalLcutoff)+1),2.0f)*g;
 
 	if(config->ramp==true)
 		localdensity=config->density*adiabatic_ramp(t,config);
@@ -1344,11 +1343,11 @@ int sc_time_evolution_1phononft(double t,const double y[],double dydt[],void *p)
 
                 if(config->centrifugal==true)
                 {
-			dxi2m2dt+=I*config->centrifugalD*pow(MIN(L,CENTRIFUGAL_L_CUTOFF)*(MIN(L,CENTRIFUGAL_L_CUTOFF)+1),2.0f)*xi2m2;
-			dxi2m1dt+=I*config->centrifugalD*pow(MIN(L,CENTRIFUGAL_L_CUTOFF)*(MIN(L,CENTRIFUGAL_L_CUTOFF)+1),2.0f)*xi2m1;
-			dxi20dt+=I*config->centrifugalD*pow(MIN(L,CENTRIFUGAL_L_CUTOFF)*(MIN(L,CENTRIFUGAL_L_CUTOFF)+1),2.0f)*xi20;
-			dxi21dt+=I*config->centrifugalD*pow(MIN(L,CENTRIFUGAL_L_CUTOFF)*(MIN(L,CENTRIFUGAL_L_CUTOFF)+1),2.0f)*xi21;
-			dxi22dt+=I*config->centrifugalD*pow(MIN(L,CENTRIFUGAL_L_CUTOFF)*(MIN(L,CENTRIFUGAL_L_CUTOFF)+1),2.0f)*xi22;
+			dxi2m2dt+=I*config->centrifugalD*pow(MIN(L,config->centrifugalLcutoff)*(MIN(L,config->centrifugalLcutoff)+1),2.0f)*xi2m2;
+			dxi2m1dt+=I*config->centrifugalD*pow(MIN(L,config->centrifugalLcutoff)*(MIN(L,config->centrifugalLcutoff)+1),2.0f)*xi2m1;
+			dxi20dt+=I*config->centrifugalD*pow(MIN(L,config->centrifugalLcutoff)*(MIN(L,config->centrifugalLcutoff)+1),2.0f)*xi20;
+			dxi21dt+=I*config->centrifugalD*pow(MIN(L,config->centrifugalLcutoff)*(MIN(L,config->centrifugalLcutoff)+1),2.0f)*xi21;
+			dxi22dt+=I*config->centrifugalD*pow(MIN(L,config->centrifugalLcutoff)*(MIN(L,config->centrifugalLcutoff)+1),2.0f)*xi22;
 		}
 
 		dydt[10+10*c]=creal(dxi2m2dt);
