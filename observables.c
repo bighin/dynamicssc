@@ -1371,3 +1371,73 @@ void print_reduced_density_matrix(FILE *out,struct bigpsi_t *psi,struct configur
 
 	gsl_matrix_complex_free(rdm);
 }
+
+double parity_free(double t,const double y[],struct params_t *params,struct configuration_t *config)
+{
+	double complex g=y[0]+I*y[1];
+
+	return pow(-1.0f,params->L)*g*conj(g);
+}
+
+double parity_1phonon(double t,const double y[],struct params_t *params,struct configuration_t *config)
+{
+	double complex g;
+	double complex res=0.0f;
+
+	struct bigpsi_t *psi=params->parent;
+
+	g=y[0]+I*y[1];
+
+	for(int n=-2;n<=2;n++)
+		res+=Dcross(psi,params->L,params->L,n,-n,DINT_MODE_PLAIN,config);
+
+	return pow(-1.0f,params->L)*g*conj(g)+pow(-1.0f,params->L)*res;
+}
+
+double parity_coherent(double t,const double y[],struct params_t *params,struct configuration_t *config)
+{
+	printf("The function parity_coherent() has not been implemented. Exiting...\n");
+	exit(0);
+
+	return 0.0f;
+}
+
+double parity(double t,const double y[],struct params_t *params,struct configuration_t *config)
+{
+	switch(config->evolution)
+	{
+		case EVOLUTION_FREE:
+		return parity_free(t,y,params,config);
+
+		case EVOLUTION_1PHONON:
+		case EVOLUTION_1PHONONFT:
+		return parity_1phonon(t,y,params,config);
+
+		case EVOLUTION_COHERENT:
+		return parity_coherent(t,y,params,config);
+	}
+
+	fprintf(stderr,"Unkown evolution type!\n");
+	exit(0);
+
+	/*
+		Never reached.
+	*/
+
+	return 0.0f;
+}
+
+double total_parity(struct bigpsi_t *psi,struct configuration_t *config)
+{
+	int d;
+	double ret=0.0f;
+
+	for(d=0;d<psi->nrpsis;d++)
+	{
+		int offset=d*(10+10*config->gridpoints);
+
+		ret+=parity(psi->t,&psi->y[offset],&psi->params[d],config);
+	}
+	
+	return ret;
+}
