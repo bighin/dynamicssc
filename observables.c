@@ -543,6 +543,9 @@ double complex D0(double t,struct configuration_t *config)
 	extern double relError;
 	extern size_t maxEval;
 
+	if(config->evolution==EVOLUTION_FREE)
+		return 0.0;
+
         xmin=0.0f;
         xmax=config->cutoff;
 
