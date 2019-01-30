@@ -60,6 +60,10 @@ int do_run(int L,int M,struct info_t *info,bool silent,struct configuration_t *c
 		info[c].aos=get_aos(psi);
 		info[c].torque=fabs(torque(psi,L,M,config));
 
+		info[c].j2=molecular_rotational_energy(psi,config);
+		info[c].l2=total_rotational_energy(psi,config);
+		info[c].lambda2=bosons_rotational_energy(psi,config);
+
 		gettimeofday(&endtime,NULL);
 
 		elapsed_time=(endtime.tv_sec-starttime.tv_sec)*1000.0;
@@ -362,8 +366,8 @@ void do_mixture(struct configuration_t *config)
 		}
 	}
 
-	printf("# <Time> <Intensity (arbitrary units)> <BathIntensity> <Re(cos2d)> <Im(cos2d)> <Re(cos^2)> <Im(cos^2)> <AverageOccupiedState> <WeightedTotalNorm> <TotalOfWeights> <Torque>\n");
-	fprintf(out,"# <Time> <Intensity (arbitrary units)> <BathIntensity> <Re(cos2d)> <Im(cos2d)> <Re(cos^2)> <Im(cos^2)> <AverageOccupiedState> <WeightedTotalNorm> <TotalOfWeights> <Torque>\n");
+	printf("# <Time> <Intensity (arbitrary units)> <BathIntensity> <Re(cos2d)> <Im(cos2d)> <Re(cos^2)> <Im(cos^2)> <AverageOccupiedState> <WeightedTotalNorm> <TotalOfWeights> <Torque> <J^2> <\\Lambda^2> <L^2>\n");
+	fprintf(out,"# <Time> <Intensity (arbitrary units)> <BathIntensity> <Re(cos2d)> <Im(cos2d)> <Re(cos^2)> <Im(cos^2)> <AverageOccupiedState> <WeightedTotalNorm> <TotalOfWeights> <Torque> <J^2> <\\Lambda^2> <L^2>\n");
 
 	for(d=0;d<=timedivs;d++)
 	{
@@ -371,9 +375,13 @@ void do_mixture(struct configuration_t *config)
 		double complex acodd=0.0f,csodd=0.0f;
 		double complex aosodd=0.0f,aoseven=0.0f;
 		double trqodd=0.0,trqeven=0.0f;
+		double j2odd=0.0,j2even=0.0f;
+		double l2odd=0.0,l2even=0.0f;
+		double lambda2odd=0.0,lambda2even=0.0f;
 		double complex ac,cs;
 		double aos;
 		double trq;
+		double j2,l2,lambda2;
 		double atn=0.0f,tw=0.0f;
 
 		for(c=0;c<nr_states;c++)
@@ -409,6 +417,10 @@ void do_mixture(struct configuration_t *config)
 				cseven+=weights[c]*infos[c][d].cossquared;
 				aoseven+=weights[c]*infos[c][d].aos;
 				trqeven+=weights[c]*infos[c][d].torque;
+
+				j2even+=weights[c]*infos[c][d].j2;
+				l2even+=weights[c]*infos[c][d].l2;
+				lambda2even+=weights[c]*infos[c][d].lambda2;
 			}
 			else
 			{
@@ -416,6 +428,10 @@ void do_mixture(struct configuration_t *config)
 				csodd+=weights[c]*infos[c][d].cossquared;
 				aosodd+=weights[c]*infos[c][d].aos;
 				trqodd+=weights[c]*infos[c][d].torque;
+
+				j2odd+=weights[c]*infos[c][d].j2;
+				l2odd+=weights[c]*infos[c][d].l2;
+				lambda2odd+=weights[c]*infos[c][d].lambda2;
 			}
 
 			atn+=infos[c][d].totalnorm;
@@ -429,6 +445,9 @@ void do_mixture(struct configuration_t *config)
 			cs=(15.0f*cseven+21.0f*csodd)/(15.0f+21.0f);
 			aos=(15.0f*aoseven+21.0f*aosodd)/(15.0f+21.0f);
 			trq=(15.0f*trqeven+21.0f*trqodd)/(15.0f+21.0f);
+			j2=(15.0f*j2even+21.0f*j2odd)/(15.0f+21.0f);
+			l2=(15.0f*l2even+21.0f*l2odd)/(15.0f+21.0f);
+			lambda2=(15.0f*lambda2even+21.0f*lambda2odd)/(15.0f+21.0f);
 			break;
 
 	                case MOLECULE_CS2:
@@ -436,6 +455,9 @@ void do_mixture(struct configuration_t *config)
 			cs=cseven;
 			aos=aoseven;
 			trq=trqeven;
+			j2=j2even;
+			l2=l2even;
+			lambda2=lambda2even;
 			break;
 
 	                case MOLECULE_OCS:
@@ -443,6 +465,9 @@ void do_mixture(struct configuration_t *config)
 			cs=(cseven+csodd)/(2.0f);
 			aos=(aoseven+aosodd)/(2.0f);
 			trq=(trqeven+trqodd)/(2.0f);
+			j2=(j2even+j2odd)/(2.0f);
+			l2=(l2even+l2odd)/(2.0f);
+			lambda2=(lambda2even+lambda2odd)/(2.0f);
 			break;
 
 			/*
@@ -450,12 +475,12 @@ void do_mixture(struct configuration_t *config)
 			*/
 		
 			default:
-			ac=cs=aos=trq=0.0f;
+			ac=cs=aos=trq=l2=j2=lambda2=0.0f;
 			break;
 		}
 
-		printf("%f %f %f %f %f %f %f %f %f %f %f\n",infos[0][d].t,infos[0][d].intensity,infos[0][d].bath_intensity,creal(ac),cimag(ac),creal(cs),cimag(cs),aos,atn/nr_states,tw,trq);
-		fprintf(out,"%f %f %f %f %f %f %f %f %f %f %f\n",infos[0][d].t,infos[0][d].intensity,infos[0][d].bath_intensity,creal(ac),cimag(ac),creal(cs),cimag(cs),aos,atn/nr_states,tw,trq);
+		printf("%f %f %f %f %f %f %f %f %f %f %f %f %f %f\n",infos[0][d].t,infos[0][d].intensity,infos[0][d].bath_intensity,creal(ac),cimag(ac),creal(cs),cimag(cs),aos,atn/nr_states,tw,trq,j2,lambda2,l2);
+		fprintf(out,"%f %f %f %f %f %f %f %f %f %f %f %f %f %f\n",infos[0][d].t,infos[0][d].intensity,infos[0][d].bath_intensity,creal(ac),cimag(ac),creal(cs),cimag(cs),aos,atn/nr_states,tw,trq,j2,lambda2,l2);
 	}
 
 	if(infos)

@@ -18,6 +18,8 @@ struct info_t
 	double complex cos2d,cossquared;
 	double aos;
 	double torque;
+
+	double j2,l2,lambda2;
 };
 
 int do_run(int L,int M,struct info_t *info,bool silent,struct configuration_t *config);
