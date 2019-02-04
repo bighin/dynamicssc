@@ -41,6 +41,10 @@ double complex Ecross(struct bigpsi_t *psi,int L,int Lprime,int n,double *y0,dou
 double eta_sigma(int L, int lambda,int n,int nu);
 double sigma_matrix(int i,int n,int nprime);
 
+double complex D0(double t,struct configuration_t *config);
+double complex D1(double t,struct configuration_t *config);
+double complex D2(double t,struct configuration_t *config);
+
 double complex molecular_rotational_energy(struct bigpsi_t *psi,struct configuration_t *config);
 double complex bosons_rotational_energy(struct bigpsi_t *psi,struct configuration_t *config);
 double complex total_rotational_energy(struct bigpsi_t *psi,struct configuration_t *config);
@@ -60,5 +64,6 @@ gsl_matrix_complex *reduced_density_matrix(struct bigpsi_t *psi,struct configura
 void print_reduced_density_matrix(FILE *out,struct bigpsi_t *psi,struct configuration_t *config);
 
 double total_parity(struct bigpsi_t *psi,struct configuration_t *config);
+double bdaggerb(struct bigpsi_t *psi,struct configuration_t *config);
 
 #endif //__OBSERVABLES_H__

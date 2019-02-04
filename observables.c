@@ -1444,3 +1444,22 @@ double total_parity(struct bigpsi_t *psi,struct configuration_t *config)
 	
 	return ret;
 }
+
+double bdaggerb(struct bigpsi_t *psi,struct configuration_t *config)
+{
+	double res=0.0f;
+
+	for(int L=0;L<psi->nrpsis;L++)
+	{
+		double complex z;
+
+		for(int n=-2;n<=2;n++)
+			res+=Dcross(psi,L,L,n,n,DINT_MODE_PLAIN,config);
+
+		z=-Dsingle(psi,L,L,0,DINT_MODE_VK,config);
+
+		res+=2.0f*creal(z);
+	}
+
+	return res;
+}

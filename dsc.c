@@ -527,7 +527,7 @@ int fAplus(unsigned ndim,const double *x,void *fdata,unsigned fdim,double *fval)
 	t=container->t;
 	localdensity=container->localdensity;
 	L=container->params->L;
-	
+
 	k=x[0];
 
 	phase21=timephase(-(omegak(k,config)+4.0f),t,config);
