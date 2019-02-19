@@ -852,19 +852,11 @@ int sc_time_evolution_free(double t,const double y[],double dydt[],void *p)
         if(config->centrifugal==true)
                 dgdt+=I*config->centrifugalD*pow(MIN(L,config->centrifugalLcutoff)*(MIN(L,config->centrifugalLcutoff)+1),2.0f)*g;
 
-#ifdef REAL_I2_SPECTRUM
-	if(true)
+	if(config->realspectrum==true)
 	{
 		/*
 			Spectrum as reported on Henrik's Excel sheet, in GHz.
 		*/
-
-		double oldi2realspectrum[15]=
-		{
-			0, 1.3, 4.0, 7.8, 12.7, 18.6, 25.2,
-			32.2, 39.5, 46.6, 53.2, 59.0, 63.3,
-			65.8, 65.9
-		};
 
 		double i2realspectrum[40]=
 		{
@@ -906,7 +898,6 @@ int sc_time_evolution_free(double t,const double y[],double dydt[],void *p)
 
 		dgdt+=-I*((i2realspectrum[L]/1.12032)-L*(L+1))*g;
 	}
-#endif
 
 	dydt[0]=creal(dgdt);
 	dydt[1]=cimag(dgdt);

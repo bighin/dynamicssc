@@ -43,6 +43,7 @@ struct configuration_t
         bool centrifugal;
         double centrifugalD;
 	int centrifugalLcutoff;
+	bool realspectrum;
 
 	bool mixture;
 	int nrl;

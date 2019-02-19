@@ -35,6 +35,7 @@ void load_config_defaults(struct configuration_t *config)
         config->centrifugal=false;
         config->centrifugalD=0.0f;
         config->centrifugalLcutoff=20;
+        config->realspectrum=false;
 
 	config->mixture=false;
 	config->nrl=1;
@@ -220,6 +221,13 @@ int configuration_handler(void *user,const char *section,const char *name,const 
 		pconfig->centrifugal=true;
 		pconfig->centrifugalLcutoff=atoi(value);
         }
+	else if(MATCH("molecule","realspectrum"))
+	{
+		if((!strcasecmp(value,"true"))||(!strcasecmp(value,"on")))
+			pconfig->realspectrum=true;
+		else
+			pconfig->realspectrum=false;
+	}
 	else if(MATCH("initialconditions","type"))
 	{
 		if(!strcmp(value,"singlestate"))
