@@ -160,18 +160,15 @@ void do_mixture(struct configuration_t *config)
 		Statistical mixture for CS2, see EnsableAveragesCS2.nb and BW.nb for better precision.
 	*/
 
-#define USE_RENORMALIZED_WEIGHTS
-#ifdef USE_RENORMALIZED_WEIGHTS
+#define NR_CS2_STATES_HE	(16)
 
-#define NR_CS2_STATES	(16)
-
-	int cs2states[NR_CS2_STATES][2]=
+	int cs2states_he[NR_CS2_STATES_HE][2]=
 	{
 		{0, 0}, {2, 2}, {2, 1}, {2, 0}, {4, 4}, {4, 3}, {4, 2}, {4, 1},
 		{4, 0}, {6, 6}, {6, 5}, {6, 4}, {6, 3}, {6, 2}, {6, 1}, {6, 0}
 	};
 
-  	double cs2weights[NR_CS2_STATES]=
+  	double cs2weights_he[NR_CS2_STATES_HE]=
 	{
 		0.237716, 0.226174, 0.226174, 0.113087, 0.0399576, 0.0399576,
 		0.0399576, 0.0399576, 0.0199788, 0.00262157, 0.00262157, 0.00262157,
@@ -182,9 +179,9 @@ void do_mixture(struct configuration_t *config)
 		Statistical mixture for I2, see EnsableAveragesCS2.nb and BW.nb for better precision.
 	*/
 
-#define NR_I2_STATES	(28)
+#define NR_I2_STATES_HE	(28)
 
-	int i2states[NR_I2_STATES][2]=
+	int i2states_he[NR_I2_STATES_HE][2]=
 	{
 		{0, 0}, {1, 0}, {1, 1}, {2, 0}, {2, 1}, {2, 2}, {3, 0}, {3, 1},
 		{3, 2}, {3, 3}, {4, 0}, {4, 1}, {4, 2}, {4, 3}, {4, 4}, {5, 0},
@@ -192,7 +189,7 @@ void do_mixture(struct configuration_t *config)
 		{6, 3}, {6, 4}, {6, 5}, {6, 6}
 	};
 
-	double i2weights[NR_I2_STATES]=
+	double i2weights_he[NR_I2_STATES_HE]=
 	{
 		0.165773, 0.142302, 0.284604, 0.0997231, 0.199446, 0.199446,
 		0.0610023, 0.122005, 0.122005, 0.122005, 0.0304639, 0.0609277,
@@ -205,39 +202,37 @@ void do_mixture(struct configuration_t *config)
 		Statistical mixture for OCS.
 	*/
 
-#define NR_OCS_STATES	(15)
+#define NR_OCS_STATES_HE	(15)
 
-	int ocsstates[NR_OCS_STATES][2]=
+	int ocsstates_he[NR_OCS_STATES_HE][2]=
 	{
 		{0, 0}, {1, 1}, {1, 0}, {2, 2}, {2, 1}, {2, 0}, {3, 3}, {3, 2},
 		{3, 1}, {3, 0}, {4, 4}, {4, 3}, {4, 2}, {4, 1}, {4, 0}
 	};
 
-	double ocsweights[NR_OCS_STATES]=
+	double ocsweights_he[NR_OCS_STATES_HE]=
 	{
 		0.25211, 0.290036, 0.145018, 0.0959652, 0.0959652, 0.0479826,
 		0.0182645, 0.0182645, 0.0182645, 0.00913223, 0.00199955, 0.00199955,
 		0.00199955, 0.00199955, 0.000999773
 	};
 
-#else
+#define NR_CS2_STATES_FREE	(9)
 
-#define NR_CS2_STATES	(9)
-
-	int cs2states[NR_CS2_STATES][2]=
+	int cs2states_free[NR_CS2_STATES_FREE][2]=
 	{
 		{0, 0}, {2, 2}, {2, 1}, {2, 0}, {4, 4}, {4, 3}, {4, 2}, {4, 1}, {4, 0}
 	};
 
-  	double cs2weights[NR_CS2_STATES]=
+  	double cs2weights_free[NR_CS2_STATES_FREE]=
 	{
 		0.702956, 0.11816, 0.11816, 0.0590798, 0.00036559,
 		0.00036559,0.00036559, 0.00036559, 0.000182795
 	};
 
-#define NR_I2_STATES	(28)
+#define NR_I2_STATES_FREE	(28)
 
-	int i2states[NR_I2_STATES][2]=
+	int i2states_free[NR_I2_STATES_FREE][2]=
 	{
 		{0, 0}, {1, 0}, {1, 1}, {2, 0}, {2, 1}, {2, 2}, {3, 0}, {3, 1},
 		{3, 2}, {3, 3}, {4, 0}, {4, 1}, {4, 2}, {4, 3}, {4, 4}, {5, 0},
@@ -245,7 +240,7 @@ void do_mixture(struct configuration_t *config)
 		{6, 3}, {6, 4}, {6, 5}, {6, 6}
 	};
 
-	double i2weights[NR_I2_STATES]=
+	double i2weights_free[NR_I2_STATES_FREE]=
 	{
 		0.269354, 0.203366, 0.406732, 0.115467, 0.230934, 0.230934,
 		0.0495644, 0.0991289, 0.0991289, 0.0991289, 0.0159995, 0.031999,
@@ -254,23 +249,21 @@ void do_mixture(struct configuration_t *config)
 		0.00143317, 0.00143317, 0.00143317, 0.00143317, 0.00143317
 	};
 
-#define NR_OCS_STATES	(10)
+#define NR_OCS_STATES_FREE	(10)
 
-	int ocsstates[NR_OCS_STATES][2]=
+	int ocsstates_free[NR_OCS_STATES_FREE][2]=
 	{
 		{0, 0}, {1, 1}, {1, 0}, {2, 2}, {2, 1}, {2, 0},
 		{3, 3}, {3, 2}, {3, 1}, {3, 0}
 	};
 
-	double ocsweights[NR_OCS_STATES]=
+	double ocsweights_free[NR_OCS_STATES_FREE]=
 	{
 		0.5895641146383894, 0.2537612526886281, 0.12688062634431405,
 		0.011753138525620587, 0.011753138525620587, 0.005876569262810293,
 		0.00011715118150224684, 0.00011715118150224684,0.00011715118150224684,
 		0.00005857559075112342
 	};
-
-#endif
 
 	double *weights;
 
@@ -280,7 +273,7 @@ void do_mixture(struct configuration_t *config)
 
 	FILE *out;
 
-	if(config->maxl<6)
+	if(config->maxl<=6)
 	{
 		fprintf(stderr,"The 'maxl' parameter should be at least 6 for a statistical mixture. Exiting.\n");
 		return;
@@ -289,37 +282,46 @@ void do_mixture(struct configuration_t *config)
         switch(config->moleculetype)
         {
                 case MOLECULE_I2:
-		nr_states=NR_I2_STATES;
-		weights=i2weights;
 
-		if(config->maxl<=6)
+		if(config->evolution==EVOLUTION_FREE)
 		{
-			fprintf(stderr,"Fatal error: when using a statistical mixture, maxl should be high enough to accommodate all states! Please increase maxl\n");
-			exit(0);
+			nr_states=NR_I2_STATES_FREE;
+			weights=i2weights_free;
+		}
+		else
+		{
+			nr_states=NR_I2_STATES_HE;
+			weights=i2weights_he;
 		}
 
 		break;
 
                 case MOLECULE_CS2:
-		nr_states=NR_CS2_STATES;
-		weights=cs2weights;
 
-		if(config->maxl<=4)
+		if(config->evolution==EVOLUTION_FREE)
 		{
-			fprintf(stderr,"Fatal error: when using a statistical mixture, maxl should be high enough to accommodate all states! Please increase maxl\n");
-			exit(0);
+			nr_states=NR_CS2_STATES_FREE;
+			weights=cs2weights_free;
+		}
+		else
+		{
+			nr_states=NR_CS2_STATES_HE;
+			weights=cs2weights_he;
 		}
 
 		break;
 
                 case MOLECULE_OCS:
-		nr_states=NR_OCS_STATES;
-		weights=ocsweights;
 
-		if(config->maxl<=3)
+		if(config->evolution==EVOLUTION_FREE)
 		{
-			fprintf(stderr,"Fatal error: when using a statistical mixture, maxl should be high enough to accommodate all states! Please increase maxl\n");
-			exit(0);
+			nr_states=NR_OCS_STATES_FREE;
+			weights=ocsweights_free;
+		}
+		else
+		{
+			nr_states=NR_OCS_STATES_HE;
+			weights=ocsweights_he;
 		}
 
                 break;
@@ -352,17 +354,31 @@ void do_mixture(struct configuration_t *config)
 	        switch(config->moleculetype)
 	        {
 	                case MOLECULE_I2:
-			do_run(i2states[c][0],i2states[c][1],infos[c],false,config);
+
+			if(config->evolution==EVOLUTION_FREE)
+				do_run(i2states_free[c][0],i2states_free[c][1],infos[c],false,config);
+			else
+				do_run(i2states_he[c][0],i2states_he[c][1],infos[c],false,config);
 
 			break;
 
 	                case MOLECULE_CS2:
-			do_run(cs2states[c][0],cs2states[c][1],infos[c],false,config);
-	                break;
+
+			if(config->evolution==EVOLUTION_FREE)
+				do_run(cs2states_free[c][0],cs2states_free[c][1],infos[c],false,config);
+			else
+				do_run(cs2states_he[c][0],cs2states_he[c][1],infos[c],false,config);
+
+			break;
 
 	                case MOLECULE_OCS:
-			do_run(ocsstates[c][0],ocsstates[c][1],infos[c],false,config);
-	                break;
+
+			if(config->evolution==EVOLUTION_FREE)
+				do_run(ocsstates_free[c][0],ocsstates_free[c][1],infos[c],false,config);
+	                else
+				do_run(ocsstates_he[c][0],ocsstates_he[c][1],infos[c],false,config);
+
+			break;
 		}
 	}
 
@@ -391,15 +407,15 @@ void do_mixture(struct configuration_t *config)
 		        switch(config->moleculetype)
 		        {
 		                case MOLECULE_I2:
-				statel=i2states[c][0];
+				statel=(config->evolution==EVOLUTION_FREE)?(i2states_free[c][0]):(i2states_he[c][0]);
 				break;
 
 		                case MOLECULE_CS2:
-				statel=cs2states[c][0];
+				statel=(config->evolution==EVOLUTION_FREE)?(cs2states_free[c][0]):(cs2states_he[c][0]);
 		                break;
 
 		                case MOLECULE_OCS:
-				statel=ocsstates[c][0];
+				statel=(config->evolution==EVOLUTION_FREE)?(ocsstates_free[c][0]):(ocsstates_he[c][0]);
 		                break;
 
 				/*

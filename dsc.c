@@ -852,6 +852,62 @@ int sc_time_evolution_free(double t,const double y[],double dydt[],void *p)
         if(config->centrifugal==true)
                 dgdt+=I*config->centrifugalD*pow(MIN(L,config->centrifugalLcutoff)*(MIN(L,config->centrifugalLcutoff)+1),2.0f)*g;
 
+#ifdef REAL_I2_SPECTRUM
+	if(true)
+	{
+		/*
+			Spectrum as reported on Henrik's Excel sheet, in GHz.
+		*/
+
+		double oldi2realspectrum[15]=
+		{
+			0, 1.3, 4.0, 7.8, 12.7, 18.6, 25.2,
+			32.2, 39.5, 46.6, 53.2, 59.0, 63.3,
+			65.8, 65.9
+		};
+
+		double i2realspectrum[40]=
+		{
+			0., 1.2936, 3.8424, 7.5696, 12.36, 18.06, 24.4776,
+			31.3824, 38.5056, 45.54, 52.14, 57.9216, 62.4624,
+			65.3016, 65.94, 85.44, 106.24, 128.34, 151.74,
+			176.44, 202.44, 229.74, 258.34, 288.24, 319.44,
+			351.94, 385.74, 420.84, 457.24, 494.94, 533.94,
+			574.24, 615.84, 658.74, 702.94, 748.44, 795.24,
+			843.34, 892.74, 943.44
+		};
+
+		if(config->moleculetype!=MOLECULE_I2)
+		{
+			printf("The option realspectrum has been implemented only for I2.\n");
+			exit(0);
+		}
+
+		if(L>40)
+		{
+			printf("Parameter maxl is too high. Quitting.\n");
+			exit(0);
+		}
+
+		/*
+			The values must be converted from GHz to units of (bare) B.
+
+			To check that everything is consistent, let's look at the energy of
+			the L=2 state, for which the centrifugal distortion is not relevant.
+			We get:
+
+			E_2 = 4.0 GHz = 3.57 B = 6 B^*
+
+			the first equality being given by the conversion factor for I2
+			B = 1.12032 GHz, the last one being by definition of B^*.
+
+			The equation above gives (B^* / B) = 0.595 which is perfectly consistent.
+		*/
+
+		dgdt+=-I*((i2realspectrum[L]/1.12032)-L*(L+1))*g;
+	}
+#endif
+
 	dydt[0]=creal(dgdt);
 	dydt[1]=cimag(dgdt);
 
