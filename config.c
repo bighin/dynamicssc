@@ -69,6 +69,8 @@ void load_config_defaults(struct configuration_t *config)
 
 	config->overlap=false;
 	config->overlapt0=-2.5;
+
+	config->mixture_nr_states=0;
 }
 
 int configuration_handler(void *user,const char *section,const char *name,const char *value)

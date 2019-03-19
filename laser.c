@@ -42,7 +42,7 @@ void load_almost_gaussian(char *fname,double *max)
 			almost_gaussian_min_x=a;
 			almost_gaussian_max_x=a;
 		}
-	
+
 		if(a<almost_gaussian_min_x)
 			almost_gaussian_min_x=a;
 

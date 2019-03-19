@@ -77,6 +77,16 @@ struct configuration_t
 	
 	bool overlap;
 	double overlapt0;
+
+	/*
+		The mixture weights that are automatically calculated in molecules.c
+	*/
+
+#define MIXTURE_MAX_NR_STATES	(32)
+
+		int mixture_states[MIXTURE_MAX_NR_STATES][2];
+		double mixture_weights[MIXTURE_MAX_NR_STATES];
+		int mixture_nr_states,mixture_even_abundance,mixture_odd_abundance;
 };
 
 void load_config_defaults(struct configuration_t *config);

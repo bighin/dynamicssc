@@ -513,10 +513,16 @@ int do_single(struct configuration_t *config)
 int do_ini_file(char *inifile)
 {
 	struct configuration_t config;
+	struct molecule_db_t *moldb;
 
 	load_config_defaults(&config);
 	config.inipath=strdup(inifile);
-	load_molecules_files("molecules.ini");
+
+	if((moldb=load_molecules_files("molecules.conf",false))==NULL)
+	{
+		printf("Couldn't load molecule database. Quitting.\n");
+		return 0;
+	}
 
 	if(ini_parse(inifile,configuration_handler,&config)<0)
 	{
@@ -525,9 +531,11 @@ int do_ini_file(char *inifile)
 	}
 
 	save_ini_backup(&config,inifile);
+	calculate_mixture_weights(moldb,&config,false);
 
 	printf("Angulon dynamics, strong coupling.\n");
 	printf("Loaded configuration from: %s\n",inifile);
+	printf("Loaded molecules database from: %s\n","molecules.conf");
 
 	printf("\nOutput-related options:\n");
 	printf("\tOutput prefix: %s\n",config.prefix);
@@ -717,6 +725,9 @@ int do_ini_file(char *inifile)
 
 	if(config.shapefile!=NULL)
 		unload_almost_gaussian();
+
+	if(moldb)
+		fini_moldb(moldb);
 
 	printf("Bye!\n");
 

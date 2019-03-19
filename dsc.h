@@ -78,4 +78,6 @@ double complex Aminus(double t,const double y[],struct params_t *params,double l
 
 int sc_time_evolution(double t,const double y[],double dydt[],void *p);
 
+double fbe(struct configuration_t *config,double x);
+
 #endif //__DSC_H__

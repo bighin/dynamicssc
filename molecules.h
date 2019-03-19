@@ -1,6 +1,8 @@
 #ifndef __MOLECULES_H__
 #define __MOLECULES_H__
 
+#include "config.h"
+
 #define MAX_NR_OF_MOLECULES	(128)
 
 struct molecule_db_t
@@ -19,7 +21,10 @@ struct molecule_db_t
 };
 
 int find_molecule_id(struct molecule_db_t *moldb,const char *section);
+int find_or_add_molecule_id(struct molecule_db_t *moldb,const char *section);
+struct molecule_db_t *load_molecules_files(char *molfile,bool verbose);
+void fini_moldb(struct molecule_db_t *moldb);
 
-void load_molecules_files(char *molfile);
+void calculate_mixture_weights(struct molecule_db_t *moldb,struct configuration_t *config,bool verbose);
 
 #endif //__MOLECULES_H__

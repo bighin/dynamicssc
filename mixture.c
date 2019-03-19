@@ -152,9 +152,70 @@ int do_run(int L,int M,struct info_t *info,bool silent,struct configuration_t *c
 	return 0;
 }
 
+int compar_double(const void *a,const void *b)
+{
+	double first=*((double *)(a));
+	double second=*((double *)(b));
+
+	if(first>second)
+		return 1;
+
+	if(first<second)
+		return -1;
+	
+	return 0;
+}
+
+double pctdiff(double a,double b)
+{
+	return 2.0f*fabs(a-b)/(a+b);
+}
+
+void debug_compare_weights(double *hardcoded_weights,int nr_states,struct configuration_t *config)
+{
+	double *calculated_weights=malloc(sizeof(double)*config->mixture_nr_states);
+
+	for(int c=0;c<config->mixture_nr_states;c++)
+		calculated_weights[c]=config->mixture_weights[c];
+
+	qsort(hardcoded_weights,nr_states,sizeof(double),compar_double);
+	qsort(calculated_weights,nr_states,sizeof(double),compar_double);
+
+#define MAX(a,b)	(((a)>(b))?(a):(b))
+
+	for(int c=0;c<MAX(nr_states,config->mixture_nr_states);c++)
+	{
+		printf("Hardcoded: ");
+
+		if(c<nr_states)
+			printf("%f, ",hardcoded_weights[c]);
+		else
+			printf("N/A ");
+
+		printf("\tCalculated: ");
+
+		if(c<config->mixture_nr_states)
+			printf("%f ",calculated_weights[c]);
+		else
+			printf("N/A ");
+	
+		if((c<nr_states)&&(c<config->mixture_nr_states))
+			printf("\tDiff: %f",pctdiff(hardcoded_weights[c],calculated_weights[c]));
+		else
+			printf("\tDiff: N/A");
+		
+
+		printf("\n");
+	}
+
+	exit(0);
+}
+
 void do_mixture(struct configuration_t *config)
 {
 	char outfile[1024];
+
+#warning Here we could start using the automatically calculated weights (already in the config struct), rather than the hardcoded ones. See the experimental function do_mixture_alt() just after!
 
 	/*
 		Statistical mixture for CS2, see EnsableAveragesCS2.nb and BW.nb for better precision.
@@ -331,6 +392,8 @@ void do_mixture(struct configuration_t *config)
                 exit(0);
         }
 
+	debug_compare_weights(weights,nr_states,config);
+
 	snprintf(outfile,1024,"%s.mixture.dat",config->prefix);
 	outfile[1023]='\0';
 
@@ -502,6 +565,131 @@ void do_mixture(struct configuration_t *config)
 	if(infos)
 	{
 		for(c=0;c<nr_states;c++)
+			if(infos[c])
+				free(infos[c]);
+	
+		free(infos);
+	}
+
+	if(out)
+		fclose(out);
+
+	printf("Done! The results have been written to %s.\n",outfile);
+}
+
+void do_mixture_alt(struct configuration_t *config)
+{
+	char outfile[1024];
+
+	int timedivs;
+	struct info_t **infos;
+	int c,d;
+
+	FILE *out;
+
+	if(config->maxl<=6)
+	{
+		fprintf(stderr,"The 'maxl' parameter should be at least 6 for a statistical mixture. Exiting.\n");
+		return;
+	}
+
+	if(config->mixture_nr_states==0)
+	{
+		fprintf(stderr,"The mixture weights have not been calculated for the molecule. Please check weather molecules.conf has been loaded and has the correct entry. Exiting.\n");
+		return;
+	}
+
+	snprintf(outfile,1024,"%s.mixture.dat",config->prefix);
+	outfile[1023]='\0';
+
+	if(!(out=fopen(outfile,"w+")))
+	{
+		printf("Couldn't open %s for writing.\n",outfile);
+		return;
+	}
+
+	infos=malloc(config->mixture_nr_states*sizeof(struct info_t *));
+
+	timedivs=(config->endtime-config->starttime)/config->timestep;
+
+	for(c=0;c<config->mixture_nr_states;c++)
+		infos[c]=malloc(sizeof(struct info_t)*(1+timedivs));
+
+#pragma omp parallel for
+
+	for(c=0;c<config->mixture_nr_states;c++)
+	{
+		do_run(config->mixture_states[c][0],config->mixture_states[c][1],infos[c],false,config);
+	}
+
+	printf("# <Time> <Intensity (arbitrary units)> <BathIntensity> <Re(cos2d)> <Im(cos2d)> <Re(cos^2)> <Im(cos^2)> <AverageOccupiedState> <WeightedTotalNorm> <TotalOfWeights> <Torque> <J^2> <\\Lambda^2> <L^2>\n");
+	fprintf(out,"# <Time> <Intensity (arbitrary units)> <BathIntensity> <Re(cos2d)> <Im(cos2d)> <Re(cos^2)> <Im(cos^2)> <AverageOccupiedState> <WeightedTotalNorm> <TotalOfWeights> <Torque> <J^2> <\\Lambda^2> <L^2>\n");
+
+	for(d=0;d<=timedivs;d++)
+	{
+		double complex aceven=0.0f,cseven=0.0f;
+		double complex acodd=0.0f,csodd=0.0f;
+		double complex aosodd=0.0f,aoseven=0.0f;
+		double trqodd=0.0,trqeven=0.0f;
+		double j2odd=0.0,j2even=0.0f;
+		double l2odd=0.0,l2even=0.0f;
+		double lambda2odd=0.0,lambda2even=0.0f;
+
+		double complex ac,cs;
+		double aos;
+		double trq;
+		double j2,l2,lambda2;
+		double atn=0.0f,tw=0.0f;
+
+		double ea=config->mixture_even_abundance;
+		double oa=config->mixture_odd_abundance;
+
+		for(c=0;c<config->mixture_nr_states;c++)
+		{
+			int statel=config->mixture_states[c][0];
+
+			if((statel%2)==0)
+			{
+				aceven+=config->mixture_weights[c]*infos[c][d].cos2d;
+				cseven+=config->mixture_weights[c]*infos[c][d].cossquared;
+				aoseven+=config->mixture_weights[c]*infos[c][d].aos;
+				trqeven+=config->mixture_weights[c]*infos[c][d].torque;
+
+				j2even+=config->mixture_weights[c]*infos[c][d].j2;
+				l2even+=config->mixture_weights[c]*infos[c][d].l2;
+				lambda2even+=config->mixture_weights[c]*infos[c][d].lambda2;
+			}
+			else
+			{
+				acodd+=config->mixture_weights[c]*infos[c][d].cos2d;
+				csodd+=config->mixture_weights[c]*infos[c][d].cossquared;
+				aosodd+=config->mixture_weights[c]*infos[c][d].aos;
+				trqodd+=config->mixture_weights[c]*infos[c][d].torque;
+
+				j2odd+=config->mixture_weights[c]*infos[c][d].j2;
+				l2odd+=config->mixture_weights[c]*infos[c][d].l2;
+				lambda2odd+=config->mixture_weights[c]*infos[c][d].lambda2;
+			}
+
+			atn+=infos[c][d].totalnorm;
+			tw+=config->mixture_weights[c];
+		}
+
+		ac=(ea*aceven+oa*acodd)/(ea+oa);
+		cs=(ea*cseven+oa*csodd)/(ea+oa);
+		aos=(ea*aoseven+oa*aosodd)/(ea+oa);
+		trq=(ea*trqeven+oa*trqodd)/(ea+oa);
+		j2=(ea*j2even+oa*j2odd)/(ea+oa);
+		l2=(ea*l2even+oa*l2odd)/(ea+oa);
+		lambda2=(ea*lambda2even+oa*lambda2odd)/(ea+oa);
+
+		printf("%f %f %f %f %f %f %f %f %f %f %f %f %f %f\n",infos[0][d].t,infos[0][d].intensity,infos[0][d].bath_intensity,creal(ac),cimag(ac),creal(cs),cimag(cs),aos,atn/config->mixture_nr_states,tw,trq,j2,lambda2,l2);
+		fprintf(out,"%f %f %f %f %f %f %f %f %f %f %f %f %f %f\n",infos[0][d].t,infos[0][d].intensity,infos[0][d].bath_intensity,creal(ac),cimag(ac),creal(cs),cimag(cs),aos,atn/config->mixture_nr_states,tw,trq,j2,lambda2,l2);
+	}
+
+	if(infos)
+	{
+		for(c=0;c<config->mixture_nr_states;c++)
 			if(infos[c])
 				free(infos[c]);
 	
