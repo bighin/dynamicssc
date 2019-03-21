@@ -513,12 +513,16 @@ int do_single(struct configuration_t *config)
 int do_ini_file(char *inifile)
 {
 	struct configuration_t config;
-	struct molecule_db_t *moldb;
 
 	load_config_defaults(&config);
 	config.inipath=strdup(inifile);
 
-	if((moldb=load_molecules_files("molecules.conf",false))==NULL)
+	/*
+		The molecule database needs to be loaded before parsing the .ini file,
+		since we need to check if the molecule type is in the database.
+	*/
+
+	if((config.moldb=load_molecules_files("molecules.conf",false))==NULL)
 	{
 		printf("Couldn't load molecule database. Quitting.\n");
 		return 0;
@@ -531,7 +535,19 @@ int do_ini_file(char *inifile)
 	}
 
 	save_ini_backup(&config,inifile);
-	calculate_mixture_weights(moldb,&config,false);
+
+	/*
+		That's a bit unusual: it's better to declar the function here, since having it in molecules.h
+		will give a dependancy loop between molecules.h and config.h
+
+		The function is called only, so no big deal, we declare it on the fly!
+	*/
+
+	{
+		void calculate_mixture_weights(struct molecule_db_t *moldb,struct configuration_t *config,bool verbose);
+
+		calculate_mixture_weights(config.moldb,&config,false);
+	}
 
 	printf("Angulon dynamics, strong coupling.\n");
 	printf("Loaded configuration from: %s\n",inifile);
@@ -586,26 +602,7 @@ int do_ini_file(char *inifile)
 		config.gridpoints=5;
 	}
 
-	printf("\nMolecule type: ");
-	
-	switch(config.moleculetype)
-	{
-		case MOLECULE_I2:
-		printf("I2\n");
-		break;
-
-		case MOLECULE_CS2:
-		printf("CS2\n");
-		break;
-
-		case MOLECULE_OCS:
-		printf("OCS\n");
-		break;
-
-		default:
-		printf("ERROR!\n");
-		break;
-	}
+	printf("\nMolecule type: %s",config.moldb->ids[config.moleculetype]);
 
         printf("\tCentrifugal distortion: %s",(config.centrifugal==true)?("true"):("false"));
 
@@ -726,8 +723,8 @@ int do_ini_file(char *inifile)
 	if(config.shapefile!=NULL)
 		unload_almost_gaussian();
 
-	if(moldb)
-		fini_moldb(moldb);
+	if(config.moldb)
+		fini_moldb(config.moldb);
 
 	printf("Bye!\n");
 

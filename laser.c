@@ -142,24 +142,7 @@ double get_laser_intensity(double fluence,double pulse_duration,double t,struct 
 		a good approximation, but not accurate enough in this case.
 	*/
 
-	switch(config->moleculetype)
-	{
-		case MOLECULE_I2:
-		etamax=9.91175*(6.0993/0.03739/pulse_duration)*fluence;
-		break;
-
-		case MOLECULE_CS2:
-		etamax=9.91175*(10.3/0.10901/pulse_duration)*fluence;
-		break;
-
-		case MOLECULE_OCS:
-		etamax=9.91175*(4.67/0.20286/pulse_duration)*fluence;
-		break;
-
-		default:
-		fprintf(stderr,"Fatal error: unknown molecular species!\n");
-		exit(0);
-	}
+	etamax=9.91175*(6.0993/config->B_in_cms_minus_one/pulse_duration)*fluence;
 
 	etamax*=pulse_sigma*sqrt(2*M_PI);
 
@@ -187,6 +170,8 @@ double get_laser_intensity(double fluence,double pulse_duration,double t,struct 
 
 double B_in_ps(struct configuration_t *config)
 {
+	double B_in_THz=config->B*0.001f;
+
 	/*
 		This is one of the two numbers that depend on the molecular species --
         	the other being the relation between the fluence and eta -- the factor is:
@@ -194,21 +179,5 @@ double B_in_ps(struct configuration_t *config)
         	B = 142.0 ps for for I2.
 	*/
 
-	switch(config->moleculetype)
-	{
-		case MOLECULE_I2:
-	        return 142.0f;
-		break;
-
-		case MOLECULE_CS2:
-	        return 48.2;
-		break;
-
-		case MOLECULE_OCS:
-	        return 26.1;
-		break;
-	}
-
-	fprintf(stderr,"Fatal error: unknown molecular species!\n");
-	exit(0);
+	return 1.0f/(2.0f*M_PI*B_in_THz);
 }

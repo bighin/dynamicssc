@@ -124,30 +124,7 @@ void calculate_mixture_weights(struct molecule_db_t *moldb,struct configuration_
 	totaleven=totalodd=0.0f;
 	maxjeven=maxjodd=0;
 
-	/*
-		We try and find the molecular id in the database
-	*/
-
-	id=-1;
-	switch(config->moleculetype)
-	{
-		case MOLECULE_I2:
-		id=find_molecule_id(moldb,"I2");
-		break;
-
-		case MOLECULE_CS2:
-		id=find_molecule_id(moldb,"CS2");
-		break;
-
-		case MOLECULE_OCS:
-		id=find_molecule_id(moldb,"OCS");
-		break;
-
-		default:
-		fprintf(stderr,"Fatal error: unknown molecular species!\n");
-		exit(0);
-	}
-
+	id=config->moleculetype;
 	if(id==-1)
 	{
 		fprintf(stderr,"Fatal: molecules.conf does not contain information for the specified molecule.\n");
@@ -170,26 +147,22 @@ void calculate_mixture_weights(struct molecule_db_t *moldb,struct configuration_
 
 	rcr=1.0f;
 
-	if(config->evolution!=EVOLUTION_FREE)
+	if(strcmp(moldb->ids[id],"I2")==0)
 	{
-		switch(config->moleculetype)
-		{
-			case MOLECULE_I2:
-			rcr=0.6f;
-			break;
-
-			case MOLECULE_CS2:
-			rcr=0.3f;
-			break;
-
-			case MOLECULE_OCS:
-			rcr=0.36f;
-			break;
-
-			default:
-			fprintf(stderr,"Fatal error: unknown molecular species!\n");
-			exit(0);
-		}
+		rcr=0.6f;
+	}
+	else if(strcmp(moldb->ids[id],"CS2")==0)
+	{
+		rcr=0.3f;
+	}
+	else if(strcmp(moldb->ids[id],"OCS")==0)
+	{
+		rcr=0.36f;
+	}
+	else
+	{
+		fprintf(stderr,"Fatal error: please specify the rotational constant renormalisation for this molecular species!\n");
+		exit(0);
 	}
 
 	/*
@@ -197,22 +170,21 @@ void calculate_mixture_weights(struct molecule_db_t *moldb,struct configuration_
 		of states. This could be improved
 	*/
 
-	switch(config->moleculetype)
+	if(strcmp(moldb->ids[id],"I2")==0)
 	{
-		case MOLECULE_I2:
 		threshold=(config->evolution==EVOLUTION_FREE)?(0.995):(0.975);
-		break;
-
-		case MOLECULE_CS2:
+	}
+	else if(strcmp(moldb->ids[id],"CS2")==0)
+	{
 		threshold=(config->evolution==EVOLUTION_FREE)?(0.999):(0.999);
-		break;
-
-		case MOLECULE_OCS:
+	}
+	else if(strcmp(moldb->ids[id],"OCS")==0)
+	{
 		threshold=(config->evolution==EVOLUTION_FREE)?(0.99999):(0.995);
-		break;
-
-		default:
-		fprintf(stderr,"Fatal error: unknown molecular species!\n");
+	}
+	else
+	{
+		fprintf(stderr,"Fatal error: please specify the statistical mixture threashold for this molecular species!\n");
 		exit(0);
 	}
 
@@ -339,114 +311,6 @@ void calculate_mixture_weights(struct molecule_db_t *moldb,struct configuration_
 					config->mixture_weights[config->mixture_nr_states]=2.0f*weights[j][j+m];
 					config->mixture_nr_states++;
 				}
-			}
-		}
-	}
-}
-
-/*
-	Apparently that's what's used in the Aarhus alignment simulator and what we used for
-	calculating the OCS weights.
-
-	However this is at odds with the formula in the SM of Jan's paper, which is used to
-	implement the previous function.
-*/
-
-void calculate_mixture_weights_alt(struct molecule_db_t *moldb,int id,struct configuration_t *config)
-{
-	double weights[MAXJ+1][2*(MAXJ+1)+1],total,cumulative,BinK,rcr,threshold;
-	int maxj;
-
-	threshold=0.999;
-
-	total=0.0f;
-	maxj=0;
-
-	/*
-		Conversion from GHz to K.
-	*/
-
-	BinK=moldb->Bs[id]/20.8366176361328;
-
-	/*
-		The rotational constant renormalisation for different molecules.
-
-		Note that the value is hardcoded is (as calculated from the static theory)
-		just for calculating the mixture weight. The equations of motion know nothing
-		about the rotational constant renormalisation, that appear 'spontaneously'.
-	*/
-
-	rcr=1.0f;
-
-	if(config->evolution!=EVOLUTION_FREE)
-	{
-		switch(config->moleculetype)
-		{
-			case MOLECULE_I2:
-			rcr=0.6f;
-			break;
-
-			case MOLECULE_CS2:
-			rcr=0.3f;
-			break;
-
-			case MOLECULE_OCS:
-			rcr=0.36f;
-			break;
-
-			default:
-			fprintf(stderr,"Fatal error: unknown molecular species!\n");
-			exit(0);
-		}
-	}
-
-	for(int j=0;j<=MAXJ;j++)
-	{
-		for(int m=-j;m<=j;m++)
-		{
-			double weight=exp(-BinK*rcr*j*(j+1)/config->temperature);
-
-			weights[j][j+m]=weight;
-			total+=weight;
-		}
-	}
-
-	cumulative=0.0f;
-	for(int j=0;j<=MAXJ;j++)
-	{
-		for(int m=-j;m<=j;m++)
-			cumulative+=weights[j][j+m];
-
-		if(cumulative>=threshold*total)
-		{
-			maxj=j;
-			break;
-		}
-	}
-
-	for(int j=0;j<=maxj;j++)
-	{
-		for(int m=-j;m<=j;m++)
-		{
-			weights[j][j+m]/=cumulative;
-		}
-	}
-
-#define MAX(a,b)	(((a)>(b))?(a):(b))
-
-	for(int j=0;j<=maxj;j++)
-	{
-		for(int m=0;m<=j;m++)
-		{
-			if(m==0)
-			{
-				if(fabs(weights[j][j+m])>1e-8)
-					printf("State: (j=%d,m=%d) ==> %f\n",j,m,weights[j][j+m]);
-			}
-			else
-			{
-				if(fabs(weights[j][j+m])>1e-8)
-					printf("State: (j=%d,m=%d) ==> %f\n",j,m,2.0f*weights[j][j+m]);
 			}
 		}
 	}

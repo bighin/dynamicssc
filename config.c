@@ -7,6 +7,7 @@
 #include "inih/ini.h"
 #include "config.h"
 #include "auxx.h"
+#include "molecules.h"
 
 void load_config_defaults(struct configuration_t *config)
 {
@@ -31,7 +32,7 @@ void load_config_defaults(struct configuration_t *config)
 	config->wtype=1;
 	config->fscale=true;
 
-	config->moleculetype=MOLECULE_I2;
+	config->moleculetype=0;
         config->centrifugal=false;
         config->centrifugalD=0.0f;
         config->centrifugalLcutoff=20;
@@ -76,6 +77,7 @@ void load_config_defaults(struct configuration_t *config)
 int configuration_handler(void *user,const char *section,const char *name,const char *value)
 {
 	struct configuration_t *pconfig=(struct configuration_t *)(user);
+	struct molecule_db_t *moldb=pconfig->moldb;
 
 #define MATCH(s,n) (strcmp(section,s)==0)&&(strcmp(name,n)==0)
 
@@ -204,14 +206,16 @@ int configuration_handler(void *user,const char *section,const char *name,const 
 	}
 	else if(MATCH("molecule","type"))
 	{
-		if(!strcmp(value,"I2"))
-			pconfig->moleculetype=MOLECULE_I2;
-		else if(!strcmp(value,"CS2"))
-			pconfig->moleculetype=MOLECULE_CS2;
-		else if(!strcmp(value,"OCS"))
-			pconfig->moleculetype=MOLECULE_OCS;
-		else
-			fprintf(stderr,"Warning: invalid molecule type '%s'\n",value);
+		pconfig->moleculetype=find_molecule_id(moldb,value);
+
+		pconfig->B=moldb->Bs[pconfig->moleculetype];
+		pconfig->B_in_cms_minus_one=pconfig->B/29.9792458;
+
+		if(pconfig->moleculetype==-1)
+		{
+			fprintf(stderr,"Error: invalid molecule type '%s'\n",value);
+			exit(0);
+		}
 	}
 	else if(MATCH("molecule","centrifugalD"))
 	{

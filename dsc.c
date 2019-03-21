@@ -66,83 +66,33 @@ double omegak(double k,struct configuration_t *config)
 	double num,den;
 	double a0,a1,a2,a3,a4,a5,b0,b1,b2,b3,b4,b5;
 
+	double kscaled=k*sqrt(config->B/1.1178);
+
 	if(config->dispersion_is_experimental==false)
-		return k*config->soundspeed;
+		return kscaled*config->soundspeed*(1.1178/config->B);
 
 	/*
-		Padè approximant for the dispersion relation
+		Padè approximant for the dispersion relation: coefficients for I2
 	*/
 
-	if(config->moleculetype==MOLECULE_I2)
-	{
-		/*
-			Coefficients for I2
-		*/
+	a0=0.0f;
+	a1=78979.82692539008;
+	a2=-4453.106390752133;
+	a3=383.5583835895215;
+	a4=-21.92511621355489;
+	a5=0.3824072227009381;
 
-		a0=0.0f;
-		a1=78979.82692539008;
-		a2=-4453.106390752133;
-		a3=383.5583835895215;
-		a4=-21.92511621355489;
-		a5=0.3824072227009381;
+	b0=3433.7252161679503;
+	b1=-218.02760941323945;
+	b2=12.467652732020886;
+	b3=0.5009420138478766;
+	b4=-0.05760613914422612;
+	b5=0.0010925920648598231;
 
-		b0=3433.7252161679503;
-		b1=-218.02760941323945;
-		b2=12.467652732020886;
-		b3=0.5009420138478766;
-		b4=-0.05760613914422612;
-		b5=0.0010925920648598231;
-	}
-	else if(config->moleculetype==MOLECULE_CS2)
-	{
-		/*
-			Coefficients for CS2
-		*/
+	num=a0+kscaled*(a1+kscaled*(a2+kscaled*(a3+kscaled*(a4+kscaled*a5))));
+	den=b0+kscaled*(b1+kscaled*(b2+kscaled*(b3+kscaled*(b4+kscaled*b5))));
 
-		a0=0.0f;
-		a1=39815.65200133856;
-		a2=-4031.0062614672765;
-		a3=570.0463741407423;
-		a4=-54.18214205687705;
-		a5=1.6053060335262601;
-
-		b0=2961.928011862246;
-		b1=-334.1600104773988;
-		b2=32.52943513283185;
-		b3=1.9844702294478243;
-		b4=-0.409499213901235;
-		b5=0.013377550279385501;
-	}
-	else if(config->moleculetype==MOLECULE_OCS)
-	{
-		/*
-			Coefficients for OCS
-		*/
-
-		a0=0.0f;
-		a1=22655.7;
-		a2=-4009.93;
-		a3=602.768;
-		a4=-62.1808;
-		a5=2.3052;
-
-		b0=2256.28;
-		b1=-421.22;
-		b2=53.0869;
-		b3=1.39869;
-		b4=-0.713085;
-		b5=0.0329314;
-	}
-	else
-	{
-		fprintf(stderr,"Unknown molecule type!\n");
-		exit(0);
-	}
-
-	num=a0+k*(a1+k*(a2+k*(a3+k*(a4+k*a5))));
-	den=b0+k*(b1+k*(b2+k*(b3+k*(b4+k*b5))));
-
-	return num/den;
+	return num/den*(1.1178/config->B);
 }
 
 /*
@@ -869,7 +819,7 @@ int sc_time_evolution_free(double t,const double y[],double dydt[],void *p)
 			843.34, 892.74, 943.44
 		};
 
-		if(config->moleculetype!=MOLECULE_I2)
+		if(strcmp(config->moldb->ids[config->moleculetype],"I2")!=0)
 		{
 			printf("The option realspectrum has been implemented only for I2.\n");
 			exit(0);
@@ -911,42 +861,13 @@ int sc_time_evolution_free(double t,const double y[],double dydt[],void *p)
 
 double fbe(struct configuration_t *config,double x)
 {
-	double temperature,beta,kelvins;
+	double temperature,beta,kelvins,B_in_kelvin;
 
 	kelvins=config->temperature;
 
-	if(config->moleculetype==MOLECULE_I2)
-	{
-		/*
-			Inverse temperature of the bath, in units of B, for I2
-		*/
-
-		temperature=kelvins/0.0536459;
-		beta=1.0f/temperature;
-	}
-	else if(config->moleculetype==MOLECULE_CS2)
-	{
-		/*
-			Inverse temperature of the bath, in units of B, for CS2
-		*/
-
-		temperature=kelvins/0.156839;
-		beta=1.0f/temperature;
-	}
-	else if(config->moleculetype==MOLECULE_OCS)
-	{
-		/*
-			Inverse temperature of the bath, in units of B, for OCS
-		*/
-
-		temperature=kelvins/0.291866;
-		beta=1.0f/temperature;
-	}
-	else
-	{
-		fprintf(stderr,"Unknown molecule type!\n");
-		exit(0);
-	}
+	B_in_kelvin=config->B*0.04799243415908;
+	temperature=kelvins/B_in_kelvin;
+	beta=1.0f/temperature;
 
 	return 1.0f/(exp(beta*x)-1.0f);
 }

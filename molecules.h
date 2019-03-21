@@ -25,6 +25,4 @@ int find_or_add_molecule_id(struct molecule_db_t *moldb,const char *section);
 struct molecule_db_t *load_molecules_files(char *molfile,bool verbose);
 void fini_moldb(struct molecule_db_t *moldb);
 
-void calculate_mixture_weights(struct molecule_db_t *moldb,struct configuration_t *config,bool verbose);
-
 #endif //__MOLECULES_H__

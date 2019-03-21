@@ -3,6 +3,8 @@
 
 #include <stdbool.h>
 
+#include "molecules.h"
+
 #ifndef GITCOMMIT
 #define GITCOMMIT "unknown"
 #endif
@@ -35,11 +37,12 @@ struct configuration_t
 	short wtype;
 	bool fscale;
 
-#define MOLECULE_I2	(20)
-#define MOLECULE_CS2	(21)
-#define MOLECULE_OCS	(22)
+	/*
+		moleculetype it's the index pointing to the correct entry
+		in a molecule_db_t structure.
+	*/
 
-	short moleculetype;
+	int moleculetype;
         bool centrifugal;
         double centrifugalD;
 	int centrifugalLcutoff;
@@ -82,11 +85,19 @@ struct configuration_t
 		The mixture weights that are automatically calculated in molecules.c
 	*/
 
-#define MIXTURE_MAX_NR_STATES	(32)
+#define MIXTURE_MAX_NR_STATES	(64)
 
-		int mixture_states[MIXTURE_MAX_NR_STATES][2];
-		double mixture_weights[MIXTURE_MAX_NR_STATES];
-		int mixture_nr_states,mixture_even_abundance,mixture_odd_abundance;
+	int mixture_states[MIXTURE_MAX_NR_STATES][2];
+	double mixture_weights[MIXTURE_MAX_NR_STATES];
+	int mixture_nr_states,mixture_even_abundance,mixture_odd_abundance;
+
+	struct molecule_db_t *moldb;
+
+	/*
+		The rotational constant, given in GHz and in cm^{-1}
+	*/
+
+	double B,B_in_cms_minus_one;
 };
 
 void load_config_defaults(struct configuration_t *config);
