@@ -210,6 +210,7 @@ int configuration_handler(void *user,const char *section,const char *name,const 
 
 		pconfig->B=moldb->Bs[pconfig->moleculetype];
 		pconfig->B_in_cms_minus_one=pconfig->B/29.9792458;
+		pconfig->Delta_alpha=moldb->alphapars[pconfig->moleculetype]-moldb->alphaperps[pconfig->moleculetype];
 
 		if(pconfig->moleculetype==-1)
 		{

@@ -142,7 +142,7 @@ double get_laser_intensity(double fluence,double pulse_duration,double t,struct 
 		a good approximation, but not accurate enough in this case.
 	*/
 
-	etamax=9.91175*(6.0993/config->B_in_cms_minus_one/pulse_duration)*fluence;
+	etamax=9.91175*(config->Delta_alpha/config->B_in_cms_minus_one/pulse_duration)*fluence;
 
 	etamax*=pulse_sigma*sqrt(2*M_PI);
 

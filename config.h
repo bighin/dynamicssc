@@ -97,7 +97,7 @@ struct configuration_t
 		The rotational constant, given in GHz and in cm^{-1}
 	*/
 
-	double B,B_in_cms_minus_one;
+	double B,B_in_cms_minus_one,Delta_alpha;
 };
 
 void load_config_defaults(struct configuration_t *config);
