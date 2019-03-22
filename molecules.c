@@ -143,6 +143,9 @@ void calculate_mixture_weights(struct molecule_db_t *moldb,struct configuration_
 		Note that the value is hardcoded is (as calculated from the static theory)
 		just for calculating the mixture weight. The equations of motion know nothing
 		about the rotational constant renormalisation, that appears 'spontaneously'.
+	
+		Note that we have the rotational constant renormalisation for many molecular species,
+		some of which are not correctly modeled by the strong coupling theory.
 	*/
 
 	rcr=1.0f;
@@ -158,6 +161,54 @@ void calculate_mixture_weights(struct molecule_db_t *moldb,struct configuration_
 	else if(strcmp(moldb->ids[id],"OCS")==0)
 	{
 		rcr=0.36f;
+	}
+	else if(strcmp(moldb->ids[id],"HCCCN")==0)
+	{
+		rcr=0.35f;
+	}
+	else if(strcmp(moldb->ids[id],"NNO")==0)
+	{
+		rcr=0.17f;
+	}
+	else if(strcmp(moldb->ids[id],"CO2")==0)
+	{
+		rcr=0.39f;
+	}
+	else if(strcmp(moldb->ids[id],"LiH")==0)
+	{
+		rcr=0.06f;
+	}
+	else if(strcmp(moldb->ids[id],"DCN")==0)
+	{
+		rcr=0.83f;
+	}
+	else if(strcmp(moldb->ids[id],"HCN")==0)
+	{
+		rcr=0.81f;
+	}
+	else if(strcmp(moldb->ids[id],"CO")==0)
+	{
+		rcr=0.63f;
+	}
+	else if(strcmp(moldb->ids[id],"C2H2")==0)
+	{
+		rcr=0.88f;
+	}
+	else if(strcmp(moldb->ids[id],"NO")==0)
+	{
+		rcr=0.76f;
+	}
+	else if(strcmp(moldb->ids[id],"HCl")==0)
+	{
+		rcr=1.0f;
+	}
+	else if(strcmp(moldb->ids[id],"HF")==0)
+	{
+		rcr=0.98f;
+	}
+	else if(strcmp(moldb->ids[id],"OH")==0)
+	{
+		rcr=1.0f;
 	}
 	else
 	{
