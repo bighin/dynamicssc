@@ -221,9 +221,9 @@ void do_mixture(struct configuration_t *config)
 
 	FILE *out;
 
-	if(config->maxl<=6)
+	if(config->maxl<=8)
 	{
-		fprintf(stderr,"The 'maxl' parameter should be at least 6 for a statistical mixture. Exiting.\n");
+		fprintf(stderr,"The 'maxl' parameter should be at least 8 for a statistical mixture. Exiting.\n");
 		return;
 	}
 

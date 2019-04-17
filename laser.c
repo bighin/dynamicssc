@@ -173,10 +173,7 @@ double B_in_ps(struct configuration_t *config)
 	double B_in_THz=config->B*0.001f;
 
 	/*
-		This is one of the two numbers that depend on the molecular species --
-        	the other being the relation between the fluence and eta -- the factor is:
-
-        	B = 142.0 ps for for I2.
+		Mind the 2 \pi factor!
 	*/
 
 	return 1.0f/(2.0f*M_PI*B_in_THz);

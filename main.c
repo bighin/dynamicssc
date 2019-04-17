@@ -540,7 +540,8 @@ int do_ini_file(char *inifile)
 		That's a bit unusual: it's better to declar the function here, since having it in molecules.h
 		will give a dependancy loop between molecules.h and config.h
 
-		The function is called only, so no big deal, we declare it on the fly!
+		Of course that could be solved, but since the function is called only once,
+		no big deal, we declare it on the fly! :)
 	*/
 
 	{
