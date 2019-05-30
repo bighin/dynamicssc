@@ -12,7 +12,7 @@ double gaussian(double x,double mu,double sigma)
 }
 
 struct interpolation_t *almost_gaussian_interpolation;
-double almost_gaussian_min_x,almost_gaussian_max_x;
+double almost_gaussian_min_x,almost_gaussian_max_x,almost_gaussian_peak;
 
 void load_almost_gaussian(char *fname,double *max)
 {
@@ -76,6 +76,11 @@ void load_almost_gaussian(char *fname,double *max)
 
 	almost_gaussian_interpolation=init_interpolation(almost_gaussian_x,almost_gaussian_y,cnt);
 
+	almost_gaussian_peak=almost_gaussian_y[0];
+	for(int c=1;c<cnt;c++)
+		if(almost_gaussian_y[c]>almost_gaussian_peak)
+			almost_gaussian_peak=almost_gaussian_y[c];
+
 	if(almost_gaussian_x)
 		free(almost_gaussian_x);
 
@@ -103,12 +108,22 @@ double almost_gaussian_ps(double x)
 {
 	if((x<=almost_gaussian_min_x)||(x>=almost_gaussian_max_x))
 		return 0.0f;
-	
+
 	return positive_part(get_point(almost_gaussian_interpolation,x));
 }
 
 double almost_gaussian(double x,struct configuration_t *config)
 {
+	/*
+		The innermost conversion factor is needed for converting between
+		units of B and ps, while the outermost one is needed to keep the
+		normalisation of overall curve.
+
+		Indeed the idea of the following function get_laser_intensity()
+		is that almost_gaussian() (and not almost_gaussian_ps()!) looks
+		pretty much like a normalised Gaussian.
+	*/
+
 	return B_in_ps(config)*almost_gaussian_ps(x*B_in_ps(config));
 }
 
@@ -153,11 +168,11 @@ double get_laser_intensity(double fluence,double pulse_duration,double t,struct 
 		This is tricky!
 	
 		The following assumes that the loaded pulse shape is normalized to
-		unity, so that the integral of \eta(t) of time is the same as using
-		a Gaussian shape.
+		unity, so that the integral of \eta(t) with respect to time is the same
+		as using a Gaussian shape.
 	
 		This is the right thing to do, since the user is specifying the fluence.
-	
+
 		However, this means that etamax is the maximum eta of an equivalent
 		Gaussian-shaped pulse, but is no longer the *actual* maximum eta.
 	*/
@@ -166,6 +181,32 @@ double get_laser_intensity(double fluence,double pulse_duration,double t,struct 
 		return etamax*almost_gaussian(t,config);
 
 	return etamax*gaussian(t,0.0f,pulse_sigma);
+}
+
+double get_peak_intensity(double fluence,double pulse_duration,struct configuration_t *config)
+{
+	double etamax,pulse_fwhm,pulse_sigma;
+
+	/*
+		Same reasoning as in the function above, but here
+		we calculate the *peak* intensity.
+	*/
+
+	pulse_fwhm=pulse_duration/B_in_ps(config);
+	pulse_sigma=pulse_fwhm/2.35;
+
+	etamax=9.91175*(config->Delta_alpha/config->B_in_cms_minus_one/pulse_duration)*fluence;
+	etamax*=pulse_sigma*sqrt(2*M_PI);
+
+	/*
+		The need for a B_in_ps() factor here is clear looking
+		at the comment in almost_gaussian().
+	*/
+
+	if(config->shapefile!=NULL)
+		return etamax*B_in_ps(config)*almost_gaussian_peak;
+
+	return etamax*gaussian(0.0,0.0f,pulse_sigma);
 }
 
 double B_in_ps(struct configuration_t *config)

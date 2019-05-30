@@ -223,7 +223,7 @@ void calculate_mixture_weights(struct molecule_db_t *moldb,struct configuration_
 
 	if(strcmp(moldb->ids[id],"I2")==0)
 	{
-		threshold=(config->evolution==EVOLUTION_FREE)?(0.995):(0.975);
+		threshold=(config->evolution==EVOLUTION_FREE)?(0.975):(0.975);
 	}
 	else if(strcmp(moldb->ids[id],"CS2")==0)
 	{

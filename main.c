@@ -540,7 +540,7 @@ int do_ini_file(char *inifile)
 		That's a bit unusual: it's better to declar the function here, since having it in molecules.h
 		will give a dependancy loop between molecules.h and config.h
 
-		Of course that could be solved, but since the function is called only once,
+		Of course that could be solved in a cleaner way, but since the function is called only once,
 		no big deal, we declare it on the fly! :)
 	*/
 
@@ -704,6 +704,19 @@ int do_ini_file(char *inifile)
 	else
 	{
 		printf("\tDuration (ps, FWHM): %f\n",config.duration);
+	}
+
+	{
+		double peak_intensity=get_peak_intensity(config.fluence,config.duration,&config);
+
+		/*
+			Conversion following Bretislav's book (slightly innacurate, see laser.c)
+			The 0.1f factor comes from the 10^(-11) there and the subsequent conversion
+			from W/cm^2 to TW/cm^2.
+		*/
+
+		peak_intensity*=config.B_in_cms_minus_one/config.Delta_alpha*0.1f;
+		printf("\tPeak intensity (TW/cm^2): %f\n",peak_intensity);
 	}
 
 	printf("\nDynamical overlap S(t) = <psi(t=0)|psi(t)>:\n");

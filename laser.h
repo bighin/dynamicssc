@@ -13,7 +13,8 @@ void unload_almost_gaussian(void);
 double almost_gaussian_ps(double x);
 double almost_gaussian(double x,struct configuration_t *config);
 
-double get_laser_intensity(double mw,double pulse_duration,double t,struct configuration_t *config);
+double get_laser_intensity(double fluence,double pulse_duration,double t,struct configuration_t *config);
+double get_peak_intensity(double fluence,double pulse_duration,struct configuration_t *config);
 
 double B_in_ps(struct configuration_t *config);
 
