@@ -710,12 +710,12 @@ int do_ini_file(char *inifile)
 		double peak_intensity=get_peak_intensity(config.fluence,config.duration,&config);
 
 		/*
-			Conversion following Bretislav's book (slightly innacurate, see laser.c)
+			Conversion following Bretislav's book: note that he approximates 1.0549 with 1.
 			The 0.1f factor comes from the 10^(-11) there and the subsequent conversion
 			from W/cm^2 to TW/cm^2.
 		*/
 
-		peak_intensity*=config.B_in_cms_minus_one/config.Delta_alpha*0.1f;
+		peak_intensity*=config.B_in_cms_minus_one/config.Delta_alpha*0.1f/1.0549;
 		printf("\tPeak intensity (TW/cm^2): %f\n",peak_intensity);
 	}
 
