@@ -605,7 +605,7 @@ int do_ini_file(char *inifile)
 
 	printf("\nMolecule type: %s",config.moldb->ids[config.moleculetype]);
 
-        printf("\tCentrifugal distortion: %s",(config.centrifugal==true)?("true"):("false"));
+        printf("\n\tCentrifugal distortion: %s",(config.centrifugal==true)?("true"):("false"));
 
         if(config.centrifugal==true)
                 printf(" (D=%f, Lcutoff=%d)",config.centrifugalD,config.centrifugalLcutoff);
