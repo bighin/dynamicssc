@@ -719,6 +719,35 @@ int do_ini_file(char *inifile)
 		printf("\tPeak intensity (TW/cm^2): %f\n",peak_intensity);
 	}
 
+	{
+		double res=0.0f;
+		double deltat=0.0001f;
+		double cfac=config.B_in_cms_minus_one/config.Delta_alpha*0.1f/1.0549f;
+
+		for(double t=-10.0f;t<=10.0f;t+=deltat)
+			res+=deltat*get_laser_intensity(config.fluence,config.duration,t,&config)*cfac;
+
+		res*=B_in_ps(&config);
+
+		/*
+			This should coincide with the fluence specified in the .ini fine (that we
+			have loaded into config.fluence) if the pulse shape file we load is normalised
+			to one.
+
+			That's the case of pulseshape.csv, for instance.
+
+			On the other hand, if the pulse shape file is not normalised to one, then one
+			has to consider the 'a posteriori' calculated fluence as the real one, and
+			the one specified in the .ini file is just a free parameter that one can tune
+			to achieve either the desired peak intensity, or the desired 'a posteriori' fluence.
+
+			This byzantine system could be changed in the future, I am not doing now
+			since it would break compatibility with old versions...
+		*/
+
+		printf("\tFluence (J/cm^2, a posteriori): %f\n",res);
+	}
+
 	printf("\nDynamical overlap S(t) = <psi(t=0)|psi(t)>:\n");
 	printf("\tOverlap: %s\n",(config.overlap==true)?("ON"):("OFF"));
 	printf("\tReference time: %f\n",config.overlapt0);
