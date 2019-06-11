@@ -36,6 +36,7 @@ void load_config_defaults(struct configuration_t *config)
         config->centrifugal=false;
         config->centrifugalD=0.0f;
         config->centrifugalLcutoff=20;
+	config->highercorrection=false;
         config->realspectrum=false;
 
 	config->mixture=false;
@@ -234,6 +235,13 @@ int configuration_handler(void *user,const char *section,const char *name,const 
 			pconfig->realspectrum=true;
 		else
 			pconfig->realspectrum=false;
+	}
+	else if(MATCH("molecule","highercorrection"))
+	{
+		if((!strcasecmp(value,"true"))||(!strcasecmp(value,"on")))
+			pconfig->highercorrection=true;
+		else
+			pconfig->highercorrection=false;
 	}
 	else if(MATCH("initialconditions","type"))
 	{

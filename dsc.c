@@ -682,6 +682,23 @@ double complex B(double t,const double y[],struct params_t *params,double locald
 	return res[0]+I*res[1];
 }
 
+double centrifugal_term(int L,struct configuration_t *config)
+{
+	int Lcutoff=config->centrifugalLcutoff;
+	double extraterm;
+
+	if(config->highercorrection==true)
+	{
+		if(L==16)
+			extraterm=10.0f;
+
+		if(L==22)
+			extraterm=20.0f;
+	}
+
+	return extraterm+config->centrifugalD*pow(MIN(L,config->centrifugalLcutoff)*(MIN(L,config->centrifugalLcutoff)+1),2.0f);
+}
+
 int sc_time_evolution_1phonon(double t,const double y[],double dydt[],void *p)
 {
 	struct params_t *params=(struct params_t *)(p);
@@ -698,7 +715,7 @@ int sc_time_evolution_1phonon(double t,const double y[],double dydt[],void *p)
 	dgdt=0.0f;
 
         if(config->centrifugal==true)
-                dgdt+=I*config->centrifugalD*pow(MIN(L,config->centrifugalLcutoff)*(MIN(L,config->centrifugalLcutoff)+1),2.0f)*g;
+                dgdt+=I*centrifugal_term(L,config)*g;
 
 	if(config->ramp==true)
 		localdensity=config->density*adiabatic_ramp(t,config);
@@ -766,11 +783,11 @@ int sc_time_evolution_1phonon(double t,const double y[],double dydt[],void *p)
 
                 if(config->centrifugal==true)
                 {
-			dxi2m2dt+=I*config->centrifugalD*pow(MIN(L,config->centrifugalLcutoff)*(MIN(L,config->centrifugalLcutoff)+1),2.0f)*xi2m2;
-			dxi2m1dt+=I*config->centrifugalD*pow(MIN(L,config->centrifugalLcutoff)*(MIN(L,config->centrifugalLcutoff)+1),2.0f)*xi2m1;
-			dxi20dt+=I*config->centrifugalD*pow(MIN(L,config->centrifugalLcutoff)*(MIN(L,config->centrifugalLcutoff)+1),2.0f)*xi20;
-			dxi21dt+=I*config->centrifugalD*pow(MIN(L,config->centrifugalLcutoff)*(MIN(L,config->centrifugalLcutoff)+1),2.0f)*xi21;
-			dxi22dt+=I*config->centrifugalD*pow(MIN(L,config->centrifugalLcutoff)*(MIN(L,config->centrifugalLcutoff)+1),2.0f)*xi22;
+			dxi2m2dt+=I*centrifugal_term(L,config)*xi2m2;
+			dxi2m1dt+=I*centrifugal_term(L,config)*xi2m1;
+			dxi20dt+=I*centrifugal_term(L,config)*xi20;
+			dxi21dt+=I*centrifugal_term(L,config)*xi21;
+			dxi22dt+=I*centrifugal_term(L,config)*xi22;
 		}
 
 		dydt[10+10*c]=creal(dxi2m2dt);
@@ -800,7 +817,7 @@ int sc_time_evolution_free(double t,const double y[],double dydt[],void *p)
 	dgdt=0.0f;
 
         if(config->centrifugal==true)
-                dgdt+=I*config->centrifugalD*pow(MIN(L,config->centrifugalLcutoff)*(MIN(L,config->centrifugalLcutoff)+1),2.0f)*g;
+                dgdt+=I*centrifugal_term(L,config)*g;
 
 	if(config->realspectrum==true)
 	{
@@ -1210,7 +1227,7 @@ int sc_time_evolution_1phononft(double t,const double y[],double dydt[],void *p)
 	dgdt=0.0f;
 
         if(config->centrifugal==true)
-                dgdt+=I*config->centrifugalD*pow(MIN(L,config->centrifugalLcutoff)*(MIN(L,config->centrifugalLcutoff)+1),2.0f)*g;
+                dgdt+=I*centrifugal_term(L,config)*g;
 
 	if(config->ramp==true)
 		localdensity=config->density*adiabatic_ramp(t,config);
@@ -1311,11 +1328,11 @@ int sc_time_evolution_1phononft(double t,const double y[],double dydt[],void *p)
 
                 if(config->centrifugal==true)
                 {
-			dxi2m2dt+=I*config->centrifugalD*pow(MIN(L,config->centrifugalLcutoff)*(MIN(L,config->centrifugalLcutoff)+1),2.0f)*xi2m2;
-			dxi2m1dt+=I*config->centrifugalD*pow(MIN(L,config->centrifugalLcutoff)*(MIN(L,config->centrifugalLcutoff)+1),2.0f)*xi2m1;
-			dxi20dt+=I*config->centrifugalD*pow(MIN(L,config->centrifugalLcutoff)*(MIN(L,config->centrifugalLcutoff)+1),2.0f)*xi20;
-			dxi21dt+=I*config->centrifugalD*pow(MIN(L,config->centrifugalLcutoff)*(MIN(L,config->centrifugalLcutoff)+1),2.0f)*xi21;
-			dxi22dt+=I*config->centrifugalD*pow(MIN(L,config->centrifugalLcutoff)*(MIN(L,config->centrifugalLcutoff)+1),2.0f)*xi22;
+			dxi2m2dt+=I*centrifugal_term(L,config)*xi2m2;
+			dxi2m1dt+=I*centrifugal_term(L,config)*xi2m1;
+			dxi20dt+=I*centrifugal_term(L,config)*xi20;
+			dxi21dt+=I*centrifugal_term(L,config)*xi21;
+			dxi22dt+=I*centrifugal_term(L,config)*xi22;
 		}
 
 		dydt[10+10*c]=creal(dxi2m2dt);
