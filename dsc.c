@@ -685,7 +685,7 @@ double complex B(double t,const double y[],struct params_t *params,double locald
 double centrifugal_term(int L,struct configuration_t *config)
 {
 	int Lcutoff=config->centrifugalLcutoff;
-	double extraterm;
+	double extraterm=0.0f;
 
 	if(config->highercorrection==true)
 	{
