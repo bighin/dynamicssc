@@ -234,6 +234,7 @@ int fDsingle(unsigned ndim,const double *x,void *fdata,unsigned fdim,double *fva
 		break;
 
 		case DINT_MODE_VK:
+		case DINT_MODE_SUPERPLAIN_VK:
 		f*=V2(k,container->localdensity,config)/W(k,config);
 		break;
 
@@ -278,6 +279,10 @@ int fDsingle(unsigned ndim,const double *x,void *fdata,unsigned fdim,double *fva
 	If mode == DINT_MODE_SUPERPLAIN_VK0 then the integral calculated is
 
 	\sum_k \alpha^{L'}_{k 2 n} V2(k)
+
+	If mode == DINT_MODE_SUPERPLAIN_VK then the integral calculated is
+
+	\sum_k \alpha^{L'}_{k 2 n} V2(k)/W(k)
 */
 
 double complex Dsingle(struct bigpsi_t *psi,int L,int Lprime,int n,int mode,struct configuration_t *config)
@@ -376,7 +381,7 @@ double complex Dsingle(struct bigpsi_t *psi,int L,int Lprime,int n,int mode,stru
 	if(y2re) free(y2re);
 	if(y2im) free(y2im);
 
-	if((mode==DINT_MODE_SUPERPLAIN)||(mode==DINT_MODE_SUPERPLAIN_VK0))
+	if((mode==DINT_MODE_SUPERPLAIN)||(mode==DINT_MODE_SUPERPLAIN_VK0)||(mode==DINT_MODE_SUPERPLAIN_VK))
 		return res[0]+I*res[1];
 
 	return conj(g)*(res[0]+I*res[1]);
@@ -1462,4 +1467,25 @@ double bdaggerb(struct bigpsi_t *psi,struct configuration_t *config)
 	}
 
 	return res;
+}
+
+double complex q_qpwL(struct bigpsi_t *psi,struct configuration_t *config,int L)
+{
+	double complex g;
+	int offsetL=L*(10+10*config->gridpoints);
+
+	g=timephase(-L*(L+1.0f),psi->t,config)*(psi->y[offsetL+0]+I*psi->y[offsetL+1]);
+	g-=Dsingle(psi,0,L,0,DINT_MODE_SUPERPLAIN_VK,config);
+
+	return g;
+}
+
+double complex q_qpw(struct bigpsi_t *psi,struct configuration_t *config)
+{
+	double complex ret=0.0f;
+
+	for(int L=0;L<psi->nrpsis;L++)
+		ret+=q_qpwL(psi,config,L);
+
+	return ret;
 }

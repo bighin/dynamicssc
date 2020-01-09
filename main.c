@@ -85,7 +85,7 @@ void print_header_alpha(FILE *out,int L,struct configuration_t *config)
 
 void print_header_norms(FILE *out)
 {
-	fprintf(out,"# <Time> <NormQP L=0> <NormPhonons L=0> ... <NormQP L=Lmax> <NormPhonons L=Lmax> <TotalNorm> <Re(AlignmentCosine)> <Im(AlignmentCosine)> <Re(Cos^2)> <Im(Cos^2)> <Re(S(t))> <Im(S(t))> <LaserIntensity> <BathIntensity> <MolecularRotationalEnergy> <BosonsRotationalEnergy> <TotalRotationalEnergy> <Hamiltonian> <JdotLambda> <(Delta JdotLambda)^2> <Lambda_z^2>_rot <J_z>_lab <Parity> <b^+ b>\n");
+	fprintf(out,"# <Time> <NormQP L=0> <NormPhonons L=0> ... <NormQP L=Lmax> <NormPhonons L=Lmax> <TotalNorm> <Re(AlignmentCosine)> <Im(AlignmentCosine)> <Re(Cos^2)> <Im(Cos^2)> <Re(S(t))> <Im(S(t))> <LaserIntensity> <BathIntensity> <MolecularRotationalEnergy> <BosonsRotationalEnergy> <TotalRotationalEnergy> <Hamiltonian> <JdotLambda> <(Delta JdotLambda)^2> <Lambda_z^2>_rot <J_z>_lab <Parity> <b^+ b> <Re(q)> <Im(q)>\n");
 }
 
 void print_header_cosines(FILE *out,struct configuration_t *config)
@@ -102,7 +102,7 @@ void print_header_cosines(FILE *out,struct configuration_t *config)
 
 void print_header_summary(FILE *out)
 {
-	fprintf(out,"# <Time> <LaserIntensity> <BathIntensity> <Norm> <NormQP> <NormPhonons> <Re(AlignmentCosine)> <Im(AlignmentCosine)> <Re(S(t))> <Im(S(t))> <Completion%%> <LocalNormErr> <TimeDE> <TimeCos> <Torque> <RotationalEnergy> <MolecularRotationalEnergy> <BosonsRotationalEnergy> <TotalRotationalEnergy> <Hamiltonian> <JdotLambda> <(Delta JdotLambda)^2> <Lambda_z^2>_rot <J_z>_lab <Parity> <b^+ b>\n");
+	fprintf(out,"# <Time> <LaserIntensity> <BathIntensity> <Norm> <NormQP> <NormPhonons> <Re(AlignmentCosine)> <Im(AlignmentCosine)> <Re(S(t))> <Im(S(t))> <Completion%%> <LocalNormErr> <TimeDE> <TimeCos> <Torque> <RotationalEnergy> <MolecularRotationalEnergy> <BosonsRotationalEnergy> <TotalRotationalEnergy> <Hamiltonian> <JdotLambda> <(Delta JdotLambda)^2> <Lambda_z^2>_rot <J_z>_lab <Parity> <b^+ b> <Re(q)> <Im(q)>\n");
 }
 
 void dump_phonons(FILE *out,struct bigpsi_t *psi,int L,struct configuration_t *config)
@@ -240,7 +240,7 @@ int do_single(struct configuration_t *config)
 		double ti=config->starttime+c*(config->endtime-config->starttime)/((double)(timedivs));
 		double bath_intensity;
 		double completion,previousnorm,elapsed_time1,elapsed_time2;
-		double complex ac,cs;
+		double complex ac,cs,q;
 		double complex S=0.0f;
 		double trq;
 		double molecular_rotational_e,bosons_rotational_e,total_rotational_e,total_e,jdotlambda,deltajdotlambda,lambdaz2rot,jayzee,parity,bdb;
@@ -306,6 +306,7 @@ int do_single(struct configuration_t *config)
 		jayzee=Jz_lab(psi,config);
 		parity=total_parity(psi,config);
 		bdb=bdaggerb(psi,config);
+		q=q_qpw(psi,config);
 		gettimeofday(&endtime,NULL);
 
 		elapsed_time2=(endtime.tv_sec-starttime.tv_sec)*1000.0;
@@ -436,7 +437,7 @@ int do_single(struct configuration_t *config)
 			fprintf(norms,"%f %f ",norm_qp(ti,&psi->y[offset],&psi->params[d],config),norm_phonons(ti,&psi->y[offset],&psi->params[d],config));
 		}
 
-		fprintf(norms,"%f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f\n",total_norm(psi),creal(ac),cimag(ac),creal(cs),cimag(cs),creal(S),cimag(S),get_laser_intensity(config->fluence,config->duration,ti,config),bath_intensity,molecular_rotational_e,bosons_rotational_e,total_rotational_e,total_e,jdotlambda,deltajdotlambda,lambdaz2rot,jayzee,parity,bdb);
+		fprintf(norms,"%f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f\n",total_norm(psi),creal(ac),cimag(ac),creal(cs),cimag(cs),creal(S),cimag(S),get_laser_intensity(config->fluence,config->duration,ti,config),bath_intensity,molecular_rotational_e,bosons_rotational_e,total_rotational_e,total_e,jdotlambda,deltajdotlambda,lambdaz2rot,jayzee,parity,bdb,creal(q),cimag(q));
 		fflush(norms);
 
 		/*
@@ -457,7 +458,7 @@ int do_single(struct configuration_t *config)
 		completion=100.0f*(ti-config->starttime)/(config->endtime-config->starttime);
 
 		printf("%f %f %f %f %f %f %f %f %f %f %f %f %f%% ",ti,get_laser_intensity(config->fluence,config->duration,ti,config),bath_intensity,total_norm(psi),total_norm_qp(psi),total_norm_phonons(psi),creal(ac),cimag(ac),creal(cs),cimag(cs),creal(S),cimag(S),completion);
-		printf("%f %f %f %f %f %f %f %f %f %f %f %f %f %f\n",previousnorm,elapsed_time1,elapsed_time2,trq,molecular_rotational_e,bosons_rotational_e,total_rotational_e,total_e,jdotlambda,deltajdotlambda,lambdaz2rot,jayzee,parity,bdb);
+		printf("%f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f\n",previousnorm,elapsed_time1,elapsed_time2,trq,molecular_rotational_e,bosons_rotational_e,total_rotational_e,total_e,jdotlambda,deltajdotlambda,lambdaz2rot,jayzee,parity,bdb,creal(q),cimag(q));
 		fflush(stdout);
 	}
 

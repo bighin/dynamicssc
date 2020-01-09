@@ -26,6 +26,7 @@ struct dint_container_t
 #define DINT_MODE_VK_OMEGAK		(25)
 #define DINT_MODE_SUPERPLAIN		(26)
 #define DINT_MODE_SUPERPLAIN_VK0	(27)
+#define DINT_MODE_SUPERPLAIN_VK		(28)
 
 	int L,Lprime,mode;
 	
@@ -65,5 +66,7 @@ void print_reduced_density_matrix(FILE *out,struct bigpsi_t *psi,struct configur
 
 double total_parity(struct bigpsi_t *psi,struct configuration_t *config);
 double bdaggerb(struct bigpsi_t *psi,struct configuration_t *config);
+
+double complex q_qpw(struct bigpsi_t *psi,struct configuration_t *config);
 
 #endif //__OBSERVABLES_H__
