@@ -1475,7 +1475,7 @@ double complex q_qpwL(struct bigpsi_t *psi,struct configuration_t *config,int L)
 	int offsetL=L*(10+10*config->gridpoints);
 
 	g=timephase(-L*(L+1.0f),psi->t,config)*(psi->y[offsetL+0]+I*psi->y[offsetL+1]);
-	g-=Dsingle(psi,0,L,0,DINT_MODE_SUPERPLAIN_VK,config);
+	g+=Dsingle(psi,0,L,0,DINT_MODE_SUPERPLAIN_VK,config);
 
 	return g;
 }

@@ -68,5 +68,6 @@ double total_parity(struct bigpsi_t *psi,struct configuration_t *config);
 double bdaggerb(struct bigpsi_t *psi,struct configuration_t *config);
 
 double complex q_qpw(struct bigpsi_t *psi,struct configuration_t *config);
+double complex q_qpwL(struct bigpsi_t *psi,struct configuration_t *config,int L);
 
 #endif //__OBSERVABLES_H__

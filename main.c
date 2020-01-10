@@ -88,6 +88,11 @@ void print_header_norms(FILE *out)
 	fprintf(out,"# <Time> <NormQP L=0> <NormPhonons L=0> ... <NormQP L=Lmax> <NormPhonons L=Lmax> <TotalNorm> <Re(AlignmentCosine)> <Im(AlignmentCosine)> <Re(Cos^2)> <Im(Cos^2)> <Re(S(t))> <Im(S(t))> <LaserIntensity> <BathIntensity> <MolecularRotationalEnergy> <BosonsRotationalEnergy> <TotalRotationalEnergy> <Hamiltonian> <JdotLambda> <(Delta JdotLambda)^2> <Lambda_z^2>_rot <J_z>_lab <Parity> <b^+ b> <Re(q)> <Im(q)>\n");
 }
 
+void print_header_qnorms(FILE *out)
+{
+	fprintf(out,"# <Time> <Re(q) L=0> <Im(q) L=0> ... <Re(q) L=Lmax> <Im(q) L=Lmax>\n");
+}
+
 void print_header_cosines(FILE *out,struct configuration_t *config)
 {
 	fprintf(out,"# Breakdown of alignment cosine in terms of L,L' overlaps\n");
@@ -170,6 +175,7 @@ int do_single(struct configuration_t *config)
 	FILE **outgs;
 	FILE **outalphas;
 	FILE *norms;
+	FILE *qnorms;
 	FILE *outcosines;
 
 	char fname[1024];
@@ -186,7 +192,7 @@ int do_single(struct configuration_t *config)
 	for(int c=0;c<config->maxl;c++)
 		outgs[c]=outalphas[c]=NULL;
 	
-	norms=outcosines=NULL;
+	norms=qnorms=outcosines=NULL;
 
 	for(int c=0;c<config->maxl;c++)
 	{
@@ -223,6 +229,13 @@ int do_single(struct configuration_t *config)
 		goto cleanup;
 	}
 
+	snprintf(fname,1024,"%s.qnorms.dat",config->prefix);
+	if(!(qnorms=fopen_mkdir(fname,"w+")))
+	{
+		fprintf(stderr,"Couldn't open output file!\n");
+		goto cleanup;
+	}
+
 	snprintf(fname,1024,"%s.cosines.dat",config->prefix);
 	if(!(outcosines=fopen_mkdir(fname,"w+")))
 	{
@@ -231,6 +244,7 @@ int do_single(struct configuration_t *config)
 	}
 
 	print_header_norms(norms);
+	print_header_qnorms(qnorms);
 	print_header_cosines(outcosines,config);
 	print_header_summary(stdout);
 
@@ -441,6 +455,22 @@ int do_single(struct configuration_t *config)
 		fflush(norms);
 
 		/*
+			...then we write the output to the 'norms' file...
+		*/
+
+		fprintf(qnorms,"%f ",psi->t);	
+
+		for(int d=0;d<psi->nrpsis;d++)
+		{
+			double complex localq=q_qpwL(psi,config,d);
+
+			fprintf(qnorms,"%f %f ",creal(localq),cimag(localq));
+		}
+
+		fprintf(qnorms,"\n");
+		fflush(qnorms);
+
+		/*
 			...then we take care of the 'cosines' file...
 		*/
 
@@ -497,6 +527,9 @@ int do_single(struct configuration_t *config)
 
 	if(norms)
 		fclose(norms);
+
+	if(qnorms)
+		fclose(qnorms);
 
 	if(outcosines)
 		fclose(outcosines);
