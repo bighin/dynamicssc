@@ -5,8 +5,8 @@
 
 double gaussian(double x,double mu,double sigma);
 
-struct interpolation_t *almost_gaussian_interpolation;
-double almost_gaussian_min_x,almost_gaussian_max_x;
+extern struct interpolation_t *almost_gaussian_interpolation;
+extern double almost_gaussian_min_x,almost_gaussian_max_x;
 
 void load_almost_gaussian(char *fname,double *max);
 void unload_almost_gaussian(void);

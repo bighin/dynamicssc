@@ -9,7 +9,7 @@ CFLAGS+=-DGITCOMMIT=\"$(COMMIT)\"
 
 OS := $(shell uname)
 ifeq ($(OS), Darwin)
-CC = gcc-mp-8
+CC = gcc-mp-10
 endif
 
 .PHONY: clean all default
